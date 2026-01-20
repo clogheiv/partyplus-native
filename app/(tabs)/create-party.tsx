@@ -1,12 +1,11 @@
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { router } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Platform, Pressable, ScrollView, TextInput } from "react-native";
 
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
-
-import { useLocalSearchParams } from "expo-router";
 import { useEffect } from "react";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
@@ -27,6 +26,8 @@ const inputStyleMultiline = {
 };
 
 export default function CreatePartyScreen() {
+ const router = useRouter();
+ 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
@@ -37,7 +38,17 @@ export default function CreatePartyScreen() {
 
   const [itemText, setItemText] = useState("");
   const [items, setItems] = useState<string[]>([]);
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const partyId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const isEditing = !!partyId;
+
+
+const onCancelEdit = async () => {
+  if (partyId) {
+    await AsyncStorage.setItem("currentPartyId", partyId);
+  }
+  router.replace("/share");
+};
   const editingId = params?.id;
 useEffect(() => {
   let isMounted = true;
@@ -45,7 +56,8 @@ useEffect(() => {
   async function loadForEdit() {
     if (!editingId) return;
 
-    const existing = await getPartyById(editingId);
+    const existing = await getPartyById(partyId ?? "");
+
     if (!existing || !isMounted) return;
 
     setTitle(existing.title ?? "");
@@ -72,7 +84,7 @@ useEffect(() => {
 }, [editingId]);
 
 function addItem() {
-  const clean = itemText.trim();C
+  const clean = itemText.trim();
   if (!clean) return;
 
   setItems((prev) => [...prev, clean]);
@@ -140,12 +152,29 @@ function addItem() {
   }
 
 return (
+  <>
+  <Stack.Screen
+  options={{
+   headerLeft: () => (
+  <Pressable onPress={onCancelEdit} style={{ paddingHorizontal: 12 }}>
+    <ThemedText>Cancel</ThemedText>
+  </Pressable>
+),
+ 
+  }}
+/>
+
   <ThemedView style={{ flex: 1 }}>
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 120 }}
       keyboardShouldPersistTaps="handled"
     >
+      {isEditing ? (
+  <Pressable onPress={onCancelEdit} style={{ alignSelf: "flex-start" }}>
+    <ThemedText type="subtitle">Cancel</ThemedText>
+  </Pressable>
+) : null}
 
       <ThemedText type="title">Create Party</ThemedText>
 
@@ -268,5 +297,6 @@ onPress={() => {
 
     </ScrollView>
   </ThemedView>
+  </>
 );
 }
