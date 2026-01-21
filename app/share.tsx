@@ -1,13 +1,14 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, TextInput } from "react-native";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "../components/themed-text";
+import { ThemedView } from "../components/themed-view";
+
 
 // These imports must match your project.
 // If VS Code underlines any of these, tell me and we’ll adjust the import path names only.
-import { getCurrentPartyId, getPartyById, upsertParty } from "@/lib/partyStore";
+import { getCurrentPartyId, getPartyById, upsertParty } from "../src/partyStore";
 
 type PartyItem = {
   id: string;
@@ -84,7 +85,11 @@ export default function ShareScreen() {
 
   if (!party) {
     return (
-      <ThemedView style={{ flex: 1, padding: 20, gap: 12 }}>
+  <ScrollView
+    style={{ flex: 1 }}
+    contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
+  >
+
         <ThemedText type="title">Share</ThemedText>
         <ThemedText>No party selected yet.</ThemedText>
         <ThemedText>Go to Load Parties, pick one, then come back here.</ThemedText>
@@ -95,12 +100,16 @@ export default function ShareScreen() {
         >
           <ThemedText>Go to Load Parties</ThemedText>
         </Pressable>
-      </ThemedView>
+      </ScrollView>
     );
   }
 
   return (
-    <ThemedView style={{ flex: 1, padding: 20, gap: 12 }}>
+    <ScrollView
+  style={{ flex: 1 }}
+  contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
+>
+
       <ThemedText type="title">{party.title}</ThemedText>
 
       <Pressable
@@ -113,13 +122,25 @@ export default function ShareScreen() {
         <ThemedText>Edit this party</ThemedText>
       </Pressable>
 
-      <ThemedText type="subtitle">Your name (for claiming)</ThemedText>
-      <Pressable
-        onPress={() => setYourName("Michael")}
-        style={{ borderWidth: 1, borderRadius: 12, padding: 10, alignSelf: "flex-start" }}
-      >
-        <ThemedText>{yourName.trim() ? yourName : "Tap to set name (example)"}</ThemedText>
-      </Pressable>
+    <ThemedView style={{ gap: 8 }}>
+  <ThemedText type="subtitle">Your name (for claiming)</ThemedText>
+
+  <TextInput
+    value={yourName}
+    onChangeText={setYourName}
+    placeholder="Type your name"
+    placeholderTextColor="#777"
+    style={{
+      borderWidth: 1,
+      borderRadius: 12,
+      padding: 12,
+      minWidth: 220,
+      backgroundColor: "#fff",
+      color: "#000",
+
+    }}
+  />
+</ThemedView>
 
       {!!party.location && <ThemedText>📍 {party.location}</ThemedText>}
       {!!party.notes && <ThemedText>📝 {party.notes}</ThemedText>}
@@ -169,6 +190,6 @@ export default function ShareScreen() {
       >
         <ThemedText>Load Parties</ThemedText>
       </Pressable>
-    </ThemedView>
+    </ScrollView>
   );
 }
