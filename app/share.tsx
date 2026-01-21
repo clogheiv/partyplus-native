@@ -1,47 +1,39 @@
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  TextInput,
-} from "react-native";
+import { useRouter } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Pressable } from "react-native";
 
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 
-import {
-  getCurrentPartyId,
-  getPartyById,
-  upsertParty,
-} from "../src/lib/partyStore";
-import type { Party } from "../src/lib/partyTypes";
+// These imports must match your project.
+// If VS Code underlines any of these, tell me and we’ll adjust the import path names only.
+import { getCurrentPartyId, getPartyById, upsertParty } from "@/lib/partyStore";
 
-const inputStyle = {
-  borderWidth: 1,
-  borderColor: "#888",
-  borderRadius: 10,
-  padding: 12,
-  backgroundColor: "#fcf1cd",
-  color: "#000",
+type PartyItem = {
+  id: string;
+  name: string;
+  claimedBy?: string | null;
 };
 
-function formatWhen(iso?: string) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleString();
-}
+type Party = {
+  id: string;
+  title: string;
+  location?: string | null;
+  notes?: string | null;
+  date?: string | null;
+  items: PartyItem[];
+};
 
 export default function ShareScreen() {
+  const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
-  const [yourName, setYourName] = useState("");
 
+  const [yourName, setYourName] = useState("");
   const canClaim = useMemo(() => yourName.trim().length > 0, [yourName]);
 
-  const load = useCallback(async () => {
+  async function loadCurrentParty() {
     setLoading(true);
     try {
       const id = await getCurrentPartyId();
@@ -50,81 +42,59 @@ export default function ShareScreen() {
         return;
       }
       const p = await getPartyById(id);
-      setParty(p);
+      setParty((p as Party) ?? null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
+  useEffect(() => {
+    void loadCurrentParty();
+  }, []);
 
   async function toggleClaim(itemId: string) {
     if (!party) return;
+    if (!canClaim) return;
 
-    const name = yourName.trim();
-    if (!name) {
-      Alert.alert("Your name", "Type your name first so we know who’s claiming.");
-      return;
-    }
+    const me = yourName.trim();
 
-    const idx = party.items.findIndex((it) => it.id === itemId);
-    if (idx === -1) return;
+    const updatedItems = party.items.map((it) => {
+      if (it.id !== itemId) return it;
 
-    const item = party.items[idx];
+      // If unclaimed, claim it. If claimed by you, unclaim. If claimed by someone else, do nothing.
+      const claimedBy = it.claimedBy ?? null;
+      if (!claimedBy) return { ...it, claimedBy: me };
+      if (claimedBy === me) return { ...it, claimedBy: null };
+      return it;
+    });
 
-    // If unclaimed -> claim it
-    if (!item.claimedBy) {
-      const updated: Party = {
-        ...party,
-        items: party.items.map((it) =>
-          it.id === itemId ? { ...it, claimedBy: name } : it
-        ),
-      };
-      await upsertParty(updated);
-      setParty(updated);
-      return;
-    }
+    const nextParty: Party = { ...party, items: updatedItems };
 
-    // If claimed by YOU -> unclaim
-    if (item.claimedBy === name) {
-      const updated: Party = {
-        ...party,
-        items: party.items.map((it) =>
-          it.id === itemId ? { ...it, claimedBy: undefined } : it
-        ),
-      };
-      await upsertParty(updated);
-      setParty(updated);
-      return;
-    }
-
-    // If claimed by someone else -> block
-    Alert.alert("Already claimed", `${item.name} is claimed by ${item.claimedBy}.`);
+    setParty(nextParty);
+    await upsertParty(nextParty as any);
   }
 
   if (loading) {
     return (
-  <ScrollView
-    keyboardShouldPersistTaps="handled"
-    contentContainerStyle={{ padding: 20, gap: 12 }}
-  >
+      <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center" }}>
         <ActivityIndicator />
-      </ScrollView>
+      </ThemedView>
     );
   }
 
   if (!party) {
     return (
-      <ThemedView style={{ flex: 1, padding: 20, gap: 10 }}>
+      <ThemedView style={{ flex: 1, padding: 20, gap: 12 }}>
         <ThemedText type="title">Share</ThemedText>
         <ThemedText>No party selected yet.</ThemedText>
-        <ThemedText>
-          Go to Load Parties, pick one, then come back here.
-        </ThemedText>
+        <ThemedText>Go to Load Parties, pick one, then come back here.</ThemedText>
+
+        <Pressable
+          onPress={() => router.push("/load-parties")}
+          style={{ borderWidth: 1, borderRadius: 12, padding: 12, alignSelf: "flex-start" }}
+        >
+          <ThemedText>Go to Load Parties</ThemedText>
+        </Pressable>
       </ThemedView>
     );
   }
@@ -132,120 +102,73 @@ export default function ShareScreen() {
   return (
     <ThemedView style={{ flex: 1, padding: 20, gap: 12 }}>
       <ThemedText type="title">{party.title}</ThemedText>
-   <Pressable
-  onPress={() => {
-    console.log("EDIT pressed, id =", party.id);
-    router.push({ pathname: "/(tabs)/create-party", params: { id: party.id } });
-  }}
-  style={{
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 10,
-    alignSelf: "flex-start",
-  }}
->
-  <ThemedText>Edit this party</ThemedText>
-</Pressable>
-   
-    <Pressable
-  onPress={() => router.push("/load-parties")}
-  style={{
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 10,
-    alignSelf: "flex-start",
-  }}
->
-  <ThemedText>Pick a saved party</ThemedText>
-</Pressable>
 
-<Pressable
-  onPress={() => router.push(`/create-party?id=${party.id}`)}
-  style={{
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 8,
-    alignSelf: "flex-start",
-  }}
->
-  <ThemedText>Edit this party</ThemedText>
-</Pressable>
+      <Pressable
+        onPress={() => {
+          console.log("EDIT pressed, id =", party.id);
+          router.push({ pathname: "/(tabs)/create-party", params: { id: party.id } });
+        }}
+        style={{ borderWidth: 1, borderRadius: 12, padding: 10, marginTop: 10, alignSelf: "flex-start" }}
+      >
+        <ThemedText>Edit this party</ThemedText>
+      </Pressable>
+
+      <ThemedText type="subtitle">Your name (for claiming)</ThemedText>
+      <Pressable
+        onPress={() => setYourName("Michael")}
+        style={{ borderWidth: 1, borderRadius: 12, padding: 10, alignSelf: "flex-start" }}
+      >
+        <ThemedText>{yourName.trim() ? yourName : "Tap to set name (example)"}</ThemedText>
+      </Pressable>
+
       {!!party.location && <ThemedText>📍 {party.location}</ThemedText>}
       {!!party.notes && <ThemedText>📝 {party.notes}</ThemedText>}
-<Pressable
-  onPress={() => router.push("/load-parties")}
-  style={{
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 10,
-    alignSelf: "flex-start",
-  }}
->
-  <ThemedText>View saved parties</ThemedText>
-</Pressable>
-
-      <ThemedText>
-  Date & Time: {party.date ? formatWhen(party.date) : "Not set"}
-</ThemedText>
-
-     <ThemedText type="subtitle">Your name</ThemedText> 
-      <TextInput
-        value={yourName}
-        onChangeText={setYourName}
-        placeholder="Type your name to claim items"
-        placeholderTextColor="#555"
-        autoCapitalize="words"
-        style={inputStyle}
-      />
 
       <ThemedText type="subtitle">What to bring</ThemedText>
 
       {party.items.length === 0 ? (
         <ThemedText>No items listed yet.</ThemedText>
       ) : (
-        <ScrollView contentContainerStyle={{ gap: 10, paddingBottom: 30 }}>
-          {party.items.map((it) => {
-            const claimed = !!it.claimedBy;
-            const claimedByYou = claimed && it.claimedBy === yourName.trim();
+        party.items.map((it) => {
+          const claimed = !!it.claimedBy;
+          const claimedByYou = claimed && (it.claimedBy ?? "") === yourName.trim();
 
-            return (
-              <Pressable
-                key={it.id}
-                onPress={() => toggleClaim(it.id)}
-                disabled={!canClaim}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#888",
-                  borderRadius: 12,
-                  padding: 14,
-                  gap: 6,
-                  backgroundColor: claimed ? "#e9e9e9" : "#fcf1cd",
-                  opacity: canClaim ? 1 : 0.7,
-                }}
-              >
+          return (
+            <Pressable
+              key={it.id}
+              onPress={() => toggleClaim(it.id)}
+              disabled={!canClaim}
+              style={{
+                borderWidth: 1,
+                borderColor: "#888",
+                borderRadius: 12,
+                padding: 14,
+                gap: 6,
+                backgroundColor: claimed ? "#e9e9e9" : "#fcf1cd",
+                opacity: canClaim ? 1 : 0.7,
+              }}
+            >
+              <ThemedText style={{ color: "#000" }}>• {it.name}</ThemedText>
+
+              {claimed ? (
                 <ThemedText style={{ color: "#000" }}>
-                  • {it.name}
+                  Claimed by: {it.claimedBy}
+                  {claimedByYou ? " (you)" : ""}
                 </ThemedText>
-
-                {claimed ? (
-                  <ThemedText style={{ color: "#000" }}>
-                    Claimed by: {it.claimedBy}
-                    {claimedByYou ? " (you)" : ""}
-                  </ThemedText>
-                ) : (
-                  <ThemedText style={{ color: "#000" }}>
-                    Tap to claim
-                  </ThemedText>
-                )}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+              ) : (
+                <ThemedText style={{ color: "#000" }}>Tap to claim</ThemedText>
+              )}
+            </Pressable>
+          );
+        })
       )}
+
+      <Pressable
+        onPress={() => router.push("/load-parties")}
+        style={{ borderWidth: 1, borderRadius: 12, padding: 12, alignSelf: "flex-start", marginTop: 12 }}
+      >
+        <ThemedText>Load Parties</ThemedText>
+      </Pressable>
     </ThemedView>
   );
 }

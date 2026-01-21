@@ -1,7 +1,23 @@
 // TEMP
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { Party } from "./partyTypes";
+type PartyItem = {
+  id: string;
+  name: string;
+  claimedBy?: string | null;
+};
+
+type Party = {
+  id: string;
+  title: string;
+  location?: string | null;
+  notes?: string | null;
+  date?: string | null;
+  items: PartyItem[];
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 
 const KEY = "partyplus.parties.v1";
 const CURRENT_KEY = "partyplus.currentPartyId.v1";
