@@ -147,8 +147,8 @@ function addItem() {
     };
 
     await upsertParty(party);
-    await setCurrentPartyId(id);
-    router.push("/share");
+    await setCurrentPartyId(party.id);
+    router.replace("/share");
   }
 
 return (

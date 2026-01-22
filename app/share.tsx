@@ -1,6 +1,13 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, TextInput } from "react-native";
+import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable, ScrollView, TextInput,
+  TouchableWithoutFeedback,
+} from "react-native";
 
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
@@ -105,10 +112,17 @@ export default function ShareScreen() {
   }
 
   return (
-    <ScrollView
-  style={{ flex: 1 }}
-  contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
->
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : undefined}
+    keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+  >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 120 }}
+      >
 
       <ThemedText type="title">{party.title}</ThemedText>
 
@@ -122,28 +136,34 @@ export default function ShareScreen() {
         <ThemedText>Edit this party</ThemedText>
       </Pressable>
 
-    <ThemedView style={{ gap: 8 }}>
+    <ThemedView style={{ gap: 8, padding: 12, borderRadius: 16, borderWidth: 1 }}>
   <ThemedText type="subtitle">Your name (for claiming)</ThemedText>
 
   <TextInput
     value={yourName}
     onChangeText={setYourName}
     placeholder="Type your name"
-    placeholderTextColor="#777"
+    returnKeyType="done"
+    blurOnSubmit
+    onSubmitEditing={Keyboard.dismiss}
+    placeholderTextColor={"#777"}
     style={{
       borderWidth: 1,
       borderRadius: 12,
-      padding: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
       minWidth: 220,
-      backgroundColor: "#fff",
+      backgroundColor: "#f2f2f2",
       color: "#000",
-
     }}
   />
 </ThemedView>
 
-      {!!party.location && <ThemedText>📍 {party.location}</ThemedText>}
-      {!!party.notes && <ThemedText>📝 {party.notes}</ThemedText>}
+<ThemedView style={{ gap: 6 }}>
+  {!!party.location && <ThemedText>📍 {party.location}</ThemedText>}
+  {!!party.notes && <ThemedText>📝 {party.notes}</ThemedText>}
+</ThemedView>
+
 
       <ThemedText type="subtitle">What to bring</ThemedText>
 
@@ -190,6 +210,8 @@ export default function ShareScreen() {
       >
         <ThemedText>Load Parties</ThemedText>
       </Pressable>
-    </ScrollView>
-  );
+         </ScrollView>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+); 
 }
