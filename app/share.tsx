@@ -4,9 +4,11 @@ import {
   ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable, ScrollView, TextInput,
   TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
 import { ThemedText } from "../components/themed-text";
@@ -40,6 +42,24 @@ export default function ShareScreen() {
 
   const [yourName, setYourName] = useState("");
   const canClaim = useMemo(() => yourName.trim().length > 0, [yourName]);
+  const openInMaps = async (address: string) => {
+  const q = encodeURIComponent(address.trim());
+
+  const url =
+    Platform.OS === "ios"
+      ? `http://maps.apple.com/?q=${q}`
+      : `geo:0,0?q=${q}`;
+
+  try {
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      await Linking.openURL(url);
+      return;
+    }
+  } catch {}
+
+  await Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`);
+}; 
 
   async function loadCurrentParty() {
     setLoading(true);
@@ -121,10 +141,17 @@ export default function ShareScreen() {
       <ScrollView
         style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 120 }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, gap: 14, paddingBottom: 28 }}  
       >
 
-      <ThemedText type="title">{party.title}</ThemedText>
+      <View style={{ gap: 6 }}>
+  <ThemedText style={{ fontSize: 13, fontWeight: "800", opacity: 0.7 }}>
+    Party
+  </ThemedText>
+
+  <ThemedText type="title">{party.title}</ThemedText>
+    </View>
+
 
       <Pressable
         onPress={() => {
@@ -136,7 +163,7 @@ export default function ShareScreen() {
         <ThemedText>Edit this party</ThemedText>
       </Pressable>
 
-    <ThemedView style={{ gap: 8, padding: 12, borderRadius: 16, borderWidth: 1 }}>
+   <ThemedView style={{ gap: 8, padding: 12, borderRadius: 16, borderWidth: 1 }}>
   <ThemedText type="subtitle">Your name (for claiming)</ThemedText>
 
   <TextInput
@@ -146,7 +173,7 @@ export default function ShareScreen() {
     returnKeyType="done"
     blurOnSubmit
     onSubmitEditing={Keyboard.dismiss}
-    placeholderTextColor={"#777"}
+    placeholderTextColor="#777"
     style={{
       borderWidth: 1,
       borderRadius: 12,
@@ -157,52 +184,95 @@ export default function ShareScreen() {
       color: "#000",
     }}
   />
+
+  <ThemedView style={{ gap: 6 }}>
+   {!!party.location && (
+  <View style={{ gap: 8 }}>
+    <ThemedText>{party.location}</ThemedText>
+
+    <Pressable
+      onPress={() => openInMaps(party.location!)}
+      style={{
+        borderWidth: 1,
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        alignSelf: "flex-start",
+        opacity: 0.9,
+      }}
+    >
+      <ThemedText>Open in Maps</ThemedText>
+    </Pressable>
+  </View>
+)}
+ 
+    {!!party.notes && <ThemedText>{party.notes}</ThemedText>}
+  </ThemedView>
 </ThemedView>
 
-<ThemedView style={{ gap: 6 }}>
-  {!!party.location && <ThemedText>📍 {party.location}</ThemedText>}
-  {!!party.notes && <ThemedText>📝 {party.notes}</ThemedText>}
-</ThemedView>
+  <ThemedText type="subtitle">What to bring</ThemedText>
 
+{party.items.length === 0 ? (
+  <ThemedText>No items listed yet.</ThemedText>
+) : (
+  party.items.map((it) => {
+    const claimed = !!it.claimedBy;
+    const claimedByYou = claimed && (it.claimedBy ?? "") === yourName.trim();
 
-      <ThemedText type="subtitle">What to bring</ThemedText>
+    return (
+      <Pressable
+        key={it.id}
+        onPress={() => toggleClaim(it.id)}
+        disabled={!canClaim}
+        style={{
+          borderWidth: 1,
+          borderColor: claimed ? "#bdbdbd" : "#888",
+          borderRadius: 12,
+          padding: 14,
+          gap: 6,
+          backgroundColor: claimed ? "#e9e9e9" : "#fcf1cd",
+          opacity: canClaim ? 1 : 0.7,
+        }}
+      >
+        <ThemedText
+          style={{
+            color: "#000",
+            fontSize: 16,
+            fontWeight: claimed ? "500" : "700",
+            opacity: claimed ? 0.55 : 1,
+          }}
+        >
+          {it.name}
+        </ThemedText>
 
-      {party.items.length === 0 ? (
-        <ThemedText>No items listed yet.</ThemedText>
-      ) : (
-        party.items.map((it) => {
-          const claimed = !!it.claimedBy;
-          const claimedByYou = claimed && (it.claimedBy ?? "") === yourName.trim();
-
-          return (
-            <Pressable
-              key={it.id}
-              onPress={() => toggleClaim(it.id)}
-              disabled={!canClaim}
-              style={{
-                borderWidth: 1,
-                borderColor: "#888",
-                borderRadius: 12,
-                padding: 14,
-                gap: 6,
-                backgroundColor: claimed ? "#e9e9e9" : "#fcf1cd",
-                opacity: canClaim ? 1 : 0.7,
-              }}
-            >
-              <ThemedText style={{ color: "#000" }}>• {it.name}</ThemedText>
-
-              {claimed ? (
-                <ThemedText style={{ color: "#000" }}>
-                  Claimed by: {it.claimedBy}
-                  {claimedByYou ? " (you)" : ""}
-                </ThemedText>
-              ) : (
-                <ThemedText style={{ color: "#000" }}>Tap to claim</ThemedText>
-              )}
-            </Pressable>
-          );
-        })
-      )}
+        {claimed ? (
+          <ThemedText
+            style={{
+              color: "#000",
+              fontSize: 13,
+              opacity: 0.6,
+              fontStyle: "italic",
+            }}
+          >
+            Claimed by: {it.claimedBy}
+            {claimedByYou ? " (you)" : ""}
+          </ThemedText>
+        ) : (
+          <ThemedText
+            style={{
+              color: "#000",
+              fontSize: 13,
+              opacity: 0.8,
+            }}
+          >
+            Tap to claim
+          </ThemedText>
+        )}
+      </Pressable>
+    );
+  })
+)}
+   
 
       <Pressable
         onPress={() => router.push("/load-parties")}
@@ -211,7 +281,7 @@ export default function ShareScreen() {
         <ThemedText>Load Parties</ThemedText>
       </Pressable>
          </ScrollView>
-    </TouchableWithoutFeedback>
+          </TouchableWithoutFeedback>
   </KeyboardAvoidingView>
 ); 
 }
