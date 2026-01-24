@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -7,13 +8,11 @@ import {
   Linking,
   Platform,
   Pressable, ScrollView, TextInput,
-  TouchableWithoutFeedback,
-  View,
+  View
 } from "react-native";
 
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
-
 
 // These imports must match your project.
 // If VS Code underlines any of these, tell me and we’ll adjust the import path names only.
@@ -137,7 +136,6 @@ export default function ShareScreen() {
     behavior={Platform.OS === "ios" ? "padding" : undefined}
     keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
   >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <ScrollView
         style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
@@ -186,7 +184,7 @@ export default function ShareScreen() {
   />
 
   <ThemedView style={{ gap: 6 }}>
-   {!!party.location && (
+  {!!party.location && (
   <View style={{ gap: 8 }}>
     <ThemedText>{party.location}</ThemedText>
 
@@ -198,13 +196,20 @@ export default function ShareScreen() {
         paddingVertical: 10,
         paddingHorizontal: 12,
         alignSelf: "flex-start",
-        opacity: 0.9,
+        backgroundColor: "rgba(239, 13, 13, 0.85)",
+        borderColor: "rgba(220, 38, 38, 0.45)",
       }}
     >
-      <ThemedText>Open in Maps</ThemedText>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Ionicons name="location-outline" size={18} color="#fff" />
+        <ThemedText style={{ color: "#fff", fontWeight: "700" }}>
+          Open in Maps
+        </ThemedText>
+      </View>
     </Pressable>
   </View>
 )}
+
  
     {!!party.notes && <ThemedText>{party.notes}</ThemedText>}
   </ThemedView>
@@ -281,7 +286,6 @@ export default function ShareScreen() {
         <ThemedText>Load Parties</ThemedText>
       </Pressable>
          </ScrollView>
-          </TouchableWithoutFeedback>
   </KeyboardAvoidingView>
 ); 
 }
