@@ -2,11 +2,18 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
-import { Alert, Platform, Pressable, ScrollView, TextInput } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  TextInput
+} from "react-native";
 
-import { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
 
@@ -26,7 +33,10 @@ const inputStyleMultiline = {
 };
 
 export default function CreatePartyScreen() {
- const router = useRouter();
+  const headerHeight = useHeaderHeight();
+  const scrollRef = useRef<ScrollView>(null);
+  const itemInputRef = useRef<TextInput>(null);
+  const router = useRouter();
  
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -34,24 +44,111 @@ export default function CreatePartyScreen() {
   const [partyDate, setPartyDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState<"date" | "time">("date");
+  const onChangePicker = (_event: any, selected?: Date) => {
+  if (!selected) {
+    setShowPicker(false);
+    return;
+  }
+
+  if (pickerMode === "date") {
+    const base = partyDate ?? new Date();
+    const next = new Date(selected);
+    next.setHours(base.getHours(), base.getMinutes(), 0, 0);
+    setPartyDate(next);
+
+    setPickerMode("time");
+    setShowPicker(true);
+    return;
+  }
+
+  const base = partyDate ?? new Date();
+  const next = new Date(base);
+  next.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
+  setPartyDate(next);
+  setShowPicker(false);
+};
+
   const [webDateText, setWebDateText] = useState("");
 
   const [itemText, setItemText] = useState("");
   const [items, setItems] = useState<string[]>([]);
+ 
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const partyId = Array.isArray(params.id) ? params.id[0] : params.id;
   const isEditing = !!partyId;
+  const [isDirty, setIsDirty] = useState(false);
+  const startNewParty = async () => {
+  await AsyncStorage.removeItem("currentPartyId");
+  setTitle("");
+  setLocation("");
+  setNotes("");
+  setPartyDate(null);
+  setItems([]);
+  setItemText("");
+
+  itemInputRef.current?.focus();
+};
+
+const handleStartNewParty = async () => {
+  if (!isDirty) {
+    await startNewParty();
+    return;
+  }
+
+  Alert.alert(
+    "Start a new party?",
+    "You have unsaved changes. Starting a new party will clear this form.",
+    [
+      { text: "Keep Editing", style: "cancel" },
+      {
+        text: "Clear Form",
+        style: "destructive",
+        onPress: async () => {
+          await startNewParty();
+        },
+      },
+    ]
+  );
+};
 
 
 const onCancelEdit = async () => {
-  if (partyId) {
-    await AsyncStorage.setItem("currentPartyId", partyId);
+  if (!isDirty) {
+    if (partyId) {
+      await AsyncStorage.setItem("currentPartyId", partyId);
+    }
+    router.replace("/share");
+    return;
   }
-  router.replace("/share");
+
+  Alert.alert(
+    "Discard changes?",
+    "You have unsaved changes. If you discard, they will be lost.",
+    [
+      { text: "Keep Editing", style: "cancel" },
+      {
+        text: "Discard",
+        style: "destructive",
+        onPress: async () => {
+          if (partyId) {
+            await AsyncStorage.setItem("currentPartyId", partyId);
+          }
+          router.replace("/share");
+        },
+      },
+    ]
+  );
 };
+
   const editingId = params?.id;
 useEffect(() => {
   let isMounted = true;
+  // If we are NOT editing a party, always start with a clean slate
+if (!isEditing) {
+  void startNewParty();
+  isMounted = false;
+  return;
+}
 
   async function loadForEdit() {
     if (!editingId) return;
@@ -81,15 +178,27 @@ useEffect(() => {
   return () => {
     isMounted = false;
   };
-}, [editingId]);
+  }, [editingId]);
+
 
 function addItem() {
+
   const clean = itemText.trim();
   if (!clean) return;
 
   setItems((prev) => [...prev, clean]);
+  setIsDirty(true);
   setItemText("");
+  itemInputRef.current?.focus();
+  requestAnimationFrame(() => {
+  scrollRef.current?.scrollToEnd({ animated: true });
+});
 }
+function removeItem(indexToRemove: number) {
+  setItems((prev) => prev.filter((_, i) => i !== indexToRemove));
+  setIsDirty(true);
+}
+
 
   async function handleSave() {
     const cleanTitle = title.trim();
@@ -150,6 +259,7 @@ function addItem() {
     await setCurrentPartyId(party.id);
     router.replace("/share");
   }
+  const canSave = title.trim().length > 0;
 
 return (
   <>
@@ -164,12 +274,20 @@ return (
   }}
 />
 
+  <KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : undefined}
+  keyboardVerticalOffset={headerHeight}
+>
   <ThemedView style={{ flex: 1 }}>
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 120 }}
-      keyboardShouldPersistTaps="handled"
-    >
+
+   <ScrollView
+  ref={scrollRef}
+  style={{ flex: 1 }}
+  contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 320 }}
+  keyboardShouldPersistTaps="handled"
+>
+ 
       {isEditing ? (
   <Pressable onPress={onCancelEdit} style={{ alignSelf: "flex-start" }}>
     <ThemedText type="subtitle">Cancel</ThemedText>
@@ -181,7 +299,11 @@ return (
       <ThemedText type="subtitle">Party title</ThemedText>
       <TextInput
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(t) => {
+  setTitle(t);
+  setIsDirty(true);
+}}
+
         placeholder="Fin's Birthday Bash"
         placeholderTextColor="#555"
         autoCapitalize="words"
@@ -191,7 +313,10 @@ return (
       <ThemedText type="subtitle">Location</ThemedText>
       <TextInput
         value={location}
-        onChangeText={setLocation}
+        onChangeText={(t) => {
+  setLocation(t);
+  setIsDirty(true);
+}}
         placeholder="123 River Rd / Our house / The camp"
         placeholderTextColor="#555"
         style={inputStyle}
@@ -222,6 +347,7 @@ onPress={() => {
 >
  <ThemedText style={{ color: "#000" }}>
   {partyDate ? partyDate.toLocaleString() : "Set date & time"}
+
 </ThemedText>
  
 </Pressable>
@@ -264,7 +390,10 @@ onPress={() => {
       <ThemedText type="subtitle">Notes</ThemedText>
       <TextInput
         value={notes}
-        onChangeText={setNotes}
+        onChangeText={(t) => {
+  setNotes(t);
+  setIsDirty(true);
+}}
         placeholder="Start time, parking, what to bring, etc."
         placeholderTextColor="#555"
         multiline
@@ -273,12 +402,13 @@ onPress={() => {
 
       <ThemedText type="subtitle">What to bring</ThemedText>
       <TextInput
+      ref={itemInputRef}
+        returnKeyType="done"
+        onSubmitEditing={addItem}
         value={itemText}
         onChangeText={setItemText}
         placeholder="Chips, ice, drinks, chairs..."
         placeholderTextColor="#555"
-        onSubmitEditing={addItem}
-        returnKeyType="done"
         blurOnSubmit={false}
         style={inputStyle}
       />
@@ -287,16 +417,46 @@ onPress={() => {
         <ThemedText style={{ color: "#000" }}>Add Item</ThemedText>
       </Pressable>
 
-      {items.map((item, index) => (
-        <ThemedText key={index}>• {item}</ThemedText>
-      ))}
+     {items.map((item, index) => (
+  <Pressable
+    key={`${item}-${index}`}
+    onPress={() => removeItem(index)}
+    style={{ paddingVertical: 6 }}
+  >
+    <ThemedText>{`• ${item}   ✕`}</ThemedText>
+  </Pressable>
+))}
 
-      <Pressable onPress={handleSave} style={{ marginTop: 20 }}>
-        <ThemedText type="subtitle">Save Party</ThemedText>
-      </Pressable>
 
-    </ScrollView>
-  </ThemedView>
+  <Pressable
+  onPress={handleStartNewParty}
+  style={{
+    marginTop: 20,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#555",
+    backgroundColor: "transparent",
+  }}
+>
+  <ThemedText type="subtitle">Start New Party</ThemedText>
+</Pressable>
+<Pressable
+  onPress={canSave ? handleSave : undefined}
+  disabled={!canSave}
+  style={{
+    marginTop: 20,
+    opacity: canSave ? 1 : 0.35,
+  }}
+>
+  <ThemedText type="subtitle">Save Party</ThemedText>
+</Pressable>
+
+
+    
+           </ScrollView>
+      </ThemedView>
+    </KeyboardAvoidingView>
   </>
 );
 }
