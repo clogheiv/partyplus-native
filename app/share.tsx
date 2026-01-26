@@ -1,13 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Linking,
   Platform,
-  Pressable, ScrollView, TextInput,
+  Pressable, ScrollView,
+  Share,
+  TextInput,
   View
 } from "react-native";
 
@@ -34,14 +38,70 @@ type Party = {
 };
 
 export default function ShareScreen() {
-  const router = useRouter();
+  // STEP 1B (TEMP): placeholder link until we wire real deep link + friendly message
 
-  const [loading, setLoading] = useState(true);
+const buildShareMessage = () => {
+  const title = party?.title?.trim() || "Party";
+  const formatWhen = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso; // fallback if parsing fails
+
+  return d.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+};
+
+const when = party?.date ? `When: ${formatWhen(party.date)}` : "";
+
+  const where = party?.location?.trim() ? `Where: ${party.location.trim()}` : "";
+  const notes = party?.notes?.trim() ? `Notes: ${party.notes.trim()}` : "";
+
+  const lines = [
+    `🎉 ${title}`,
+    when,
+    where,
+    notes,
+    `Invite link: ${inviteLink}`,
+  ].filter(Boolean);
+
+  return lines.join("\n");
+};
+
+const handleCopyInvite = async () => {
+  try {
+  await Clipboard.setStringAsync(buildShareMessage());
+  
+    Alert.alert("Copied!", "Invite link copied to clipboard.");
+  } catch (e) {
+    Alert.alert("Copy failed", "Could not copy the invite link.");
+  }
+};
+const handleNativeShare = async () => {
+  try {
+    const message = buildShareMessage();
+    await Share.share({ message });
+  } catch (e) {
+    Alert.alert("Share failed", "Could not open the share sheet.");
+  }
+};
+
+  const router = useRouter();
+    const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
+const inviteLink = useMemo(() => {
+  return party?.id
+    ? `partyplus://party/${party.id}`
+    : "partyplus://party/EXAMPLE";
+}, [party]);
 
   const [yourName, setYourName] = useState("");
   const canClaim = useMemo(() => yourName.trim().length > 0, [yourName]);
-  const openInMaps = async (address: string) => {
+ const openInMaps = async (address: string) => {
   const q = encodeURIComponent(address.trim());
 
   const url =
@@ -57,8 +117,11 @@ export default function ShareScreen() {
     }
   } catch {}
 
-  await Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`);
-}; 
+  await Linking.openURL(
+    `https://www.google.com/maps/search/?api=1&query=${q}`
+  );
+};
+
 
   async function loadCurrentParty() {
     setLoading(true);
@@ -115,6 +178,7 @@ export default function ShareScreen() {
     style={{ flex: 1 }}
     contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
   >
+   
 
         <ThemedText type="title">Share</ThemedText>
         <ThemedText>No party selected yet.</ThemedText>
@@ -209,11 +273,40 @@ export default function ShareScreen() {
     </Pressable>
   </View>
 )}
-
  
     {!!party.notes && <ThemedText>{party.notes}</ThemedText>}
   </ThemedView>
 </ThemedView>
+<Pressable
+  onPress={handleCopyInvite}
+  style={{
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 12,
+    marginBottom: 12,
+  }}
+>
+  <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+    Copy Invite
+  </ThemedText>
+</Pressable>
+<Pressable
+  onPress={handleNativeShare}
+  style={{
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 12,
+  }}
+>
+  <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+    Share Invite
+  </ThemedText>
+</Pressable>
+
 
   <ThemedText type="subtitle">What to bring</ThemedText>
 
