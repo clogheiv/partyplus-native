@@ -6,16 +6,25 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
   Alert,
+  Animated,
+  Keyboard,
   KeyboardAvoidingView,
+  LayoutAnimation,
   Platform,
   Pressable,
   ScrollView,
-  TextInput
+  TextInput,
+  UIManager
 } from "react-native";
+
 
 import React, { useEffect, useRef, useState } from "react";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
+
+if (Platform.OS === "android") {
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
 
 const inputStyle = {
   borderWidth: 1,
@@ -77,6 +86,73 @@ export default function CreatePartyScreen() {
   const partyId = Array.isArray(params.id) ? params.id[0] : params.id;
   const isEditing = !!partyId;
   const [isDirty, setIsDirty] = useState(false);
+  const [lastRemoved, setLastRemoved] = useState<{
+  item: string;
+  index: number;
+  } | null>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+// 🔹 STEP 2 — Toast animation + timer refs
+const toastAnim = useRef(new Animated.Value(0)).current;
+const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+useEffect(() => {
+  const showSub = Keyboard.addListener("keyboardDidShow", (e: any) => {
+
+    setKeyboardHeight(e.endCoordinates.height);
+  });
+
+  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardHeight(0);
+  });
+
+  return () => {
+    showSub.remove();
+    hideSub.remove();
+  };
+}, []);
+
+
+useEffect(() => {
+  // Clear any previous timer
+  if (toastTimerRef.current) {
+    clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = null;
+  }
+
+  if (!lastRemoved) {
+    // Hide state
+    toastAnim.setValue(0);
+    return;
+  }
+
+  // Animate IN (fade + slide up a touch)
+  toastAnim.setValue(0);
+  Animated.timing(toastAnim, {
+    toValue: 1,
+    duration: 180,
+    useNativeDriver: true,
+  }).start();
+
+  // Auto-dismiss after 3s
+  toastTimerRef.current = setTimeout(() => {
+    Animated.timing(toastAnim, {
+      toValue: 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start(() => {
+      setLastRemoved(null);
+    });
+  }, 5000);
+
+  // Cleanup on change/unmount
+  return () => {
+    if (toastTimerRef.current) {
+      clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = null;
+    }
+  };
+}, [lastRemoved, toastAnim]);
+
   const startNewParty = async () => {
   await AsyncStorage.removeItem("currentPartyId");
   setTitle("");
@@ -195,10 +271,49 @@ function addItem() {
 });
 }
 function removeItem(indexToRemove: number) {
-  setItems((prev) => prev.filter((_, i) => i !== indexToRemove));
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+  setItems((prev) => {
+    const removed = prev[indexToRemove];
+    if (removed !== undefined) {
+      setLastRemoved({ item: removed, index: indexToRemove });
+    }
+    return prev.filter((_, i) => i !== indexToRemove);
+  });
+
+  setIsDirty(true);
+}
+function undoRemove() {
+  if (!lastRemoved) return;
+
+  LayoutAnimation.configureNext(
+    LayoutAnimation.Presets.easeInEaseOut
+  );
+
+  setItems((prev) => {
+    const next = [...prev];
+    const idx = Math.min(
+      Math.max(lastRemoved.index, 0),
+      next.length
+    );
+    next.splice(idx, 0, lastRemoved.item);
+    return next;
+  });
+
+  setLastRemoved(null);
   setIsDirty(true);
 }
 
+function confirmRemoveItem(index: number) {
+  Alert.alert(
+    "Remove item?",
+    `Remove "${items[index]}" from the list?`,
+    [
+      { text: "Cancel", style: "cancel" },
+      { text: "Remove", style: "destructive", onPress: () => removeItem(index) },
+    ]
+  );
+}
 
   async function handleSave() {
     const cleanTitle = title.trim();
@@ -280,6 +395,40 @@ return (
   keyboardVerticalOffset={headerHeight}
 >
   <ThemedView style={{ flex: 1 }}>
+    {lastRemoved && (
+  <ThemedView
+    style={{
+      position: "absolute",
+      left: 16,
+      right: 16,
+      bottom: keyboardHeight + 16,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: "#555",
+      backgroundColor: "#222",
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      zIndex: 999,
+    }}
+  >
+    <ThemedText style={{ color: "#fff", flex: 1 }}>
+      {lastRemoved?.item ? `"${lastRemoved.item}" removed` : "Item removed"}
+    </ThemedText>
+
+    <Pressable
+      onPress={undoRemove}
+      style={{ paddingHorizontal: 10, paddingVertical: 6 }}
+    >
+      <ThemedText style={{ color: "#6ee7ff", fontWeight: "800" }}>
+        UNDO
+      </ThemedText>
+    </Pressable>
+  </ThemedView>
+)}
+
 
    <ScrollView
   ref={scrollRef}
@@ -417,16 +566,29 @@ onPress={() => {
         <ThemedText style={{ color: "#000" }}>Add Item</ThemedText>
       </Pressable>
 
-     {items.map((item, index) => (
-  <Pressable
+    {items.map((item, index) => (
+  <ThemedView
     key={`${item}-${index}`}
-    onPress={() => removeItem(index)}
-    style={{ paddingVertical: 6 }}
+    style={{ paddingVertical: 8, flexDirection: "row", alignItems: "center" }}
   >
-    <ThemedText>{`• ${item}   ✕`}</ThemedText>
-  </Pressable>
-))}
+    <ThemedText style={{ flex: 1 }}>
+      • {item}
+    </ThemedText>
 
+    <Pressable onPress={() => confirmRemoveItem(index)}>
+      <ThemedText
+        style={{
+          color: "#ff3b30",
+          fontSize: 26,
+          fontWeight: "900",
+          paddingLeft: 12,
+        }}
+      >
+        X
+      </ThemedText>
+    </Pressable>
+  </ThemedView>
+))}
 
   <Pressable
   onPress={handleStartNewParty}
