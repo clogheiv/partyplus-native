@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -7,12 +8,12 @@ import {
   Alert,
   Keyboard,
   KeyboardAvoidingView,
-  Linking,
   Platform,
-  Pressable, ScrollView,
+  Pressable,
+  ScrollView,
   Share,
   TextInput,
-  View
+  View,
 } from "react-native";
 
 import { ThemedText } from "../components/themed-text";
@@ -60,14 +61,18 @@ const when = party?.date ? `When: ${formatWhen(party.date)}` : "";
 
   const where = party?.location?.trim() ? `Where: ${party.location.trim()}` : "";
   const notes = party?.notes?.trim() ? `Notes: ${party.notes.trim()}` : "";
+const link = inviteLink;
 
-  const lines = [
-    `🎉 ${title}`,
-    when,
-    where,
-    notes,
-    `Invite link: ${inviteLink}`,
-  ].filter(Boolean);
+const lines = [
+  `🎉 You're invited: ${title}`,
+
+  when,
+  where,
+  notes,
+  "",
+  link,
+].filter(Boolean);
+ 
 
   return lines.join("\n");
 };
@@ -93,11 +98,11 @@ const handleNativeShare = async () => {
   const router = useRouter();
     const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
-const inviteLink = useMemo(() => {
-  return party?.id
-    ? `partyplus://party/${party.id}`
-    : "partyplus://party/EXAMPLE";
-}, [party]);
+  const inviteLink = useMemo(() => {
+    const id = party?.id ?? "EXAMPLE";
+    // This MUST be a real public https URL (Netlify/Vercel/domain).
+  return `https://partyplus-invite.netlify.app/i/${id}`;  
+  }, [party]);
 
   const [yourName, setYourName] = useState("");
   const canClaim = useMemo(() => yourName.trim().length > 0, [yourName]);
@@ -121,7 +126,6 @@ const inviteLink = useMemo(() => {
     `https://www.google.com/maps/search/?api=1&query=${q}`
   );
 };
-
 
   async function loadCurrentParty() {
     setLoading(true);
