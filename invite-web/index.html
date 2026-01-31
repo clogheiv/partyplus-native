@@ -66,47 +66,28 @@
       </div>
     </div>
 
-    <script>
-      const path = window.location.pathname || "/";
-      const parts = path.split("/").filter(Boolean);
+   <script>
+  const inviteId = document.getElementById("inviteId").textContent;
 
-      let id = "";
-      const iIndex = parts.indexOf("i");
-      if (iIndex >= 0 && parts[iIndex + 1]) id = parts[iIndex + 1];
+  const openApp = document.getElementById("openApp");
+  const getApp = document.getElementById("getApp");
 
-      const subtitle = document.getElementById("subtitle");
-      const inviteId = document.getElementById("inviteId");
-      const openApp = document.getElementById("openApp");
-      const getApp = document.getElementById("getApp");
+  // Auto-attempt app open on page load
+  window.location.href = `partyplus:///party/${inviteId}`;
 
-      if (!id) {
-        subtitle.textContent = "This invite link looks incomplete.";
-        inviteId.textContent = "Missing party id in URL (expected /i/<id>).";
-        openApp.style.display = "none";
-      } else {
-        subtitle.textContent = "You’re invited! 🎈";
-        inviteId.textContent = id;
+  // Button: Open in PartyPlus
+  openApp.href = `partyplus:///party/${inviteId}`;
+  openApp.onclick = (e) => {
+    e.preventDefault();
+    window.location.href = `partyplus:///party/${inviteId}`;
+  };
 
-        openApp.href = `partyplus:///party/${id}`;
-openApp.onclick = (e) => {
-  e.preventDefault();
-
-  // Try to open the app
-  window.location.href = `partyplus:///party/${id}`;
-
-  // Optional: gentle fallback message after a moment
-  setTimeout(() => {
-    alert(
-      "If PartyPlus didn’t open, it may not be installed yet 👀"
-    );
-  }, 1200);
-};
-}
-      getApp.href = "#";
-      getApp.onclick = (e) => {
-        e.preventDefault();
-        alert("Next upgrade: link to install PartyPlus (Play Store / website).");
-      };
-    </script>
+  // Button: Get the app (future upgrade)
+  getApp.href = "#";
+  getApp.onclick = (e) => {
+    e.preventDefault();
+    alert("Next upgrade: install PartyPlus from the Play Store 👀");
+  };
+</script> 
   </body>
 </html>
