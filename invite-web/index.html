@@ -87,13 +87,21 @@
         subtitle.textContent = "You’re invited! 🎈";
         inviteId.textContent = id;
 
-        openApp.href = "#";
-        openApp.onclick = (e) => {
-          e.preventDefault();
-          alert("Next upgrade: open the PartyPlus app directly 👀");
-        };
-      }
+        openApp.href = `partyplus:///party/${id}`;
+openApp.onclick = (e) => {
+  e.preventDefault();
 
+  // Try to open the app
+  window.location.href = `partyplus:///party/${id}`;
+
+  // Optional: gentle fallback message after a moment
+  setTimeout(() => {
+    alert(
+      "If PartyPlus didn’t open, it may not be installed yet 👀"
+    );
+  }, 1200);
+};
+}
       getApp.href = "#";
       getApp.onclick = (e) => {
         e.preventDefault();
