@@ -20,7 +20,21 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.PartyPlusNative"
+      "package": "com.anonymous.PartyPlusNative",
+      "intentFilters": [
+  {
+    "action": "VIEW",
+    "data": [
+      {
+        "scheme": "https",
+        "host": "partyplus-invite.netlify.app",
+        "pathPrefix": "/i/"
+      }
+    ],
+    "category": ["BROWSABLE", "DEFAULT"]
+  }
+]
+
     },
     "web": {
       "output": "static",
