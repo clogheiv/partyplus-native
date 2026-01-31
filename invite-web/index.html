@@ -82,7 +82,15 @@ function decodeInviteData(dParam) {
   return JSON.parse(json);
 }
  
-  const inviteId = document.getElementById("inviteId").textContent;
+ // Read party id from the URL path: /i/<id>
+const pathParts = window.location.pathname.split("/").filter(Boolean);
+// expects ["i", "<id>"]
+const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
+
+// (Optional) if you have an element showing the id, update it
+const inviteIdEl = document.getElementById("inviteId");
+if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
+ 
 
   const openApp = document.getElementById("openApp");
   const getApp = document.getElementById("getApp");
