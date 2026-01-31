@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PartyPlus Invite</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: #0b0f14;
+        color: #e7eef7;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 28px 18px;
+      }
+      .card {
+        background: #121a24;
+        border: 1px solid #223044;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      }
+      h1 { margin: 0 0 8px; font-size: 28px; }
+      p { margin: 10px 0; line-height: 1.45; color: #c9d6e6; }
+      .id {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        background: #0b111a;
+        border: 1px solid #223044;
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-top: 10px;
+        word-break: break-all;
+      }
+      .btnrow { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+      a.btn {
+        display: inline-block;
+        padding: 12px 14px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .primary { background: #2b8cff; color: #081018; }
+      .ghost { border: 1px solid #2b8cff; color: #b8d7ff; }
+      .tiny { margin-top: 14px; font-size: 12px; opacity: 0.75; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>🎉 PartyPlus Invite</h1>
+        <p id="subtitle">Loading invite…</p>
+
+        <div class="id" id="inviteId">—</div>
+
+        <div class="btnrow">
+          <a class="btn primary" id="openApp" href="#">Open in PartyPlus</a>
+          <a class="btn ghost" id="getApp" href="#">Get the app</a>
+        </div>
+
+        <p class="tiny">
+          Tip: If PartyPlus isn’t installed yet, this page will still load. Later we’ll upgrade this link so it can open the app automatically.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const path = window.location.pathname || "/";
+      const parts = path.split("/").filter(Boolean);
+
+      let id = "";
+      const iIndex = parts.indexOf("i");
+      if (iIndex >= 0 && parts[iIndex + 1]) id = parts[iIndex + 1];
+
+      const subtitle = document.getElementById("subtitle");
+      const inviteId = document.getElementById("inviteId");
+      const openApp = document.getElementById("openApp");
+      const getApp = document.getElementById("getApp");
+
+      if (!id) {
+        subtitle.textContent = "This invite link looks incomplete.";
+        inviteId.textContent = "Missing party id in URL (expected /i/<id>).";
+        openApp.style.display = "none";
+      } else {
+        subtitle.textContent = "You’re invited! 🎈";
+        inviteId.textContent = id;
+
+        openApp.href = "#";
+        openApp.onclick = (e) => {
+          e.preventDefault();
+          alert("Next upgrade: open the PartyPlus app directly 👀");
+        };
+      }
+
+      getApp.href = "#";
+      getApp.onclick = (e) => {
+        e.preventDefault();
+        alert("Next upgrade: link to install PartyPlus (Play Store / website).");
+      };
+    </script>
+  </body>
+</html>
