@@ -65,7 +65,12 @@ export async function getCurrentPartyId(): Promise<string | null> {
   return AsyncStorage.getItem(CURRENT_KEY);
 }
 
-export async function getPartyById(id: string): Promise<Party | null> {
+export async function getPartyById(id: string) {
+  const targetId = String(id);
+
+  // IMPORTANT: load the persisted parties first
   const parties = await getParties();
-  return parties.find(p => p.id === id) ?? null;
+
+return parties.find((p: any) => String(p.id) === targetId) ?? null;  
 }
+

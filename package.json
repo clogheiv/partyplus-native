@@ -16,7 +16,8 @@
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
-    "@react-navigation/native": "^7.1.8",
+    "@react-navigation/native": "^7.1.28",
+    "base-64": "^1.0.0",
     "expo": "~54.0.32",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
@@ -42,10 +43,11 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@types/base-64": "^1.0.2",
     "@types/react": "~19.1.0",
-    "typescript": "~5.9.2",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "~10.0.0"
+    "eslint-config-expo": "~10.0.0",
+    "typescript": "~5.9.2"
   },
   "private": true
 }

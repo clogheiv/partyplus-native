@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -9,12 +10,12 @@ import {
   ScrollView,
   View,
 } from "react-native";
-
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
 
 // Adjust this import path ONLY if VS Code underlines it
-import { getPartyById } from "../../src/partyStore";
+import { getPartyById, upsertParty } from "../../src/partyStore";
+
 
 type PartyItem = {
   id: string;
@@ -33,27 +34,66 @@ type Party = {
 
 export default function PartyGuestViewScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; d?: string }>();
+const { id } = params;
+
 
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
+  const navigation = useNavigation();
 
-  useEffect(() => {
-    const run = async () => {
-      try {
-        if (!id) {
-          setParty(null);
-          return;
-        }
-        const found = await getPartyById(String(id));
-        setParty((found ?? null) as any);
-      } finally {
-        setLoading(false);
+
+
+ useEffect(() => {
+  const run = async () => {
+    try {
+      if (!id) {
+        setParty(null);
+        return;
       }
-    };
 
-    run();
-  }, [id]);
+      // 1) Try to load normally (party already exists on this phone)
+      const found = await getPartyById(String(id));
+      if (found) {
+        setParty(found as any);
+        return;
+      }
+
+      // 2) If not found, try importing from link param (?d=...)
+      // Expo Router may give string | string[]
+      const rawD = (params as any)?.d;
+      const d = Array.isArray(rawD) ? rawD[0] : rawD;
+
+      if (d) {
+        try {
+          const decoded = decodeURIComponent(d);
+          const importedParty = JSON.parse(decoded);
+
+          // Make sure it has the right id
+          importedParty.id = String(id);
+
+          await upsertParty(importedParty);
+          setParty(importedParty);
+          return;
+        } catch (err) {
+          // If decoding/parsing fails, fall through to "not found" UI
+        }
+      }
+
+      setParty(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  run();
+}, [id]);
+useEffect(() => {
+  navigation.setOptions({
+    title: party?.title ? party.title : "Party",
+  });
+}, [navigation, party?.title]);
+
 
   const whenText = useMemo(() => {
     if (!party?.date) return "";

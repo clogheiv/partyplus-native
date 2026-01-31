@@ -16,8 +16,32 @@ import {
   View,
 } from "react-native";
 
+import { encode as b64encode } from "base-64";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
+
+// URL-safe base64
+function toBase64Url(input: string) {
+  return b64encode(input)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function buildInviteData(party: any) {
+  const payload = {
+    t: party.title ?? "",
+    dt: party.dateTime ?? party.date ?? "",
+    l: party.locationName ?? party.location ?? "",
+    a: party.address ?? "",
+    la: party.lat ?? party.latitude ?? null,
+    ln: party.lng ?? party.longitude ?? null,
+  };
+
+  const json = JSON.stringify(payload);
+  return toBase64Url(encodeURIComponent(json));
+}
+
 
 // These imports must match your project.
 // If VS Code underlines any of these, tell me and we’ll adjust the import path names only.
@@ -98,11 +122,13 @@ const handleNativeShare = async () => {
   const router = useRouter();
     const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
-  const inviteLink = useMemo(() => {
-    const id = party?.id ?? "EXAMPLE";
-    // This MUST be a real public https URL (Netlify/Vercel/domain).
-  return `https://partyplus-invite.netlify.app/i/${id}`;  
-  }, [party]);
+const inviteLink = useMemo(() => {
+  if (!party?.id) return "";
+
+  const baseInviteUrl = `https://partyplus-invite.netlify.app/i/${party.id}`;
+  const d = buildInviteData(party);
+  return `${baseInviteUrl}?d=${encodeURIComponent(d)}`;
+}, [party]);
 
   const [yourName, setYourName] = useState("");
   const canClaim = useMemo(() => yourName.trim().length > 0, [yourName]);
