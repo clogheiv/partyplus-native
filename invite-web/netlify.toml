@@ -1,3 +1,5 @@
 [build]
-  command = ""
+  base = "invite-web"
   publish = "."
+  functions = "netlify/functions"
+
