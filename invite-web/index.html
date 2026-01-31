@@ -51,7 +51,9 @@
     <div class="wrap">
       <div class="card">
         <h1>🎉 PartyPlus Invite</h1>
-        <p id="subtitle">Loading invite…</p>
+        <p id="subtitle"></p>
+<div id="details"></div>
+
 
         <div class="id" id="inviteId">—</div>
 
@@ -67,27 +69,70 @@
     </div>
 
    <script>
+   function fromBase64Url(input) {
+  let b64 = input.replace(/-/g, "+").replace(/_/g, "/");
+  while (b64.length % 4) b64 += "=";
+  return atob(b64);
+}
+
+function decodeInviteData(dParam) {
+  const raw = decodeURIComponent(dParam);
+  const decoded = fromBase64Url(raw);
+  const json = decodeURIComponent(decoded);
+  return JSON.parse(json);
+}
+ 
   const inviteId = document.getElementById("inviteId").textContent;
 
   const openApp = document.getElementById("openApp");
   const getApp = document.getElementById("getApp");
 
   // Auto-attempt app open on page load
-  window.location.href = `partyplus:///party/${inviteId}`;
+ // Grab encoded party payload (?d=...) from the page URL
+const d = new URLSearchParams(window.location.search).get("d");
+const subtitle = document.getElementById("subtitle");
+const details = document.getElementById("details");
 
-  // Button: Open in PartyPlus
-  openApp.href = `partyplus:///party/${inviteId}`;
-  openApp.onclick = (e) => {
-    e.preventDefault();
-    window.location.href = `partyplus:///party/${inviteId}`;
-  };
+if (d) {
+  try {
+    const party = decodeInviteData(d);
 
-  // Button: Get the app (future upgrade)
-  getApp.href = "#";
-  getApp.onclick = (e) => {
-    e.preventDefault();
-    alert("Next upgrade: install PartyPlus from the Play Store 👀");
-  };
+    subtitle.textContent = party.t || "You're invited!";
+
+    const rows = [];
+    if (party.dt) rows.push(`<p><b>When:</b> ${party.dt}</p>`);
+    if (party.l) rows.push(`<p><b>Where:</b> ${party.l}</p>`);
+    if (party.a) rows.push(`<p>${party.a}</p>`);
+
+    details.innerHTML = rows.join("");
+  } catch (e) {
+    subtitle.textContent = "This invite looks corrupted.";
+    details.innerHTML = "<p>Please ask the host to resend it.</p>";
+    console.error(e);
+  }
+} else {
+  subtitle.textContent = "You're invited!";
+}
+
+// Build deep link into the app (pass d if present)
+const deepLink = d
+  ? `partyplus://party/${inviteId}?d=${encodeURIComponent(d)}`
+  : `partyplus://party/${inviteId}`;
+
+// Auto-attempt app open on page load
+
+// Button: Open in PartyPlus
+openApp.href = deepLink;
+openApp.onclick = (e) => {
+  e.preventDefault();
+  window.location.href = deepLink;
+};
+
+getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
+getApp.target = "_blank";
+getApp.rel = "noopener noreferrer";
+getApp.onclick = null;
+ 
 </script> 
   </body>
 </html>
