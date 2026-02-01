@@ -61,6 +61,22 @@ type Party = {
   date?: string | null;
   items: PartyItem[];
 };
+const getInviteEmoji = (title?: string) => {
+  if (!title) return "🎉";
+
+  const t = title.toLowerCase();
+
+  if (t.includes("endymion") || t.includes("mardi gras") || t.includes("krewe"))
+    return "🎭💜💛💚";
+
+  if (t.includes("parade")) return "🎭🥁";
+  if (t.includes("birthday")) return "🎂🎉";
+  if (t.includes("bbq") || t.includes("cookout")) return "🔥🍖";
+  if (t.includes("game") || t.includes("watch")) return "🏈🍻";
+  if (t.includes("nola") || t.includes("new orleans")) return "⚜️🎷";
+
+  return "🎉";
+};
 
 export default function ShareScreen() {
   // STEP 1B (TEMP): placeholder link until we wire real deep link + friendly message
@@ -81,23 +97,62 @@ const buildShareMessage = () => {
   });
 };
 
-const when = party?.date ? `When: ${formatWhen(party.date)}` : "";
+const when = party?.date ? `🗓 When: ${formatWhen(party.date)}` : "";
+const where = party?.location?.trim() ? `📍 Where: ${party.location.trim()}` : "";
 
-  const where = party?.location?.trim() ? `Where: ${party.location.trim()}` : "";
   const notes = party?.notes?.trim() ? `Notes: ${party.notes.trim()}` : "";
-const link = inviteLink;
+const shortLink = party?.id
+  ? `https://partyplus-invite.netlify.app/i/${party.id}`
+  : "";
+const link = shortLink;
+
+const itemsPreview =
+  party?.items?.length
+    ? [
+        "🧺 What to bring",
+        ...party.items.map(i => `• ${i.name}`),
+      ].join("\n")
+    : "";
+
+
+const getInviteEmoji = (title: string = "") => {
+  const t = title.toLowerCase();
+ if (t.includes("endymion") || t.includes("mardi gras") || t.includes("krewe")) return "🎭💜💛💚";
+if (t.includes("nola") || t.includes("new orleans")) return "⚜️🎷";
+ 
+// Wedding vibes
+if (t.includes("wedding") || t.includes("rehearsal") || t.includes("bridal") || t.includes("groom")) return "💍👰🤵";
+if (t.includes("engagement") || t.includes("fiancé") || t.includes("fiance") || t.includes("bachelorette") || t.includes("bachelor")) return "💍🥂🎉";
+if (t.includes("shower") || t.includes("couples shower")) return "🎁💍🥂";
+
+// Stock-the-bar party
+if (t.includes("stock the bar") || t.includes("stock-the-bar") || t.includes("stock bar")) return "🍾🥃🍸";
+
+  if (t.includes("birthday")) return "🎂🎉";
+  if (t.includes("bbq") || t.includes("grill")) return "🍔🔥";
+  if (t.includes("parade")) return "🎭🥁";
+  if (t.includes("coffee")) return "☕️✨";
+  if (t.includes("brunch")) return "🥞🍳";
+  if (t.includes("game") || t.includes("football")) return "🏈🍻";
+  if (t.includes("party")) return "🎉🥳";
+  if (t.includes("early") || t.includes("morning")) return "🌅☕️";
+  if (t.includes("night")) return "🌙🍸";
+
+  return "🎉";
+};
 
 const lines = [
-  `🎉 You're invited: ${title}`,
-
+`${getInviteEmoji(title)} ${title}`,
   when,
   where,
   notes,
+  itemsPreview,
   "",
-  link,
+"Open this party in PartyPlus to claim what you're bringing 👇",
+
+link,
 ].filter(Boolean);
  
-
   return lines.join("\n");
 };
 
