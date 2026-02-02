@@ -15,6 +15,13 @@ import { ThemedView } from "../../components/themed-view";
 
 // Adjust this import path ONLY if VS Code underlines it
 import { getPartyById, upsertParty } from "../../src/partyStore";
+function trackInviteOpen(partyId: string) {
+  console.log("📊 Invite opened", {
+    partyId,
+    source: "app",
+    ts: new Date().toISOString(),
+  });
+}
 
 
 type PartyItem = {
@@ -33,9 +40,15 @@ type Party = {
 };
 
 export default function PartyGuestViewScreen() {
+ 
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
 const { id } = params;
+useEffect(() => {
+  if (id) {
+    trackInviteOpen(id);
+  }
+}, [id]);
 
 
   const [loading, setLoading] = useState(true);
@@ -145,6 +158,18 @@ useEffect(() => {
       </ScrollView>
     );
   }
+  const rawLocation = (party.location ?? "").trim();
+
+const displayLocation =
+  rawLocation.length === 0
+    ? "No location set"
+    : rawLocation.length < 6 && !rawLocation.includes(" ")
+    ? "Location saved (add more detail to enable Maps)"
+    : rawLocation;
+
+const canOpenMaps =
+  rawLocation.length >= 6 || rawLocation.includes(" ");
+
 
   return (
     <ScrollView
@@ -157,29 +182,33 @@ useEffect(() => {
 
       {!!party.location?.trim() && (
         <ThemedView style={{ padding: 14, borderRadius: 16, gap: 10 }}>
-          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
-            Where
-          </ThemedText>
-          <ThemedText>{party.location.trim()}</ThemedText>
+        <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+          📍 Where
+        </ThemedText>
+  
+         <ThemedText>{displayLocation}</ThemedText> 
 
-          <Pressable
-            onPress={() => openInMaps(party.location!.trim())}
-            style={{
-              flexDirection: "row",
-              gap: 10,
-              alignItems: "center",
-              borderRadius: 12,
-              paddingVertical: 12,
-              paddingHorizontal: 14,
-              borderWidth: 1,
-              alignSelf: "flex-start",
-            }}
-          >
-            <Ionicons name="location-outline" size={18} />
-            <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
-              Open in Maps
-            </ThemedText>
-          </Pressable>
+       {canOpenMaps ? (
+  <Pressable
+    onPress={() => openInMaps(rawLocation)}
+    style={{
+      flexDirection: "row",
+      gap: 10,
+      alignItems: "center",
+      borderRadius: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      alignSelf: "flex-start",
+    }}
+  >
+    <Ionicons name="location-outline" size={18} />
+    <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+      Open in Maps
+    </ThemedText>
+  </Pressable>
+) : null}
+  
         </ThemedView>
       )}
 
@@ -194,7 +223,12 @@ useEffect(() => {
       {party.items?.length ? (
         <View style={{ gap: 10 }}>
           {party.items.map((it) => {
-            const claimed = !!it.claimedBy;
+         const claimed = !!it.claimedBy;
+
+const claimedLabel = claimed
+  ? `🔒 Claimed by ${it.claimedBy}`
+  : "";
+
             return (
               <ThemedView
                 key={it.id}
@@ -207,9 +241,14 @@ useEffect(() => {
                 <ThemedText style={{ fontSize: 18, fontWeight: "700" }}>
                   {it.name}
                 </ThemedText>
-                <ThemedText style={{ opacity: 0.85 }}>
-                  {claimed ? `Claimed by: ${it.claimedBy}` : "Unclaimed"}
-                </ThemedText>
+{claimed ? (
+  <ThemedText style={{ opacity: 0.85 }}>
+    🔒 Claimed by {it.claimedBy}
+  </ThemedText>
+) : null}
+
+
+
               </ThemedView>
             );
           })}
