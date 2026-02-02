@@ -137,6 +137,7 @@ const itemsPreview = () => {
   const remaining = displayNames.length - shown.length;
 
   const lines = [
+    "",
     "🧺 What to bring",
     ...shown.map((name) => {
       const key = name.toLowerCase();
@@ -171,6 +172,26 @@ if (t.includes("stock the bar") || t.includes("stock-the-bar") || t.includes("st
   if (t.includes("party")) return "🎉🥳";
   if (t.includes("early") || t.includes("morning")) return "🌅☕️";
   if (t.includes("night")) return "🌙🍸";
+// 🍾 Stock the Bar / Bar Party (expanded)
+if (
+  t.includes("bar party") ||
+  t.includes("cocktails") ||
+  t.includes("booze") ||
+  t.includes("liquor")
+) {
+  return "🍾🥂🍸";
+}
+
+// 💍 Wedding / Shower / Engagement (expanded)
+if (
+  t.includes("wedding") ||
+  t.includes("bridal") ||
+  t.includes("shower") ||
+  t.includes("engagement") ||
+  t.includes("couples shower")
+) {
+  return "💍💒🥂";
+}
 
   return "🎉";
 };
@@ -182,7 +203,7 @@ const lines = [
   notes,
  itemsPreview(),
   "",
-"Open this party in PartyPlus to claim what you're bringing 👇",
+"Open in PartyPlus to claim an item 👇",
 link,
 ].filter(Boolean);
  
