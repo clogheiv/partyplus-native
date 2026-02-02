@@ -106,14 +106,48 @@ const shortLink = party?.id
   : "";
 const link = shortLink;
 
-const itemsPreview =
-  party?.items?.length
-    ? [
-        "🧺 What to bring",
-        ...party.items.map(i => `• ${i.name}`),
-      ].join("\n")
-    : "";
+const itemsPreview = () => {
+  const items = party?.items ?? [];
+  if (!items.length) return "";
 
+  // 1) Count duplicates (case-insensitive)
+  const counts = new Map<string, number>();
+  for (const it of items) {
+    const name = (it?.name ?? "").trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  // 2) Keep first-seen casing for display
+  const displayNames: string[] = [];
+  const seen = new Set<string>();
+  for (const it of items) {
+    const name = (it?.name ?? "").trim();
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      displayNames.push(name);
+    }
+  }
+
+  const max = 5;
+  const shown = displayNames.slice(0, max);
+  const remaining = displayNames.length - shown.length;
+
+  const lines = [
+    "🧺 What to bring",
+    ...shown.map((name) => {
+      const key = name.toLowerCase();
+      const n = counts.get(key) ?? 1;
+      return `• ${name}${n > 1 ? ` (x${n})` : ""}`;
+    }),
+  ];
+
+  if (remaining > 0) lines.push(`...and ${remaining} more`);
+  return lines.join("\n");
+};
 
 const getInviteEmoji = (title: string = "") => {
   const t = title.toLowerCase();
@@ -146,10 +180,9 @@ const lines = [
   when,
   where,
   notes,
-  itemsPreview,
+ itemsPreview(),
   "",
 "Open this party in PartyPlus to claim what you're bringing 👇",
-
 link,
 ].filter(Boolean);
  
