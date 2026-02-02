@@ -9,6 +9,7 @@ type PartyItem = {
 
 type Party = {
   id: string;
+  hostId?: string | null;
   title: string;
   location?: string | null;
   notes?: string | null;

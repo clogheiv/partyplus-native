@@ -6,7 +6,7 @@ import { ThemedView } from "@/components/themed-view";
 
 export default function PickActionScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
-  const id = params?.id;
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
   return (
     <ThemedView style={{ flex: 1, padding: 20, gap: 14, justifyContent: "center" }}>

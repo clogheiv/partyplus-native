@@ -16,4 +16,5 @@ export type Party = {
   items: PartyItem[];
   createdAt: string;
   updatedAt: string;
+  hostId?: string | null;
 };

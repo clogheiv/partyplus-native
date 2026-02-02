@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
@@ -12,6 +13,7 @@ import {
 } from "react-native";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
+import type { Party } from "../../src/lib/partyTypes";
 
 // Adjust this import path ONLY if VS Code underlines it
 import { getPartyById, upsertParty } from "../../src/partyStore";
@@ -22,22 +24,6 @@ function trackInviteOpen(partyId: string) {
     ts: new Date().toISOString(),
   });
 }
-
-
-type PartyItem = {
-  id: string;
-  name: string;
-  claimedBy?: string | null;
-};
-
-type Party = {
-  id: string;
-  title: string;
-  location?: string | null;
-  notes?: string | null;
-  date?: string | null;
-  items: PartyItem[];
-};
 
 export default function PartyGuestViewScreen() {
  
@@ -50,12 +36,11 @@ useEffect(() => {
   }
 }, [id]);
 
-
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
+  const [isHost, setIsHost] = useState(false);
+  const [myUserId, setMyUserId] = useState<string | null>(null);
   const navigation = useNavigation();
-
-
 
  useEffect(() => {
   const run = async () => {
@@ -69,6 +54,14 @@ useEffect(() => {
       const found = await getPartyById(String(id));
       if (found) {
         setParty(found as any);
+        const storedUserId = await AsyncStorage.getItem("userId");
+setMyUserId(storedUserId);
+
+if (storedUserId && found?.hostId === storedUserId) {
+  setIsHost(true);
+} else {
+  setIsHost(false);
+}
         return;
       }
 
@@ -177,6 +170,44 @@ const canOpenMaps =
       contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 100 }}
     >
       <ThemedText type="title">{party.title?.trim() || "Party"}</ThemedText>
+      <Pressable
+  onPress={() => router.push(`/(tabs)/create-party?id=${party.id}`)}
+  style={{
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignSelf: "flex-start",
+    marginTop: 10,
+    marginBottom: 6,
+  }}
+>
+  <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+    ✏️ Edit Party
+  </ThemedText>
+</Pressable>
+
+<Pressable
+  onPress={() =>
+    router.push({
+      pathname: "/pick-action",
+      params: { id: party.id },
+    })
+  }
+  style={{
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    alignSelf: "flex-start",
+    marginTop: 10,
+    marginBottom: 6,
+  }}
+>
+  <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+    ✏️ Edit Party
+  </ThemedText>
+</Pressable>
 
       {!!whenText && <ThemedText>When: {whenText}</ThemedText>}
 

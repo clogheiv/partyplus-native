@@ -46,13 +46,44 @@ export default function CreatePartyScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const itemInputRef = useRef<TextInput>(null);
   const router = useRouter();
- 
+ const params = useLocalSearchParams<{ id?: string | string[] }>();
+
+const partyId =
+  typeof params.id === "string"
+    ? params.id
+    : Array.isArray(params.id)
+    ? params.id[0]
+    : "";
+
+const isEditing = !!partyId;
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [partyDate, setPartyDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState<"date" | "time">("date");
+  useEffect(() => {
+  if (!isEditing) return;
+
+  (async () => {
+    const p = await getPartyById(partyId);
+    if (!p) return;
+
+    // Core fields
+    setTitle(p.title ?? "");
+    setLocation(p.location ?? "");
+    setNotes(p.notes ?? "");
+
+    // Date (stored as string | null)
+    if (p.date) {
+      const d = new Date(p.date);
+      if (!isNaN(d.getTime())) setPartyDate(d);
+    } else {
+      setPartyDate(null);
+    }
+  })();
+}, [isEditing, partyId]);
+
   const onChangePicker = (_event: any, selected?: Date) => {
   if (!selected) {
     setShowPicker(false);
@@ -82,9 +113,7 @@ export default function CreatePartyScreen() {
   const [itemText, setItemText] = useState("");
   const [items, setItems] = useState<string[]>([]);
  
-  const params = useLocalSearchParams<{ id?: string | string[] }>();
-  const partyId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const isEditing = !!partyId;
+
   const [isDirty, setIsDirty] = useState(false);
   const [lastRemoved, setLastRemoved] = useState<{
   item: string;
@@ -322,7 +351,8 @@ function confirmRemoveItem(index: number) {
       return;
     }
 
-    const id = editingId ? String(editingId) : `${Date.now()}`;
+    const id = isEditing ? partyId : `${Date.now()}`;
+
     const now = new Date().toISOString();
     const existing = editingId ? await getPartyById(String(editingId)) : null;
 
@@ -371,7 +401,15 @@ function confirmRemoveItem(index: number) {
     };
 
     await upsertParty(party);
-    await setCurrentPartyId(party.id);
+    await setCurrentPartyId(id);
+   // Mark this party as "host-owned" on this device
+const raw = await AsyncStorage.getItem("hostPartyIds");
+const hostIds: string[] = raw ? JSON.parse(raw) : [];
+if (!hostIds.includes(party.id)) {
+  hostIds.push(party.id);
+  await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
+}
+ 
     router.replace("/share");
   }
   const canSave = title.trim().length > 0;
