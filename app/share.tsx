@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { encode as b64encode } from "base-64";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
@@ -15,10 +17,9 @@ import {
   TextInput,
   View,
 } from "react-native";
-
-import { encode as b64encode } from "base-64";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
+import type { Party as PartyType } from "../src/lib/partyTypes";
 
 // URL-safe base64
 function toBase64Url(input: string) {
@@ -229,10 +230,13 @@ const handleNativeShare = async () => {
 };
 
   const router = useRouter();
-    const [loading, setLoading] = useState(true);
-  const [party, setParty] = useState<Party | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [party, setParty] = useState<PartyType | null>(null);
+  const [isHost, setIsHost] = useState(false);
+
 const inviteLink = useMemo(() => {
   if (!party?.id) return "";
+
 
   const baseInviteUrl = `https://partyplus-invite.netlify.app/i/${party.id}`;
   const d = buildInviteData(party);
@@ -270,8 +274,14 @@ const inviteLink = useMemo(() => {
         setParty(null);
         return;
       }
-      const p = await getPartyById(id);
-      setParty((p as Party) ?? null);
+    const p = await getPartyById(id);
+const next = (p as PartyType) ?? null;
+
+setParty(next);
+
+const storedUserId = await AsyncStorage.getItem("userId");
+setIsHost(!!storedUserId && !!next?.hostId && next.hostId === storedUserId);
+ 
     } finally {
       setLoading(false);
     }
@@ -297,9 +307,11 @@ const inviteLink = useMemo(() => {
       return it;
     });
 
-    const nextParty: Party = { ...party, items: updatedItems };
+  const nextParty = { ...party, items: updatedItems };
+  
 
-    setParty(nextParty);
+    setParty(nextParty as any);
+
     await upsertParty(nextParty as any);
   }
 
@@ -354,15 +366,26 @@ const inviteLink = useMemo(() => {
     </View>
 
 
-      <Pressable
-        onPress={() => {
-          console.log("EDIT pressed, id =", party.id);
-          router.push({ pathname: "/(tabs)/create-party", params: { id: party.id } });
-        }}
-        style={{ borderWidth: 1, borderRadius: 12, padding: 10, marginTop: 10, alignSelf: "flex-start" }}
-      >
-        <ThemedText>Edit this party</ThemedText>
-      </Pressable>
+   {isHost ? (
+  <Pressable
+    onPress={() =>
+      router.push({
+        pathname: "/(tabs)/create-party",
+        params: { id: party.id },
+      })
+    }
+    style={{
+      borderWidth: 1,
+      borderRadius: 12,
+      padding: 10,
+      marginTop: 10,
+      alignSelf: "flex-start",
+    }}
+  >
+    <ThemedText>Edit this party</ThemedText>
+  </Pressable>
+) : null}
+   
 
    <ThemedView style={{ gap: 8, padding: 12, borderRadius: 16, borderWidth: 1 }}>
   <ThemedText type="subtitle">Your name (for claiming)</ThemedText>
