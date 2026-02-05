@@ -309,10 +309,19 @@ setIsHost(!!storedUserId && !!next?.hostId && next.hostId === storedUserId);
 
   const nextParty = { ...party, items: updatedItems };
   
+ const normalized: PartyType = {
+  ...nextParty,
+  items: (nextParty.items ?? []).map((it) => ({
+    ...it,
+    claimedBy: (it as any).claimedBy ?? undefined, // null -> undefined
+  })),
+};
+ 
 
-    setParty(nextParty as any);
+setParty(normalized);  
 
-    await upsertParty(nextParty as any);
+ await upsertParty(normalized);
+
   }
 
   if (loading) {

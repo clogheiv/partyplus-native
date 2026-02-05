@@ -9,6 +9,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  Text,
   View,
 } from "react-native";
 import { ThemedText } from "../../components/themed-text";
@@ -24,8 +25,17 @@ function trackInviteOpen(partyId: string) {
     ts: new Date().toISOString(),
   });
 }
+async function ensureUserId() {
+  let uid = await AsyncStorage.getItem("userId");
+  if (!uid) {
+    uid = `u_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    await AsyncStorage.setItem("userId", uid);
+  }
+  return uid;
+}
 
 export default function PartyGuestViewScreen() {
+console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
  
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
@@ -40,6 +50,8 @@ useEffect(() => {
   const [party, setParty] = useState<Party | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [debugHost, setDebugHost] = useState("");
+
   const navigation = useNavigation();
 
  useEffect(() => {
@@ -54,13 +66,32 @@ useEffect(() => {
       const found = await getPartyById(String(id));
       if (found) {
         setParty(found as any);
-        const storedUserId = await AsyncStorage.getItem("userId");
+        const storedUserId = await ensureUserId();
+        setDebugHost(`storedUserId=${storedUserId ?? "null"} | found.hostId=${found?.hostId ?? "null"} | isHost=pending`);
+  console.log("USER ID:", storedUserId);
+     
 setMyUserId(storedUserId);
 
 if (storedUserId && found?.hostId === storedUserId) {
   setIsHost(true);
 } else {
   setIsHost(false);
+}
+setDebugHost(
+  `storedUserId=${storedUserId ?? "null"} | found.hostId=${found.hostId ?? "null"} | isHost=${storedUserId && found.hostId === storedUserId ? "true" : "false"}`
+);
+
+// 🔒 Guest safety: force edit OFF even if they deep-linked or came in weird
+if (!(storedUserId && found.hostId === storedUserId)) {
+  // If you have any local edit state, force it off here:
+  // setIsEditing(false);
+  // setEditMode(false);
+
+  // If you use navigation params to enable edit, strip them:
+  // navigation.setParams({ edit: undefined, mode: undefined });
+
+  // If you navigate to a separate edit screen, kick them back:
+  // navigation.navigate("party", { id: String(id) });
 }
         return;
       }
@@ -94,11 +125,20 @@ if (storedUserId && found?.hostId === storedUserId) {
 
   run();
 }, [id]);
-useEffect(() => {
+
+ useEffect(() => {
   navigation.setOptions({
     title: party?.title ? party.title : "Party",
+    headerRight: isHost
+      ? () => (
+          <Pressable onPress={() => {}} style={{ marginRight: 12 }}>
+            <Text style={{ fontWeight: "600" }}>Edit</Text>
+          </Pressable>
+        )
+      : undefined,
   });
-}, [navigation, party?.title]);
+}, [navigation, party?.title, isHost]);
+  
 
 
   const whenText = useMemo(() => {
@@ -120,6 +160,7 @@ useEffect(() => {
   if (loading) {
     return (
       <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center" }}>
+      <ThemedText type="title">DEBUG: [id].tsx is rendering</ThemedText> 
         <ActivityIndicator />
       </ThemedView>
     );
@@ -131,6 +172,10 @@ useEffect(() => {
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
       >
+       <Text style={{ padding: 8, fontSize: 12 }}>
+  DEBUG: {debugHost || "(empty)"}
+</Text>
+
         <ThemedText type="title">Invite</ThemedText>
         <ThemedText>Couldn’t find that party.</ThemedText>
 
@@ -163,13 +208,18 @@ const displayLocation =
 const canOpenMaps =
   rawLocation.length >= 6 || rawLocation.includes(" ");
 
+   return (
+  <ScrollView
+    style={{ flex: 1 }}
+    contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 100 }}
+  >
+    <Text style={{ padding: 8, fontSize: 12 }}>
+    HOST DEBUG → {debugHost}
+    </Text>
 
-  return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 100 }}
-    >
-      <ThemedText type="title">{party.title?.trim() || "Party"}</ThemedText>
+    <ThemedText type="title">{party.title?.trim() || "Party"}</ThemedText>
+   
+   {isHost ? (
       <Pressable
   onPress={() => router.push(`/(tabs)/create-party?id=${party.id}`)}
   style={{
@@ -186,28 +236,32 @@ const canOpenMaps =
     ✏️ Edit Party
   </ThemedText>
 </Pressable>
+) : null}
 
-<Pressable
-  onPress={() =>
-    router.push({
-      pathname: "/pick-action",
-      params: { id: party.id },
-    })
-  }
-  style={{
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    alignSelf: "flex-start",
-    marginTop: 10,
-    marginBottom: 6,
-  }}
->
-  <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
-    ✏️ Edit Party
-  </ThemedText>
-</Pressable>
+{isHost ? (
+  <Pressable
+    onPress={() =>
+      router.push({
+        pathname: "/pick-action",
+        params: { id: party.id },
+      })
+    }
+    style={{
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      alignSelf: "flex-start",
+      marginTop: 10,
+      marginBottom: 6,
+    }}
+  >
+    <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+      ✏️ Edit Party
+    </ThemedText>
+  </Pressable>
+) : null}
+
 
       {!!whenText && <ThemedText>When: {whenText}</ThemedText>}
 
