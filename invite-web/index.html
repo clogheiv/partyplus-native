@@ -122,10 +122,8 @@ if (d) {
   subtitle.textContent = "You're invited!";
 }
 
-// Build deep link into the app (pass d if present)
-const deepLink = d
-  ? `partyplus://party/${inviteId}?d=${encodeURIComponent(d)}`
-  : `partyplus://party/${inviteId}`;
+// Build deep link into the app (Expo Go)
+const deepLink = `exp://192.168.1.174:8081/--/share?id=${encodeURIComponent(inviteId ?? "")}`;
 
 // Auto-attempt app open on page load
 
@@ -133,6 +131,7 @@ const deepLink = d
 openApp.href = deepLink;
 openApp.onclick = (e) => {
   e.preventDefault();
+  openApp.setAttribute("href", deepLink);
   window.location.href = deepLink;
 };
 

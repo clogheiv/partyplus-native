@@ -243,7 +243,7 @@ const canOpenMaps =
     onPress={() =>
       router.push({
         pathname: "/pick-action",
-        params: { id: party.id },
+        params: { id: party.id, isHost: isHost ? "true" : "false" },
       })
     }
     style={{

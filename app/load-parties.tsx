@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView } from "react-native";
@@ -42,7 +43,9 @@ export default function LoadPartiesScreen() {
 
   async function openParty(p: Party) {
     await setCurrentPartyId(p.id);
-    router.push(`/pick-action?id=${p.id}`);
+    const storedUserId = await AsyncStorage.getItem("userId");
+    const isHost = !!storedUserId && p.hostId === storedUserId;
+    router.push(`/pick-action?id=${p.id}&isHost=${isHost ? "true" : "false"}`);
   }
 
   return (
