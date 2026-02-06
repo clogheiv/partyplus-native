@@ -1,9 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { encode as b64encode } from "base-64";
+import { decode as b64decode, encode as b64encode } from "base-64";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -230,6 +230,8 @@ const handleNativeShare = async () => {
 };
 
   const router = useRouter();
+  const params = useLocalSearchParams<{ d?: string }>();
+  const d = Array.isArray(params.d) ? params.d[0] : params.d;
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<PartyType | null>(null);
   const [isHost, setIsHost] = useState(false);
@@ -269,18 +271,38 @@ const inviteLink = useMemo(() => {
   async function loadCurrentParty() {
     setLoading(true);
     try {
-      const id = await getCurrentPartyId();
-      if (!id) {
-        setParty(null);
-        return;
+      let next: PartyType | null = null;
+      if (d) {
+        const raw = decodeURIComponent(d);
+        let b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4) b64 += "=";
+        const json = decodeURIComponent(b64decode(b64));
+        const decoded = JSON.parse(json);
+        next = {
+          ...decoded,
+          items: Array.isArray(decoded?.items)
+            ? decoded.items.map((it: any) => ({
+                ...it,
+                claimedBy: it?.claimedBy ?? undefined,
+              }))
+            : decoded?.items ?? [],
+        };
+        await upsertParty(next as PartyType);
+      } else {
+        const id = await getCurrentPartyId();
+        if (!id) {
+          setParty(null);
+          return;
+        }
+        const p = await getPartyById(id);
+        next = (p as PartyType) ?? null;
       }
-    const p = await getPartyById(id);
-const next = (p as PartyType) ?? null;
 
 setParty(next);
 
-const storedUserId = await AsyncStorage.getItem("userId");
+const storedUserId = await ensureUserId();
 setIsHost(!!storedUserId && !!next?.hostId && next.hostId === storedUserId);
+      return;
  
     } finally {
       setLoading(false);
