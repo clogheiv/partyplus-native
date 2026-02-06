@@ -123,7 +123,9 @@ if (d) {
 }
 
 // Build deep link into the app (Expo Go)
-const deepLink = `exp://192.168.1.174:8081/--/share?id=${encodeURIComponent(inviteId ?? "")}`;
+const deepLink = d
+  ? `exp://192.168.1.174:8081/--/share?d=${d}`
+  : `exp://192.168.1.174:8081/--/share`;
 
 // Auto-attempt app open on page load
 
