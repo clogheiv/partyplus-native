@@ -124,7 +124,8 @@ if (d) {
 }
 
 // Build deep link into the app (Expo Go)
-const deepLink = `partyplusnative://share?id=${inviteId ?? ""}${d ? `&d=${d}` : ""}`;
+const deepLink = `partyplus:///share?id=${inviteId ?? ""}${d ? `&d=${d}` : ""}`;
+
 details.textContent = `Deep link: ${deepLink}`;
 
 // Auto-attempt app open on page load
