@@ -21,6 +21,15 @@ import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
 import type { Party as PartyType } from "../src/lib/partyTypes";
 
+async function ensureUserId() {
+  let uid = await AsyncStorage.getItem("userId");
+  if (!uid) {
+    uid = `u_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    await AsyncStorage.setItem("userId", uid);
+  }
+  return uid;
+}
+
 // URL-safe base64
 function toBase64Url(input: string) {
   return b64encode(input)
@@ -232,6 +241,7 @@ const handleNativeShare = async () => {
   const router = useRouter();
   const params = useLocalSearchParams<{ d?: string }>();
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
+  const debugD = d ? d.slice(0, 30) : "NO_D";
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<PartyType | null>(null);
   const [isHost, setIsHost] = useState(false);
@@ -387,6 +397,9 @@ setParty(normalized);
         keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, gap: 14, paddingBottom: 28 }}  
       >
+      <ThemedText style={{ fontSize: 12, opacity: 0.6 }}>
+        debug d: {debugD}
+      </ThemedText>
 
       <View style={{ gap: 6 }}>
   <ThemedText style={{ fontSize: 13, fontWeight: "800", opacity: 0.7 }}>

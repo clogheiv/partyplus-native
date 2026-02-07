@@ -1,12 +1,12 @@
-import { router, useLocalSearchParams } from "expo-router";
-import { Pressable } from "react-native";
-
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { router, useLocalSearchParams } from "expo-router";
+import { Alert, Pressable } from "react-native";
 
 export default function PickActionScreen() {
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; isHost?: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const isHost = params.isHost === "true";
 
   return (
     <ThemedView style={{ flex: 1, padding: 20, gap: 14, justifyContent: "center" }}>
@@ -21,10 +21,17 @@ export default function PickActionScreen() {
       </Pressable>
 
       <Pressable
-        onPress={() => {
-          if (!id) return;
-          router.push(`/create-party?id=${id}`);
-        }}
+       onPress={() => {
+  if (!id) return;
+
+  if (!isHost) {
+    Alert.alert("Host only", "Only the party host can edit this party.");
+    return;
+  }
+
+  router.push(`/create-party?id=${id}`);
+}}
+
         style={{ borderWidth: 1, borderRadius: 14, padding: 14 }}
       >
         <ThemedText type="subtitle">Edit</ThemedText>

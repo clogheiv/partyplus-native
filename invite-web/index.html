@@ -97,7 +97,9 @@ if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
 
   // Auto-attempt app open on page load
  // Grab encoded party payload (?d=...) from the page URL
-const d = new URLSearchParams(window.location.search).get("d");
+const params = new URLSearchParams(window.location.search);
+const rawPayload = params.get("d") ?? params.get("invite");
+const d = rawPayload;
 const subtitle = document.getElementById("subtitle");
 const details = document.getElementById("details");
 
@@ -123,16 +125,16 @@ if (d) {
 }
 
 // Build deep link into the app (Expo Go)
-const deepLink = d
-  ? `exp://192.168.1.174:8081/--/share?d=${encodeURIComponent(d)}`
-  : `exp://192.168.1.174:8081/--/share`;
+const deepLink = rawPayload
+  ? `exp://192.168.1.174:8081/--/share?d=${encodeURIComponent(rawPayload)}`
+  : `exp://192.168.1.174:8081/--/share?d=`;
 
 // Auto-attempt app open on page load
 
 // Button: Open in PartyPlus
-openApp.href = d
-  ? `intent://192.168.1.174:8081/--/share?d=${encodeURIComponent(d)}#Intent;scheme=exp;package=host.exp.exponent;end`
-  : `intent://192.168.1.174:8081/--/share#Intent;scheme=exp;package=host.exp.exponent;end`;
+openApp.href = rawPayload
+  ? `intent://192.168.1.174:8081/--/share?d=${encodeURIComponent(rawPayload)}#Intent;scheme=exp;package=host.exp.exponent;end`
+  : `intent://192.168.1.174:8081/--/share?d=#Intent;scheme=exp;package=host.exp.exponent;end`;
 openApp.onclick = (e) => {
   e.preventDefault();
   openApp.setAttribute("href", openApp.href);
