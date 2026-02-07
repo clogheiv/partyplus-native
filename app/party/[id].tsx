@@ -65,7 +65,26 @@ useEffect(() => {
       // 1) Try to load normally (party already exists on this phone)
       const found = await getPartyById(String(id));
       if (found) {
-        setParty(found as any);
+     const normalized = {
+  ...found,
+
+  // Party-level null -> undefined
+  title: found.title ?? undefined,
+  date: found.date ?? undefined,
+  location: found.location ?? undefined,
+  notes: found.notes ?? undefined,
+  hostId: found.hostId ?? undefined,
+
+  // Items: claimedBy null -> undefined
+  items: (found.items ?? []).map((it) => ({
+    ...it,
+    claimedBy: (it as any).claimedBy ?? undefined,
+  })),
+};
+
+setParty(normalized as any);
+
+  
         const storedUserId = await ensureUserId();
         setDebugHost(`storedUserId=${storedUserId ?? "null"} | found.hostId=${found?.hostId ?? "null"} | isHost=pending`);
   console.log("USER ID:", storedUserId);
@@ -243,7 +262,7 @@ const canOpenMaps =
     onPress={() =>
       router.push({
         pathname: "/pick-action",
-        params: { id: party.id, isHost: isHost ? "true" : "false" },
+        params: { id: party.id },
       })
     }
     style={{

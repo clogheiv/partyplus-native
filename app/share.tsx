@@ -55,7 +55,7 @@ function buildInviteData(party: any) {
 
 // These imports must match your project.
 // If VS Code underlines any of these, tell me and we’ll adjust the import path names only.
-import { getCurrentPartyId, getPartyById, upsertParty } from "../src/partyStore";
+import { getCurrentPartyId, getPartyById, setCurrentPartyId, upsertParty } from "../src/partyStore";
 
 type PartyItem = {
   id: string;
@@ -239,8 +239,9 @@ const handleNativeShare = async () => {
 };
 
   const router = useRouter();
-  const params = useLocalSearchParams<{ d?: string }>();
+  const params = useLocalSearchParams<{ d?: string; id?: string }>();
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
+  const inviteId = Array.isArray(params.id) ? params.id[0] : params.id;
   const debugD = d ? d.slice(0, 30) : "NO_D";
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<PartyType | null>(null);
@@ -283,22 +284,36 @@ const inviteLink = useMemo(() => {
     try {
       let next: PartyType | null = null;
       if (d) {
-        const raw = decodeURIComponent(d);
-        let b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
-        while (b64.length % 4) b64 += "=";
-        const json = decodeURIComponent(b64decode(b64));
-        const decoded = JSON.parse(json);
-        next = {
-          ...decoded,
-          items: Array.isArray(decoded?.items)
-            ? decoded.items.map((it: any) => ({
-                ...it,
-                claimedBy: it?.claimedBy ?? undefined,
-              }))
-            : decoded?.items ?? [],
-        };
-        await upsertParty(next as PartyType);
-      } else {
+        try {
+          const raw = decodeURIComponent(d);
+          let b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
+          while (b64.length % 4) b64 += "=";
+          const json = decodeURIComponent(b64decode(b64));
+          const decoded = JSON.parse(json);
+          next = {
+            ...decoded,
+            id: decoded?.id ?? decoded?.i ?? inviteId,
+            items: Array.isArray(decoded?.items)
+              ? decoded.items.map((it: any) => ({
+                  ...it,
+                  claimedBy: it?.claimedBy ?? undefined,
+                }))
+              : decoded?.items ?? [],
+          };
+          if (next?.id) {
+            await upsertParty(next as PartyType);
+            await setCurrentPartyId(next.id);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (!next && inviteId) {
+        const p = await getPartyById(inviteId);
+        next = (p as PartyType) ?? null;
+        if (next?.id) await setCurrentPartyId(next.id);
+      }
+      if (!next) {
         const id = await getCurrentPartyId();
         if (!id) {
           setParty(null);
