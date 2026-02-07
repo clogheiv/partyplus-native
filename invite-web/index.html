@@ -124,17 +124,19 @@ if (d) {
 
 // Build deep link into the app (Expo Go)
 const deepLink = d
-  ? `exp+partyplusnative://expo-development-client/?url=${encodeURIComponent(`http://192.168.1.174:8081/--/share?d=${encodeURIComponent(d)}`)}`
-  : `exp+partyplusnative://expo-development-client/?url=${encodeURIComponent("http://192.168.1.174:8081/--/share")}`;
+  ? `exp://192.168.1.174:8081/--/share?d=${encodeURIComponent(d)}`
+  : `exp://192.168.1.174:8081/--/share`;
 
 // Auto-attempt app open on page load
 
 // Button: Open in PartyPlus
-openApp.href = deepLink;
+openApp.href = d
+  ? `intent://192.168.1.174:8081/--/share?d=${encodeURIComponent(d)}#Intent;scheme=exp;package=host.exp.exponent;end`
+  : `intent://192.168.1.174:8081/--/share#Intent;scheme=exp;package=host.exp.exponent;end`;
 openApp.onclick = (e) => {
   e.preventDefault();
-  openApp.setAttribute("href", deepLink);
-  window.location.href = deepLink;
+  openApp.setAttribute("href", openApp.href);
+  window.location.href = openApp.href;
 };
 
 getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
