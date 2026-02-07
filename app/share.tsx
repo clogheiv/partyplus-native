@@ -240,11 +240,28 @@ const handleNativeShare = async () => {
 
   const router = useRouter();
   const params = useLocalSearchParams<{ d?: string; id?: string }>();
-  console.log("HIT_SHARE_ROUTE", params);
-  const d = Array.isArray(params.d) ? params.d[0] : params.d;
+  console.log("[SHARE params]", params);
   const inviteId = Array.isArray(params.id) ? params.id[0] : params.id;
-  const debugD = d ? d.slice(0, 30) : "NO_D";
-  const [loading, setLoading] = useState(true);
+const dParam = Array.isArray(params.d) ? params.d[0] : params.d;
+
+useEffect(() => {
+  if (!inviteId) return;
+
+  const t = setTimeout(() => {
+    console.log("[SHARE redirect] to party", { inviteId, hasD: Boolean(dParam), dLen: dParam?.length });  
+    router.replace({ pathname: "/party/[id]", params: { id: inviteId, d: dParam } });
+  }, 0);
+
+  return () => clearTimeout(t);
+}, [router, inviteId, dParam]);
+
+
+if (inviteId) {
+  return null;
+}
+
+  const debugD = dParam ? dParam.slice(0, 30) : "NO_D";
+  const [loading, setLoading] = useState(true); 
   const [party, setParty] = useState<PartyType | null>(null);
   const [isHost, setIsHost] = useState(false);
 
@@ -252,9 +269,10 @@ const inviteLink = useMemo(() => {
   if (!party?.id) return "";
 
 
-  const baseInviteUrl = `https://partyplus-invite.netlify.app/i/${party.id}`;
-  const d = buildInviteData(party);
-  return `${baseInviteUrl}?d=${encodeURIComponent(d)}`;
+const baseInviteUrl = `https://partyplus-invite.netlify.app/${party.id}`;
+const d = buildInviteData(party);
+return `${baseInviteUrl}?id=${party.id}&d=${encodeURIComponent(d)}`;
+  
 }, [party]);
 
   const [yourName, setYourName] = useState("");
@@ -284,9 +302,9 @@ const inviteLink = useMemo(() => {
     setLoading(true);
     try {
       let next: PartyType | null = null;
-      if (d) {
+      if (dParam) {
         try {
-          const raw = decodeURIComponent(d);
+          const raw = decodeURIComponent(dParam);
           let b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
           while (b64.length % 4) b64 += "=";
           const json = decodeURIComponent(b64decode(b64));

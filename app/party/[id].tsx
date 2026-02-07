@@ -40,7 +40,8 @@ console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
   console.log("[PartyScreen params]", params);
-const { id } = params;
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const d = Array.isArray(params.d) ? params.d[0] : params.d;
 useEffect(() => {
   if (id) {
     trackInviteOpen(id);
@@ -118,19 +119,16 @@ if (!(storedUserId && found.hostId === storedUserId)) {
 
       // 2) If not found, try importing from link param (?d=...)
       // Expo Router may give string | string[]
-      const rawD = (params as any)?.d;
-      const d = Array.isArray(rawD) ? rawD[0] : rawD;
-
       if (d) {
         try {
-          const decoded = decodeURIComponent(d);
-          const importedParty = JSON.parse(decoded);
+          console.log("[JOIN] importing from d", { id, hasD: Boolean(d), len: d?.length });
+          const obj = JSON.parse(decodeURIComponent(d));
 
           // Make sure it has the right id
-          importedParty.id = String(id);
+          obj.id = String(id);
 
-          await upsertParty(importedParty);
-          setParty(importedParty);
+          await upsertParty(obj);
+          setParty(obj);
           return;
         } catch (err) {
           // If decoding/parsing fails, fall through to "not found" UI

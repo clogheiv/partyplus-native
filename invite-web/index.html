@@ -84,8 +84,9 @@ function decodeInviteData(dParam) {
  
  // Read party id from the URL path: /i/<id>
 const pathParts = window.location.pathname.split("/").filter(Boolean);
-// expects ["i", "<id>"]
-const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
+const params = new URLSearchParams(window.location.search);
+const queryId = params.get("id");
+const inviteId = queryId ?? (pathParts[pathParts.length - 1] ?? null);
 
 // (Optional) if you have an element showing the id, update it
 const inviteIdEl = document.getElementById("inviteId");
@@ -97,9 +98,7 @@ if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
 
   // Auto-attempt app open on page load
  // Grab encoded party payload (?d=...) from the page URL
-const params = new URLSearchParams(window.location.search);
-const rawPayload = params.get("d") ?? params.get("invite");
-const d = rawPayload;
+const d = params.get("d");
 const subtitle = document.getElementById("subtitle");
 const details = document.getElementById("details");
 
@@ -125,16 +124,14 @@ if (d) {
 }
 
 // Build deep link into the app (Expo Go)
-const deepLink = d
-  ? `exp://192.168.1.174:8081/--/share?d=${encodeURIComponent(d)}`
-  : inviteId
-  ? `exp://192.168.1.174:8081/--/share?id=${inviteId}`
-  : `exp://192.168.1.174:8081/--/share`;
+const deepLink = `partyplusnative://share?id=${inviteId ?? ""}${d ? `&d=${d}` : ""}`;
+details.textContent = `Deep link: ${deepLink}`;
 
 // Auto-attempt app open on page load
 
 // Button: Open in PartyPlus
 openApp.href = deepLink;
+openApp.setAttribute("href", deepLink);
 openApp.onclick = (e) => {
   e.preventDefault();
   openApp.setAttribute("href", deepLink);
