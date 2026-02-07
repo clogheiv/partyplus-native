@@ -240,6 +240,7 @@ const handleNativeShare = async () => {
 
   const router = useRouter();
   const params = useLocalSearchParams<{ d?: string; id?: string }>();
+  console.log("HIT_SHARE_ROUTE", params);
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
   const inviteId = Array.isArray(params.id) ? params.id[0] : params.id;
   const debugD = d ? d.slice(0, 30) : "NO_D";

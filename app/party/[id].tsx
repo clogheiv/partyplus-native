@@ -39,6 +39,7 @@ console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
  
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
+  console.log("[PartyScreen params]", params);
 const { id } = params;
 useEffect(() => {
   if (id) {
