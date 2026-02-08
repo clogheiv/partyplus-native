@@ -84,9 +84,7 @@ function decodeInviteData(dParam) {
  
  // Read party id from the URL path: /i/<id>
 const pathParts = window.location.pathname.split("/").filter(Boolean);
-const params = new URLSearchParams(window.location.search);
-const queryId = params.get("id");
-const inviteId = queryId ?? (pathParts[pathParts.length - 1] ?? null);
+const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
 
 // (Optional) if you have an element showing the id, update it
 const inviteIdEl = document.getElementById("inviteId");
@@ -98,7 +96,8 @@ if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
 
   // Auto-attempt app open on page load
  // Grab encoded party payload (?d=...) from the page URL
-const d = params.get("d");
+const url = new URL(window.location.href);
+const d = url.searchParams.get("d") || "";
 const subtitle = document.getElementById("subtitle");
 const details = document.getElementById("details");
 
@@ -124,7 +123,8 @@ if (d) {
 }
 
 // Build deep link into the app (Expo Go)
-const deepLink = `partyplus:///share?id=${inviteId ?? ""}${d ? `&d=${d}` : ""}`;
+const deepLink = `partyplusnative://share?id=${encodeURIComponent(inviteId ?? "")}${d ? `&d=${encodeURIComponent(d)}` : ""}`;
+
 
 details.textContent = `Deep link: ${deepLink}`;
 
@@ -136,6 +136,7 @@ openApp.setAttribute("href", deepLink);
 openApp.onclick = (e) => {
   e.preventDefault();
   openApp.setAttribute("href", deepLink);
+ console.log("DEEPLINK FIRING:", deepLink); 
   window.location.href = deepLink;
 };
 
