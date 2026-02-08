@@ -123,7 +123,9 @@ if (d) {
 }
 
 // Build deep link into the app (Expo Go)
-const deepLink = `partyplusnative://share?id=${encodeURIComponent(inviteId ?? "")}${d ? `&d=${encodeURIComponent(d)}` : ""}`;
+const deepLink =
+  `partyplusnative://share?id=${encodeURIComponent(inviteId || "")}` +
+  (d ? `&d=${encodeURIComponent(d)}` : "");
 
 
 details.textContent = `Deep link: ${deepLink}`;

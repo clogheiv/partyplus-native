@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { decode as b64decode, encode as b64encode } from "base-64";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRootNavigationState, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -111,11 +111,13 @@ const when = party?.date ? `🗓 When: ${formatWhen(party.date)}` : "";
 const where = party?.location?.trim() ? `📍 Where: ${party.location.trim()}` : "";
 
   const notes = party?.notes?.trim() ? `Notes: ${party.notes.trim()}` : "";
-const shortLink = party?.id
-  ? `https://partyplus-invite.netlify.app/i/${party.id}`
+const shortlink = party?.id
+  ? `https://partyplus-invite.netlify.app/i/${party.id}?d=${encodeURIComponent(
+      buildInviteData(party)
+    )}`
   : "";
-const link = shortLink;
 
+const link = shortlink;
 const itemsPreview = () => {
   const items = party?.items ?? [];
   if (!items.length) return "";
@@ -232,6 +234,7 @@ const handleCopyInvite = async () => {
 const handleNativeShare = async () => {
   try {
     const message = buildShareMessage();
+    console.log("SHARE MESSAGE:", message);
     await Share.share({ message });
   } catch (e) {
     Alert.alert("Share failed", "Could not open the share sheet.");
@@ -241,11 +244,16 @@ const handleNativeShare = async () => {
   const router = useRouter();
   const params = useLocalSearchParams<{ d?: string; id?: string }>();
   console.log("[SHARE params]", params);
+  const rootNavState = useRootNavigationState();
   const inviteId = Array.isArray(params.id) ? params.id[0] : params.id;
-const dParam = Array.isArray(params.d) ? params.d[0] : params.d;
+const dParam =
+  Array.isArray((params as any).d) ? (params as any).d[0]
+  : (params as any).d ?? (params as any).data ?? (params as any).payload ?? "";
+
 
 useEffect(() => {
   if (!inviteId) return;
+  if (!rootNavState?.key) return;
 
   const t = setTimeout(() => {
     console.log("[SHARE redirect] to party", { inviteId, hasD: Boolean(dParam), dLen: dParam?.length });  
@@ -253,12 +261,8 @@ useEffect(() => {
   }, 0);
 
   return () => clearTimeout(t);
-}, [router, inviteId, dParam]);
+}, [inviteId, dParam, rootNavState?.key, router]);
 
-
-if (inviteId) {
-  return null;
-}
 
   const debugD = dParam ? dParam.slice(0, 30) : "NO_D";
   const [loading, setLoading] = useState(true); 
@@ -269,9 +273,9 @@ const inviteLink = useMemo(() => {
   if (!party?.id) return "";
 
 
-const baseInviteUrl = `https://partyplus-invite.netlify.app/${party.id}`;
+const baseInviteUrl = `https://partyplus-invite.netlify.app/i/${party.id}`;
 const d = buildInviteData(party);
-return `${baseInviteUrl}?id=${party.id}&d=${encodeURIComponent(d)}`;
+return `${baseInviteUrl}?d=${encodeURIComponent(d)}`;
   
 }, [party]);
 
@@ -556,6 +560,10 @@ setParty(normalized);
   party.items.map((it) => {
     const claimed = !!it.claimedBy;
     const claimedByYou = claimed && (it.claimedBy ?? "") === yourName.trim();
+
+if (inviteId) {
+  return null;
+}
 
     return (
       <Pressable
