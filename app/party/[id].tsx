@@ -33,6 +33,31 @@ async function ensureUserId() {
   }
   return uid;
 }
+function decodeInvitePayload(d: string | undefined) {
+  if (!d) return null;
+
+  try {
+    const { Buffer } = require("buffer");
+
+    // d is URL-safe base64. Convert to normal base64.
+    let b64 = d.replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4 !== 0) b64 += "=";
+
+    const decoded = Buffer.from(b64, "base64").toString("utf8");
+
+    // New format: decoded is JSON string
+    if (decoded.trim().startsWith("{")) {
+      return JSON.parse(decoded);
+    }
+
+    // Old format fallback: decoded might be URI-encoded JSON
+    const maybeJson = decodeURIComponent(decoded);
+    return JSON.parse(maybeJson);
+  } catch (e) {
+    console.log("[INVITE decode failed]", e);
+    return null;
+  }
+}
 
 export default function PartyGuestViewScreen() {
 console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
@@ -42,6 +67,8 @@ console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
   console.log("[PartyScreen params]", params);
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
+  console.log("[INVITE d raw]", d);
+
 useEffect(() => {
   if (id) {
     trackInviteOpen(id);
@@ -66,7 +93,15 @@ useEffect(() => {
 
       // 1) Try to load normally (party already exists on this phone)
       const found = await getPartyById(String(id));
-      if (found) {
+      console.log("[FOUND party]", JSON.stringify(found, null, 2));
+      console.log("[PARTY load]", {
+  id: String(id),
+  found: Boolean(found),
+  hasD: Boolean(d),
+  dLen: d ? d.length : 0,
+});
+
+ if (found && !d) {     
      const normalized = {
   ...found,
 
@@ -117,23 +152,63 @@ if (!(storedUserId && found.hostId === storedUserId)) {
         return;
       }
 
-      // 2) If not found, try importing from link param (?d=...)
-      // Expo Router may give string | string[]
-      if (d) {
-        try {
-          console.log("[JOIN] importing from d", { id, hasD: Boolean(d), len: d?.length });
-          const obj = JSON.parse(decodeURIComponent(d));
+    // 2) If not found locally, try to hydrate from invite payload "d"
+if (!found || true) {
+console.log("[INVITE hydrate] forced branch running", { found: Boolean(found), hasD: Boolean(d), dLen: d?.length });
+  const invite = decodeInvitePayload(d);
 
-          // Make sure it has the right id
-          obj.id = String(id);
+  if (invite) {
+    console.log("[INVITE decoded]", invite);
+    console.log("[INVITE keys]", Object.keys(invite || {}));
+console.log("[INVITE items preview]", {
+  items: invite?.items,
+  whatToBring: (invite as any)?.whatToBring,
+  bring: (invite as any)?.bring,
+  list: (invite as any)?.list,
+  partyItems: (invite as any)?.party?.items,
+});
 
-          await upsertParty(obj);
-          setParty(obj);
-          return;
-        } catch (err) {
-          // If decoding/parsing fails, fall through to "not found" UI
-        }
-      }
+
+    const hydrated = {
+      id: String(id),
+
+      // These field names depend on what your invite contains.
+      // We'll map the common ones safely.
+      title: invite.title ?? invite.name ?? "Party",
+      date: invite.date ?? invite.when ?? undefined,
+      location: invite.location ?? invite.where ?? undefined,
+      notes: invite.notes ?? undefined,
+
+      hostId: invite.hostId ?? invite.host?.id ?? undefined,
+
+      items: Array.isArray(invite.items)
+        ? invite.items.map((it: any) => ({
+            ...it,
+            claimedBy: it.claimedBy ?? undefined,
+          }))
+        : [],
+    };
+
+    // Save it so future opens work instantly
+    await upsertParty(hydrated as any);
+
+    setParty(hydrated as any);
+
+    const storedUserId = await ensureUserId();
+    setMyUserId(storedUserId);
+
+    setIsHost(Boolean(hydrated.hostId && hydrated.hostId === storedUserId));
+
+    // If you have loading state, flip it off here
+    // setLoading(false);
+
+    return; // IMPORTANT: stop fallthrough
+  }
+
+  // If no invite payload, show a clean "not found" state
+  console.log("[PARTY not found] no local party + no invite payload");
+}
+  
 
       setParty(null);
     } finally {
@@ -325,22 +400,19 @@ const canOpenMaps =
 
       {party.items?.length ? (
         <View style={{ gap: 10 }}>
-          {party.items.map((it) => {
-         const claimed = !!it.claimedBy;
+       {party.items.map((it) => {
+  const claimed = !!it.claimedBy;
 
-const claimedLabel = claimed
-  ? `🔒 Claimed by ${it.claimedBy}`
-  : "";
-
-            return (
-              <ThemedView
-                key={it.id}
-                style={{
-                  padding: 14,
-                  borderRadius: 16,
-                  opacity: claimed ? 0.55 : 1,
-                }}
-              >
+  return (
+    <ThemedView
+      key={it.id}
+      style={{
+        padding: 14,
+        borderRadius: 16,
+        opacity: claimed ? 0.55 : 1,
+      }}
+    >
+   
                 <ThemedText style={{ fontSize: 18, fontWeight: "700" }}>
                   {it.name}
                 </ThemedText>

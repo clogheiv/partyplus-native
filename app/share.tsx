@@ -46,10 +46,18 @@ function buildInviteData(party: any) {
     a: party.address ?? "",
     la: party.lat ?? party.latitude ?? null,
     ln: party.lng ?? party.longitude ?? null,
+    items: Array.isArray(party.items)
+  ? party.items.map((it: any) => ({
+      name: it.name ?? it.item ?? it.title ?? "",
+      qty: it.qty ?? it.quantity ?? undefined,
+      claimedBy: it.claimedBy ?? undefined,
+    }))
+  : [],
+
   };
 
-  const json = JSON.stringify(payload);
-  return toBase64Url(encodeURIComponent(json));
+const json = JSON.stringify(payload);
+return toBase64Url(json);  
 }
 
 
@@ -275,6 +283,13 @@ const inviteLink = useMemo(() => {
 
 const baseInviteUrl = `https://partyplus-invite.netlify.app/i/${party.id}`;
 const d = buildInviteData(party);
+console.log("[INVITE build payload]", d);
+try {
+  const decoded = JSON.parse(d);
+  console.log("[INVITE build keys]", Object.keys(decoded));
+  console.log("[INVITE build items]", decoded.items);
+} catch {}
+
 return `${baseInviteUrl}?d=${encodeURIComponent(d)}`;
   
 }, [party]);
