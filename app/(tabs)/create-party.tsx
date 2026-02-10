@@ -45,6 +45,7 @@ export default function CreatePartyScreen() {
   const headerHeight = useHeaderHeight();
   const scrollRef = useRef<ScrollView>(null);
   const itemInputRef = useRef<TextInput>(null);
+  const notesInputRef = useRef<TextInput>(null);
   const router = useRouter();
  const params = useLocalSearchParams<{ id?: string | string[] }>();
 
@@ -286,6 +287,20 @@ if (!isEditing) {
   }, [editingId]);
 
 
+const scrollToInput = (inputRef: React.RefObject<TextInput>) => {
+  const input = inputRef.current;
+  const scrollResponder = scrollRef.current?.getScrollResponder?.();
+  if (!input || !scrollResponder) return;
+
+  setTimeout(() => {
+    input.measureLayout(
+      scrollResponder,
+      (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(y - 20, 0), animated: true }),
+      () => {}
+    );
+  }, 80);
+};
+
 function addItem() {
 
   const clean = itemText.trim();
@@ -429,7 +444,7 @@ return (
 
   <KeyboardAvoidingView
   style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : undefined}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
   keyboardVerticalOffset={headerHeight}
 >
   <ThemedView style={{ flex: 1 }}>
@@ -576,6 +591,8 @@ onPress={() => {
 
       <ThemedText type="subtitle">Notes</ThemedText>
       <TextInput
+        ref={notesInputRef}
+        onFocus={() => scrollToInput(notesInputRef)}
         value={notes}
         onChangeText={(t) => {
   setNotes(t);
@@ -591,6 +608,7 @@ onPress={() => {
       <TextInput
       ref={itemInputRef}
         returnKeyType="done"
+        onFocus={() => scrollToInput(itemInputRef)}
         onSubmitEditing={addItem}
         value={itemText}
         onChangeText={setItemText}
