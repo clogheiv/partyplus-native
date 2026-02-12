@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -178,15 +178,15 @@ console.log("[INVITE items preview]", {
       date: invite.date ?? invite.when ?? undefined,
       location: invite.location ?? invite.where ?? undefined,
       notes: invite.notes ?? undefined,
-
       hostId: invite.hostId ?? invite.host?.id ?? undefined,
 
       items: Array.isArray(invite.items)
-        ? invite.items.map((it: any) => ({
-            ...it,
-            claimedBy: it.claimedBy ?? undefined,
-          }))
-        : [],
+  ? invite.items.map((it: any, index: number) => ({
+      ...it,
+      id: it.id ?? `${Date.now()}-${index}-${Math.random().toString(16).slice(2)}`,
+      claimedBy: it.claimedBy ?? undefined,
+    }))
+  : [],
     };
 
     // Save it so future opens work instantly
@@ -400,18 +400,20 @@ const canOpenMaps =
 
       {party.items?.length ? (
         <View style={{ gap: 10 }}>
-       {party.items.map((it) => {
+      {party.items.map((it, index) => {
   const claimed = !!it.claimedBy;
 
   return (
-    <ThemedView
-      key={it.id}
-      style={{
-        padding: 14,
-        borderRadius: 16,
-        opacity: claimed ? 0.55 : 1,
-      }}
-    >
+  <ThemedView
+    key={it.id ?? `${it.name}-${index}`}
+    style={{
+      padding: 14,
+      borderRadius: 16,
+      opacity: claimed ? 0.55 : 1,
+    }}
+  >
+
+
    
                 <ThemedText style={{ fontSize: 18, fontWeight: "700" }}>
                   {it.name}
