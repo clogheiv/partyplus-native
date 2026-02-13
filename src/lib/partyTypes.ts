@@ -17,4 +17,5 @@ export type Party = {
   createdAt: string;
   updatedAt: string;
   hostId?: string;
+  t?: string;
 };

@@ -285,22 +285,23 @@ if (!isEditing) {
   };
   }, [editingId]);
 
-
 const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
-  const input = inputRef.current;
+  const inputNode = inputRef.current ? findNodeHandle(inputRef.current) : null;
   const scrollNode = scrollRef.current ? findNodeHandle(scrollRef.current) : null;
 
-  if (!input || !scrollNode) return;
+  if (!inputNode || !scrollNode) return;
 
   setTimeout(() => {
-    input.measureLayout(
+    UIManager.measureLayout(
+      inputNode,
       scrollNode,
-      (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(y - 20, 0), animated: true }),
-      () => {}
+      () => {}, // onFail
+      (_x, y) => {
+        scrollRef.current?.scrollTo({ y: Math.max(y - 20, 0), animated: true });
+      }
     );
   }, 80);
 };
-
 
 function addItem() {
 

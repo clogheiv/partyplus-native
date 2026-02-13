@@ -1,8 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
@@ -60,6 +59,8 @@ function decodeInvitePayload(d: string | undefined) {
 }
 
 export default function PartyGuestViewScreen() {
+ const navigation = useNavigation();
+ 
 console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
  
   const router = useRouter();
@@ -68,6 +69,21 @@ console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
   console.log("[INVITE d raw]", d);
+
+ const didCanonicalizeRef = useRef(false);
+
+useEffect(() => {
+  if (!id) return;
+  if (didCanonicalizeRef.current) return;
+
+  // Only canonicalize when we arrived with invite payload in the URL
+  if (typeof d !== "string" || d.length === 0) return;
+
+  didCanonicalizeRef.current = true;
+  router.replace(`/party/${String(id)}`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [id, d]);
+
 
 useEffect(() => {
   if (id) {
@@ -81,7 +97,10 @@ useEffect(() => {
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [debugHost, setDebugHost] = useState("");
 
-  const navigation = useNavigation();
+
+  // derive a stable display name that supports both shapes: `title` and `t`
+  const partyName =
+    (party?.title ?? (party as any)?.t ?? "").toString().trim() || "Party";
 
  useEffect(() => {
   const run = async () => {
@@ -220,17 +239,8 @@ console.log("[INVITE items preview]", {
 }, [id]);
 
  useEffect(() => {
-  navigation.setOptions({
-    title: party?.title ? party.title : "Party",
-    headerRight: isHost
-      ? () => (
-          <Pressable onPress={() => {}} style={{ marginRight: 12 }}>
-            <Text style={{ fontWeight: "600" }}>Edit</Text>
-          </Pressable>
-        )
-      : undefined,
-  });
-}, [navigation, party?.title, isHost]);
+  navigation.setOptions({ title: partyName });
+}, [navigation, partyName]);
   
 
 
@@ -310,7 +320,7 @@ const canOpenMaps =
     HOST DEBUG → {debugHost}
     </Text>
 
-    <ThemedText type="title">{party.title?.trim() || "Party"}</ThemedText>
+  <ThemedText type="title">{partyName}</ThemedText>
    
    {isHost ? (
       <Pressable
@@ -434,29 +444,31 @@ const canOpenMaps =
         <ThemedText>No items listed yet.</ThemedText>
       )}
 
-      <ThemedView style={{ padding: 14, borderRadius: 16, gap: 10 }}>
-        <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
-          Want to claim items?
-        </ThemedText>
-        <ThemedText style={{ opacity: 0.85 }}>
-          Open this party in PartyPlus to claim what you’re bringing.
-        </ThemedText>
-
-        <Pressable
-          onPress={() => router.replace("/share")}
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-            alignSelf: "flex-start",
-          }}
-        >
-          <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
-            Open in PartyPlus
+      {Platform.OS === "web" ? (
+        <ThemedView style={{ padding: 14, borderRadius: 16, gap: 10 }}>
+          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+            Want to claim items?
           </ThemedText>
-        </Pressable>
-      </ThemedView>
+          <ThemedText style={{ opacity: 0.85 }}>
+            Open this party in PartyPlus to claim what you’re bringing.
+          </ThemedText>
+
+          <Pressable
+            onPress={() => router.replace("/share")}
+            style={{
+              borderWidth: 1,
+              borderRadius: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              alignSelf: "flex-start",
+            }}
+          >
+            <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+              Open in PartyPlus
+            </ThemedText>
+          </Pressable>
+        </ThemedView>
+      ) : null}
     </ScrollView>
   );
 }

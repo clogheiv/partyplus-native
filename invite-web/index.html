@@ -122,11 +122,10 @@ if (d) {
   subtitle.textContent = "You're invited!";
 }
 
-// Build deep link into the app (Expo Go)
+// Build deep link into the app (use /party/:id so the app opens the party screen)
 const deepLink =
-  `partyplusnative://share?id=${encodeURIComponent(inviteId || "")}` +
-  (d ? `&d=${encodeURIComponent(d)}` : "");
-
+  `partyplusnative://party/${encodeURIComponent(inviteId || "")}` +
+  (d ? `?d=${encodeURIComponent(d)}` : "");
 
 details.textContent = `Deep link: ${deepLink}`;
 
@@ -138,7 +137,7 @@ openApp.setAttribute("href", deepLink);
 openApp.onclick = (e) => {
   e.preventDefault();
   openApp.setAttribute("href", deepLink);
- console.log("DEEPLINK FIRING:", deepLink); 
+  console.log("DEEPLINK FIRING:", deepLink);
   window.location.href = deepLink;
 };
 
