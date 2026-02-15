@@ -4,18 +4,18 @@ import { decode as b64decode, encode as b64encode } from "base-64";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { useLocalSearchParams, useRootNavigationState, useRouter } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Share,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    Share,
+    TextInput,
+    View,
 } from "react-native";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
@@ -251,7 +251,7 @@ const handleNativeShare = async () => {
 
   const router = useRouter();
   const params = useLocalSearchParams<{ d?: string; id?: string }>();
-  console.log("[SHARE params]", params);
+  // console.log("[SHARE params]", params);
   const rootNavState = useRootNavigationState();
   const inviteId = Array.isArray(params.id) ? params.id[0] : params.id;
 const dParam =
@@ -264,7 +264,7 @@ useEffect(() => {
   if (!rootNavState?.key) return;
 
   const t = setTimeout(() => {
-    console.log("[SHARE redirect] to party", { inviteId, hasD: Boolean(dParam), dLen: dParam?.length });  
+    // console.log("[SHARE redirect] to party", { inviteId, hasD: Boolean(dParam), dLen: dParam?.length });  
     router.replace({ pathname: "/party/[id]", params: { id: inviteId, d: dParam } });
   }, 0);
 
@@ -283,11 +283,11 @@ const inviteLink = useMemo(() => {
 
 const baseInviteUrl = `https://partyplus-invite.netlify.app/i/${party.id}`;
 const d = buildInviteData(party);
-console.log("[INVITE build payload]", d);
+// console.log("[INVITE build payload]", d);
 try {
   const decoded = JSON.parse(d);
-  console.log("[INVITE build keys]", Object.keys(decoded));
-  console.log("[INVITE build items]", decoded.items);
+  // console.log("[INVITE build keys]", Object.keys(decoded));
+  // console.log("[INVITE build items]", decoded.items);
 } catch {}
 
 return `${baseInviteUrl}?d=${encodeURIComponent(d)}`;

@@ -2,7 +2,7 @@
   "expo": {
     "name": "PartyPlusNative",
     "slug": "PartyPlusNative",
-   "scheme": ["partyplusnative", "partyplus"],
+    "scheme": ["partyplusnative", "partyplus"],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -50,6 +50,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-dev-client",
       [
         "expo-splash-screen",
         {
