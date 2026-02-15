@@ -69,7 +69,7 @@
     </div>
 
    <script>
-   function fromBase64Url(input) {
+function fromBase64Url(input) {
   let b64 = input.replace(/-/g, "+").replace(/_/g, "/");
   while (b64.length % 4) b64 += "=";
   return atob(b64);
@@ -81,30 +81,25 @@ function decodeInviteData(dParam) {
   const json = decodeURIComponent(decoded);
   return JSON.parse(json);
 }
- 
- // Read party id from the URL path: /i/<id>
+
+// Read party id from the URL path: /i/<id>
 const pathParts = window.location.pathname.split("/").filter(Boolean);
 const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
 
-// (Optional) if you have an element showing the id, update it
+// Update the invite ID display element
 const inviteIdEl = document.getElementById("inviteId");
 if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
- 
 
-  const openApp = document.getElementById("openApp");
-  const getApp = document.getElementById("getApp");
-
-  // Auto-attempt app open on page load
- // Grab encoded party payload (?d=...) from the page URL
+// Parse query string
 const url = new URL(window.location.href);
 const d = url.searchParams.get("d") || "";
 const subtitle = document.getElementById("subtitle");
 const details = document.getElementById("details");
 
+// Decode and display party details if payload exists
 if (d) {
   try {
     const party = decodeInviteData(d);
-
     subtitle.textContent = party.t || "You're invited!";
 
     const rows = [];
@@ -116,36 +111,89 @@ if (d) {
   } catch (e) {
     subtitle.textContent = "This invite looks corrupted.";
     details.innerHTML = "<p>Please ask the host to resend it.</p>";
-    console.error(e);
+    console.error("[invite] Decode error:", e);
   }
 } else {
   subtitle.textContent = "You're invited!";
 }
 
-// Build deep link into the app (use /party/:id so the app opens the party screen)
+// Build the deep link with id and d parameters
+// Use __share handler to let app decide routing
 const deepLink =
-  `partyplusnative://party/${encodeURIComponent(inviteId || "")}` +
-  (d ? `?d=${encodeURIComponent(d)}` : "");
+  `partyplusnative://__share?id=${encodeURIComponent(inviteId || "")}` +
+  (d ? `&d=${encodeURIComponent(d)}` : "");
 
-details.textContent = `Deep link: ${deepLink}`;
+// Configure buttons
+const openApp = document.getElementById("openApp");
+const getApp = document.getElementById("getApp");
 
-// Auto-attempt app open on page load
-
-// Button: Open in PartyPlus
 openApp.href = deepLink;
 openApp.setAttribute("href", deepLink);
 openApp.onclick = (e) => {
   e.preventDefault();
-  openApp.setAttribute("href", deepLink);
-  console.log("DEEPLINK FIRING:", deepLink);
+  // User manually clicked the button, try to open even if previously attempted
   window.location.href = deepLink;
 };
 
 getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
 getApp.target = "_blank";
 getApp.rel = "noopener noreferrer";
-getApp.onclick = null;
- 
+
+// ============================================================
+// AUTO-REDIRECT: Attempt to open app on page load with timeout
+// ============================================================
+
+function attemptAppDeepLink() {
+  // Loop prevention: only auto-redirect once per session per invite
+  const sessionKey = `pp_invite_attempted_${inviteId}`;
+  if (sessionStorage.getItem(sessionKey) === "true") {
+    // Already attempted in this session, don't auto-redirect again
+    // But button is still clickable for manual retry
+    return;
+  }
+  
+  if (!inviteId) {
+    // No party ID, can't redirect
+    return;
+  }
+
+  // Mark this invite as attempted in this session
+  sessionStorage.setItem(sessionKey, "true");
+
+  // Use hidden iframe approach for Android
+  // Attempts deep link without navigating away if app isn't installed
+  const iframe = document.createElement("iframe");
+  iframe.style.display = "none";
+  iframe.src = deepLink;
+  document.body.appendChild(iframe);
+
+  // Clean up iframe
+  setTimeout(() => {
+    try {
+      document.body.removeChild(iframe);
+    } catch (e) {
+      // iframe may already be gone if app opened
+    }
+  }, 100);
+
+  // Fallback timeout: show the buttons if app redirect failed
+  // Android handles deep links within ~2-2.5 seconds
+  setTimeout(() => {
+    const btnRow = document.querySelector(".btnrow");
+    if (btnRow) {
+      btnRow.style.opacity = "1";
+      btnRow.style.pointerEvents = "auto";
+    }
+  }, 2500); // 2.5 second timeout
+}
+
+// Trigger auto-redirect when page is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", attemptAppDeepLink);
+} else {
+  // Page already loaded
+  attemptAppDeepLink();
+}
 </script> 
   </body>
 </html>

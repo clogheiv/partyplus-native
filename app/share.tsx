@@ -242,7 +242,7 @@ const handleCopyInvite = async () => {
 const handleNativeShare = async () => {
   try {
     const message = buildShareMessage();
-    console.log("SHARE MESSAGE:", message);
+    // console.log("SHARE MESSAGE:", message);
     await Share.share({ message });
   } catch (e) {
     Alert.alert("Share failed", "Could not open the share sheet.");

@@ -18,11 +18,11 @@ import type { Party } from "../../src/lib/partyTypes";
 // Adjust this import path ONLY if VS Code underlines it
 import { getPartyById, upsertParty } from "../../src/partyStore";
 function trackInviteOpen(partyId: string) {
-  console.log("📊 Invite opened", {
-    partyId,
-    source: "app",
-    ts: new Date().toISOString(),
-  });
+  // console.log("📊 Invite opened", {
+  //   partyId,
+  //   source: "app",
+  //   ts: new Date().toISOString(),
+  // });
 }
 async function ensureUserId() {
   let uid = await AsyncStorage.getItem("userId");
@@ -53,7 +53,7 @@ function decodeInvitePayload(d: string | undefined) {
     const maybeJson = decodeURIComponent(decoded);
     return JSON.parse(maybeJson);
   } catch (e) {
-    console.log("[INVITE decode failed]", e);
+    // console.log("[INVITE decode failed]", e);
     return null;
   }
 }
@@ -61,14 +61,14 @@ function decodeInvitePayload(d: string | undefined) {
 export default function PartyGuestViewScreen() {
  const navigation = useNavigation();
  
-console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
+// console.log("🔥 RUNNING app/party/[id].tsx PartyGuestViewScreen");
  
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
-  console.log("[PartyScreen params]", params);
+  // console.log("[PartyScreen params]", params);
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
-  console.log("[INVITE d raw]", d);
+  // console.log("[INVITE d raw]", d);
 
  const didCanonicalizeRef = useRef(false);
 
@@ -112,15 +112,15 @@ useEffect(() => {
 
       // 1) Try to load normally (party already exists on this phone)
       const found = await getPartyById(String(id));
-      console.log("[FOUND party]", JSON.stringify(found, null, 2));
-      console.log("[PARTY load]", {
-  id: String(id),
-  found: Boolean(found),
-  hasD: Boolean(d),
-  dLen: d ? d.length : 0,
-});
+      // console.log("[FOUND party]", JSON.stringify(found, null, 2));
+      // console.log("[PARTY load]", {
+      //   id: String(id),
+      //   found: Boolean(found),
+      //   hasD: Boolean(d),
+      //   dLen: d ? d.length : 0,
+      // });
 
- if (found && !d) {     
+      if (found && !d) {     
      const normalized = {
   ...found,
 
@@ -143,7 +143,7 @@ setParty(normalized as any);
   
         const storedUserId = await ensureUserId();
         setDebugHost(`storedUserId=${storedUserId ?? "null"} | found.hostId=${found?.hostId ?? "null"} | isHost=pending`);
-  console.log("USER ID:", storedUserId);
+  // console.log("USER ID:", storedUserId);
      
 setMyUserId(storedUserId);
 
@@ -173,19 +173,19 @@ if (!(storedUserId && found.hostId === storedUserId)) {
 
     // 2) If not found locally, try to hydrate from invite payload "d"
 if (!found || true) {
-console.log("[INVITE hydrate] forced branch running", { found: Boolean(found), hasD: Boolean(d), dLen: d?.length });
+// console.log("[INVITE hydrate] forced branch running", { found: Boolean(found), hasD: Boolean(d), dLen: d?.length });
   const invite = decodeInvitePayload(d);
 
   if (invite) {
-    console.log("[INVITE decoded]", invite);
-    console.log("[INVITE keys]", Object.keys(invite || {}));
-console.log("[INVITE items preview]", {
-  items: invite?.items,
-  whatToBring: (invite as any)?.whatToBring,
-  bring: (invite as any)?.bring,
-  list: (invite as any)?.list,
-  partyItems: (invite as any)?.party?.items,
-});
+    // console.log("[INVITE decoded]", invite);
+    // console.log("[INVITE keys]", Object.keys(invite || {}));
+    // console.log("[INVITE items preview]", {
+    //   items: invite?.items,
+    //   whatToBring: (invite as any)?.whatToBring,
+    //   bring: (invite as any)?.bring,
+    //   list: (invite as any)?.list,
+    //   partyItems: (invite as any)?.party?.items,
+    // });
 
 
     const hydrated = {
@@ -225,7 +225,7 @@ console.log("[INVITE items preview]", {
   }
 
   // If no invite payload, show a clean "not found" state
-  console.log("[PARTY not found] no local party + no invite payload");
+  // console.log("[PARTY not found] no local party + no invite payload");
 }
   
 
