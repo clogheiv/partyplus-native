@@ -62,6 +62,8 @@
           <a class="btn ghost" id="getApp" href="#">Get the app</a>
         </div>
 
+        <div class="id" id="debugLaunchHref"></div>
+
         <p class="tiny">
           Tip: If PartyPlus isn’t installed yet, this page will still load. Later we’ll upgrade this link so it can open the app automatically.
         </p>
@@ -119,21 +121,19 @@ if (d) {
 
 // Build the deep link with id and d parameters
 // Use __share handler to let app decide routing
-const deepLink =
-  `partyplusnative://__share?id=${encodeURIComponent(inviteId || "")}` +
-  (d ? `&d=${encodeURIComponent(d)}` : "");
+const androidIntentLink =
+  `intent://__share?id=${encodeURIComponent(inviteId || "")}` +
+  (d ? `&d=${encodeURIComponent(d)}` : "") +
+  `#Intent;scheme=partyplusnative;package=com.anonymous.PartyPlusNative;end`;
 
 // Configure buttons
 const openApp = document.getElementById("openApp");
 const getApp = document.getElementById("getApp");
+const debugLaunchHref = document.getElementById("debugLaunchHref");
 
-openApp.href = deepLink;
-openApp.setAttribute("href", deepLink);
-openApp.onclick = (e) => {
-  e.preventDefault();
-  // User manually clicked the button, try to open even if previously attempted
-  window.location.href = deepLink;
-};
+openApp.href = androidIntentLink;
+openApp.setAttribute("href", androidIntentLink);
+if (debugLaunchHref) debugLaunchHref.textContent = androidIntentLink;
 
 getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
 getApp.target = "_blank";
@@ -144,47 +144,7 @@ getApp.rel = "noopener noreferrer";
 // ============================================================
 
 function attemptAppDeepLink() {
-  // Loop prevention: only auto-redirect once per session per invite
-  const sessionKey = `pp_invite_attempted_${inviteId}`;
-  if (sessionStorage.getItem(sessionKey) === "true") {
-    // Already attempted in this session, don't auto-redirect again
-    // But button is still clickable for manual retry
-    return;
-  }
-  
-  if (!inviteId) {
-    // No party ID, can't redirect
-    return;
-  }
-
-  // Mark this invite as attempted in this session
-  sessionStorage.setItem(sessionKey, "true");
-
-  // Use hidden iframe approach for Android
-  // Attempts deep link without navigating away if app isn't installed
-  const iframe = document.createElement("iframe");
-  iframe.style.display = "none";
-  iframe.src = deepLink;
-  document.body.appendChild(iframe);
-
-  // Clean up iframe
-  setTimeout(() => {
-    try {
-      document.body.removeChild(iframe);
-    } catch (e) {
-      // iframe may already be gone if app opened
-    }
-  }, 100);
-
-  // Fallback timeout: show the buttons if app redirect failed
-  // Android handles deep links within ~2-2.5 seconds
-  setTimeout(() => {
-    const btnRow = document.querySelector(".btnrow");
-    if (btnRow) {
-      btnRow.style.opacity = "1";
-      btnRow.style.pointerEvents = "auto";
-    }
-  }, 2500); // 2.5 second timeout
+  return;
 }
 
 // Trigger auto-redirect when page is ready
