@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView } from "react-native";
@@ -6,7 +5,9 @@ import { ActivityIndicator, Pressable, ScrollView } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 
-import { getParties, setCurrentPartyId } from "../src/lib/partyStore";
+import { getRemoteParties } from "../src/data/parties";
+import { ensureUserId } from "../src/lib/ids";
+import { getParties, setCurrentPartyId, upsertParty } from "../src/lib/partyStore";
 import type { Party } from "../src/lib/partyTypes";
 
 function formatWhen(iso?: string) {
@@ -23,7 +24,25 @@ export default function LoadPartiesScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await getParties();
+      const localParties = await getParties();
+      let remoteParties: Party[] = [];
+
+      try {
+        remoteParties = await getRemoteParties();
+        await Promise.all(remoteParties.map((party) => upsertParty(party)));
+      } catch (error) {
+        console.warn("[load parties remote fetch failed]", error);
+      }
+
+      const mergedById = new Map<string, Party>();
+      for (const party of localParties) {
+        mergedById.set(party.id, party);
+      }
+      for (const party of remoteParties) {
+        mergedById.set(party.id, party);
+      }
+
+      const list = [...mergedById.values()];
       // newest first (your store already unshifts, but this keeps it consistent)
       const sorted = [...list].sort((a, b) =>
         (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
@@ -43,7 +62,7 @@ export default function LoadPartiesScreen() {
 
   async function openParty(p: Party) {
     await setCurrentPartyId(p.id);
-    const storedUserId = await AsyncStorage.getItem("userId");
+    const storedUserId = await ensureUserId();
     const isHost = !!storedUserId && p.hostId === storedUserId;
     router.push(`/pick-action?id=${p.id}&isHost=${isHost ? "true" : "false"}`);
   }

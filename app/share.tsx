@@ -19,16 +19,9 @@ import {
 } from "react-native";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
+import { ensureUserId } from "../src/lib/ids";
+import { routeFromUrl } from "../src/lib/deepLinkRouting";
 import type { Party as PartyType } from "../src/lib/partyTypes";
-
-async function ensureUserId() {
-  let uid = await AsyncStorage.getItem("userId");
-  if (!uid) {
-    uid = `u_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    await AsyncStorage.setItem("userId", uid);
-  }
-  return uid;
-}
 
 // URL-safe base64
 function toBase64Url(input: string) {
@@ -63,7 +56,7 @@ return toBase64Url(json);
 
 // These imports must match your project.
 // If VS Code underlines any of these, tell me and we’ll adjust the import path names only.
-import { getCurrentPartyId, getPartyById, setCurrentPartyId, upsertParty } from "../src/partyStore";
+import { getCurrentPartyId, getPartyById, setCurrentPartyId, upsertParty } from "../src/lib/partyStore";
 
 type PartyItem = {
   id: string;
@@ -269,6 +262,42 @@ useEffect(() => {
   }, 0);
 
   return () => clearTimeout(t);
+}, [inviteId, dParam, rootNavState?.key, router]);
+
+useEffect(() => {
+  if (inviteId && dParam) return;
+  if (!rootNavState?.key) return;
+
+  let cancelled = false;
+
+  const recoverInitialInvite = async () => {
+    const initialUrl = await Linking.getInitialURL();
+    if (!initialUrl || cancelled) return;
+
+    const target = routeFromUrl(initialUrl);
+    if (!target || typeof target === "string") return;
+    if (target.pathname !== "/party/[id]") return;
+
+    const recoveredId = Array.isArray(target.params?.id)
+      ? target.params.id[0]
+      : target.params?.id;
+    const recoveredD = Array.isArray(target.params?.d)
+      ? target.params.d[0]
+      : target.params?.d;
+
+    if (!recoveredId) return;
+
+    router.replace({
+      pathname: "/party/[id]",
+      params: { id: recoveredId, d: recoveredD },
+    });
+  };
+
+  void recoverInitialInvite();
+
+  return () => {
+    cancelled = true;
+  };
 }, [inviteId, dParam, rootNavState?.key, router]);
 
 
