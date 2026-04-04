@@ -24,6 +24,8 @@ begin
       and column_name = 'guest_name'
   ) then
     execute 'update public.party_rsvps set name = coalesce(name, guest_name) where name is null';
+    execute 'update public.party_rsvps set guest_name = coalesce(guest_name, name, ''Guest'') where guest_name is null';
+    execute 'alter table public.party_rsvps alter column guest_name drop not null';
   end if;
 
   if exists (

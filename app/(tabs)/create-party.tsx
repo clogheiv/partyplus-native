@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -11,6 +12,7 @@ import {
   LayoutAnimation,
   Platform,
   Pressable,
+  Share,
   ScrollView,
   TextInput,
   UIManager
@@ -18,6 +20,9 @@ import {
 
 
 import React, { useEffect, useRef, useState } from "react";
+import { createRemoteParty, replaceRemotePartyItems } from "../../src/data/parties";
+import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
+import { buildShareMessage } from "../../src/lib/inviteShare";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
 
@@ -182,21 +187,24 @@ useEffect(() => {
   };
 }, [lastRemoved, toastAnim]);
 
-  const startNewParty = async () => {
+  const resetCreateForm = async () => {
   await AsyncStorage.removeItem("currentPartyId");
   setTitle("");
   setLocation("");
   setNotes("");
   setPartyDate(null);
+  setWebDateText("");
   setItems([]);
   setItemText("");
-
-  itemInputRef.current?.focus();
+  setShowPicker(false);
+  setPickerMode("date");
+  setIsDirty(false);
+  setLastRemoved(null);
 };
 
 const handleStartNewParty = async () => {
   if (!isDirty) {
-    await startNewParty();
+    await resetCreateForm();
     return;
   }
 
@@ -209,7 +217,7 @@ const handleStartNewParty = async () => {
         text: "Clear Form",
         style: "destructive",
         onPress: async () => {
-          await startNewParty();
+          await resetCreateForm();
         },
       },
     ]
@@ -221,8 +229,10 @@ const onCancelEdit = async () => {
   if (!isDirty) {
     if (partyId) {
       await AsyncStorage.setItem("currentPartyId", partyId);
+      router.replace(`/party/${partyId}`);
+      return;
     }
-    router.replace("/share");
+    router.replace("/");
     return;
   }
 
@@ -237,8 +247,10 @@ const onCancelEdit = async () => {
         onPress: async () => {
           if (partyId) {
             await AsyncStorage.setItem("currentPartyId", partyId);
+            router.replace(`/party/${partyId}`);
+            return;
           }
-          router.replace("/share");
+          router.replace("/");
         },
       },
     ]
@@ -250,7 +262,7 @@ useEffect(() => {
   let isMounted = true;
   // If we are NOT editing a party, always start with a clean slate
 if (!isEditing) {
-  void startNewParty();
+  void resetCreateForm();
   isMounted = false;
   return;
 }
@@ -285,6 +297,14 @@ if (!isEditing) {
   };
   }, [editingId]);
 
+useFocusEffect(
+  React.useCallback(() => {
+    if (!isEditing) {
+      void resetCreateForm();
+    }
+  }, [isEditing])
+);
+
 const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
   const inputNode = inputRef.current ? findNodeHandle(inputRef.current) : null;
   const scrollNode = scrollRef.current ? findNodeHandle(scrollRef.current) : null;
@@ -312,9 +332,6 @@ function addItem() {
   setIsDirty(true);
   setItemText("");
   itemInputRef.current?.focus();
-  requestAnimationFrame(() => {
-  scrollRef.current?.scrollToEnd({ animated: true });
-});
 }
 function removeItem(indexToRemove: number) {
   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -368,7 +385,8 @@ function confirmRemoveItem(index: number) {
       return;
     }
 
-    const id = isEditing ? partyId : `${Date.now()}`;
+    const ownerId = await ensureUserId();
+    const id = isEditing ? ensureUuid(partyId) : createUuid();
 
     const now = new Date().toISOString();
     const existing = editingId ? await getPartyById(String(editingId)) : null;
@@ -397,15 +415,23 @@ function confirmRemoveItem(index: number) {
       location: location.trim(),
       notes: notes.trim(),
       theme: "",
+      hostId: ownerId,
+      rsvps: existing?.rsvps ?? [],
       items: items.map((name, index) => {
   const prev = existing?.items?.[index];
 
   // If this item already existed, keep ALL its old fields (including claimedBy)
-  if (prev) return { ...prev, name };
+  if (prev) {
+    return {
+      ...prev,
+      id: isUuid(prev.id) ? prev.id : createUuid(),
+      name,
+    };
+  }
 
   // If it's a brand-new item, create it clean
   return {
-    id: `${index}-${Date.now()}`,
+    id: createUuid(),
     name,
     qty: "",
     claimedBy: undefined,
@@ -418,6 +444,11 @@ function confirmRemoveItem(index: number) {
     };
 
     await upsertParty(party);
+    try {
+      await createRemoteParty(party);
+      await replaceRemotePartyItems(party.id, party.items ?? []);
+    } catch {
+    }
     await setCurrentPartyId(id);
    // Mark this party as "host-owned" on this device
 const raw = await AsyncStorage.getItem("hostPartyIds");
@@ -426,8 +457,32 @@ if (!hostIds.includes(party.id)) {
   hostIds.push(party.id);
   await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
 }
- 
-    router.replace("/share");
+
+    Alert.alert(
+      "Party saved",
+      "Would you like to share it now?",
+      [
+        {
+          text: "Maybe later",
+          onPress: () => {
+            router.replace(`/party/${id}`);
+          },
+        },
+        {
+          text: "Share now",
+          onPress: async () => {
+            try {
+              await Share.share({ message: buildShareMessage(party) });
+            } catch {
+              Alert.alert("Share failed", "Could not open the share sheet.");
+            } finally {
+              router.replace(`/party/${id}`);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   }
   const canSave = title.trim().length > 0;
 
@@ -492,13 +547,7 @@ return (
   keyboardShouldPersistTaps="handled"
 >
  
-      {isEditing ? (
-  <Pressable onPress={onCancelEdit} style={{ alignSelf: "flex-start" }}>
-    <ThemedText type="subtitle">Cancel</ThemedText>
-  </Pressable>
-) : null}
-
-      <ThemedText type="title">Create Party</ThemedText>
+      <ThemedText type="title">{isEditing ? "Edit Party" : "Create Party"}</ThemedText>
 
       <ThemedText type="subtitle">Party title</ThemedText>
       <TextInput

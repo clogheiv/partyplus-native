@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { setCurrentPartyId } from "@/src/lib/partyStore";
 import { router, useLocalSearchParams } from "expo-router";
 import { Alert, Pressable } from "react-native";
 
@@ -10,14 +11,39 @@ export default function PickActionScreen() {
 
   return (
     <ThemedView style={{ flex: 1, padding: 20, gap: 14, justifyContent: "center" }}>
-      <ThemedText type="title">What do you want to do?</ThemedText>
+      <ThemedText type="title">Choose an action</ThemedText>
 
       <Pressable
-        onPress={() => router.push("/share")}
+        onPress={() => {
+          if (id) {
+            router.push(`/party/${id}`);
+            return;
+          }
+
+          router.push("/share");
+        }}
         style={{ borderWidth: 1, borderRadius: 14, padding: 14 }}
       >
         <ThemedText type="subtitle">Join</ThemedText>
-        <ThemedText style={{ opacity: 0.7 }}>Claim items and share with others</ThemedText>
+        <ThemedText style={{ opacity: 0.7 }}>
+          Open the party page to RSVP and claim items
+        </ThemedText>
+      </Pressable>
+
+      <Pressable
+        onPress={async () => {
+          if (!id) {
+            router.push("/share");
+            return;
+          }
+
+          await setCurrentPartyId(id);
+          router.push("/share");
+        }}
+        style={{ borderWidth: 1, borderRadius: 14, padding: 14 }}
+      >
+        <ThemedText type="subtitle">Share</ThemedText>
+        <ThemedText style={{ opacity: 0.7 }}>Copy or send this invite</ThemedText>
       </Pressable>
 
       <Pressable

@@ -44,3 +44,6 @@ app-example
 
 # Local Netlify folder
 .netlify
+.env
+.env.local
+

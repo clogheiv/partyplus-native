@@ -1,11 +1,14 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, router, usePathname, useRootNavigationState, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { routeFromUrl } from '@/src/lib/deepLinkRouting';
+import { StartupDeepLinkContext } from '@/src/lib/startupDeepLinkContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -17,9 +20,7 @@ export const linking = {
   prefixes: [prefix, 'partyplusnative://', 'partyplus://', 'https://partyplus-invite.netlify.app'],
   config: {
     screens: {
-      __share: '__share',
       'party/[id]': 'party/:id',
-      share: 'share',
       '(tabs)': '',
       '(tabs)/create-party': 'create-party',
       '(tabs)/explore': 'explore',
@@ -27,50 +28,137 @@ export const linking = {
   },
 };
 
+function getFirstParam(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) {
+    const first = value[0];
+    return typeof first === 'string' ? first : undefined;
+  }
+  return undefined;
+}
+
+function getRouteLabel(route: Href | null) {
+  if (!route) return null;
+  if (typeof route === 'string') return route;
+
+  if (route.pathname === '/party/[id]') {
+    const id = getFirstParam(route.params?.id);
+    return id ? `/party/${id}` : route.pathname;
+  }
+
+  return route.pathname;
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const router = useRouter();
+  const pathname = usePathname();
+  const rootNavState = useRootNavigationState();
+  const didInitialReplaceRef = useRef(false);
+  const [initialLinkResolved, setInitialLinkResolved] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<Href | null>(null);
+  const [startupRoutePending, setStartupRoutePending] = useState(false);
+  const [startupTargetPath, setStartupTargetPath] = useState<string | null>(null);
+
+  // Capture initial URL + runtime deep links (NO navigation here)
+  useEffect(() => {
+    let sub: { remove: () => void } | undefined;
+
+    const captureInitial = async () => {
+      try {
+        const initialUrl = await Linking.getInitialURL();
+        if (initialUrl) {
+          const r = routeFromUrl(initialUrl);
+          if (r) {
+            const routeLabel = getRouteLabel(r);
+            setPendingRoute(r);
+            setStartupRoutePending(true);
+            setStartupTargetPath(routeLabel);
+          }
+        }
+      } finally {
+        setInitialLinkResolved(true);
+      }
+    };
+
+    const captureIncoming = (e: { url: string }) => {
+      const r = routeFromUrl(e.url);
+      if (r) {
+        const routeLabel = getRouteLabel(r);
+        didInitialReplaceRef.current = false;
+        setPendingRoute(r);
+        setStartupRoutePending(true);
+        setStartupTargetPath(routeLabel);
+      }
+    };
+
+    captureInitial();
+    sub = Linking.addEventListener('url', captureIncoming);
+
+    return () => sub?.remove?.();
+  }, []);
+
+  // Navigate only after root navigator is mounted
+  useEffect(() => {
+    if (!initialLinkResolved) return;
+    if (!rootNavState?.key) return; // navigator not ready
+    if (!pendingRoute) return;
+    if (didInitialReplaceRef.current) return;
+
+    didInitialReplaceRef.current = true;
+    const target = pendingRoute;
+
+    router.replace(target as any);
+  }, [initialLinkResolved, pendingRoute, rootNavState?.key]);
 
   useEffect(() => {
-    const handleDeepLink = async () => {
-      const url = await Linking.getInitialURL();
-      if (url != null) {
-        // Deep link launched the app; route accordingly
-        Linking.addEventListener('url', handleUrl);
-      }
-    };
+    if (!startupRoutePending || !startupTargetPath) return;
+    if (pathname !== startupTargetPath) return;
 
-    const handleUrl = ({ url }: { url: string }) => {
-      const parsed = Linking.parse(url);
-      const path = parsed.path ?? '';
-      const queryParams = (parsed.queryParams ?? {}) as Record<string, any>;
+    setStartupRoutePending(false);
+    setStartupTargetPath(null);
+    setPendingRoute(null);
+  }, [pathname, startupRoutePending, startupTargetPath]);
 
-      if (path === 'party/:id' || path.startsWith('party/')) {
-        const id = queryParams.id ?? path.split('/')[1];
-        if (id) {
-          router.push(`/party/${id}`);
-        }
-      } else if (path === '__share') {
-        router.push('/__share');
-      }
-    };
+  if (!initialLinkResolved) {
+    return (
+      <StartupDeepLinkContext.Provider value={{ initialLinkResolved, startupRoutePending }}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <ActivityIndicator />
+          </View>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </StartupDeepLinkContext.Provider>
+    );
+  }
 
-    handleDeepLink();
-
-    const sub = Linking.addEventListener('url', handleUrl);
-
-    return () => {
-      sub.remove();
-    };
-  }, [router]);
-
+  // IMPORTANT: Stack renders on first render (no conditional early returns)
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <StartupDeepLinkContext.Provider value={{ initialLinkResolved, startupRoutePending }}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <View style={{ flex: 1 }}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="__share" options={{ title: 'Invite' }} />
+            <Stack.Screen name="party/[id]" options={{ title: 'Party' }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          </Stack>
+          {startupRoutePending ? (
+            <View
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 24,
+                backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+              }}
+            >
+              <ActivityIndicator />
+            </View>
+          ) : null}
+        </View>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </StartupDeepLinkContext.Provider>
   );
 }

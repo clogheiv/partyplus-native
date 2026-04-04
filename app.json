@@ -35,8 +35,7 @@
       "action": "VIEW",
       "data": [
         {
-          "scheme": "partyplusnative",
-          "host": "party"
+          "scheme": "partyplusnative"
         }
       ],
       "category": ["BROWSABLE", "DEFAULT"]

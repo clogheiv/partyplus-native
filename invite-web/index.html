@@ -21,12 +21,20 @@
         border: 1px solid #223044;
         border-radius: 16px;
         padding: 18px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       }
-      h1 { margin: 0 0 8px; font-size: 28px; }
-      p { margin: 10px 0; line-height: 1.45; color: #c9d6e6; }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      p {
+        margin: 10px 0;
+        line-height: 1.45;
+        color: #c9d6e6;
+      }
       .id {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
         background: #0b111a;
         border: 1px solid #223044;
         border-radius: 10px;
@@ -34,7 +42,12 @@
         margin-top: 10px;
         word-break: break-all;
       }
-      .btnrow { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+      .btnrow {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+      }
       a.btn {
         display: inline-block;
         padding: 12px 14px;
@@ -42,118 +55,117 @@
         text-decoration: none;
         font-weight: 700;
       }
-      .primary { background: #2b8cff; color: #081018; }
-      .ghost { border: 1px solid #2b8cff; color: #b8d7ff; }
-      .tiny { margin-top: 14px; font-size: 12px; opacity: 0.75; }
+      .primary {
+        background: #2b8cff;
+        color: #081018;
+      }
+      .ghost {
+        border: 1px solid #2b8cff;
+        color: #b8d7ff;
+      }
+      .tiny {
+        margin-top: 14px;
+        font-size: 12px;
+        opacity: 0.75;
+      }
     </style>
   </head>
   <body>
     <div class="wrap">
       <div class="card">
-        <h1>🎉 PartyPlus Invite</h1>
+        <h1>PartyPlus Invite</h1>
         <p id="subtitle"></p>
-<div id="details"></div>
+        <div id="details"></div>
 
-
-        <div class="id" id="inviteId">—</div>
+        <div class="id" id="inviteId">-</div>
 
         <div class="btnrow">
           <a class="btn primary" id="openApp" href="#">Open in PartyPlus</a>
           <a class="btn ghost" id="getApp" href="#">Get the app</a>
         </div>
 
-        <div class="id" id="debugLaunchHref"></div>
-
-        <p class="tiny">
-          Tip: If PartyPlus isn’t installed yet, this page will still load. Later we’ll upgrade this link so it can open the app automatically.
-        </p>
+        <p class="tiny">Tip: If PartyPlus isn't installed yet, this page will still load.</p>
       </div>
     </div>
 
-   <script>
-function fromBase64Url(input) {
-  let b64 = input.replace(/-/g, "+").replace(/_/g, "/");
-  while (b64.length % 4) b64 += "=";
-  return atob(b64);
-}
+    <script>
+      function fromBase64Url(input) {
+        let b64 = input.replace(/-/g, "+").replace(/_/g, "/");
+        while (b64.length % 4) b64 += "=";
+        return atob(b64);
+      }
 
-function decodeInviteData(dParam) {
-  const raw = decodeURIComponent(dParam);
-  const decoded = fromBase64Url(raw);
-  const json = decodeURIComponent(decoded);
-  return JSON.parse(json);
-}
+      function decodeInviteData(dParam) {
+        const raw = decodeURIComponent(dParam);
+        const decoded = fromBase64Url(raw);
+        const json = decodeURIComponent(decoded);
+        return JSON.parse(json);
+      }
 
-// Read party id from the URL path: /i/<id>
-const pathParts = window.location.pathname.split("/").filter(Boolean);
-const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
 
-// Update the invite ID display element
-const inviteIdEl = document.getElementById("inviteId");
-if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
+      const inviteIdEl = document.getElementById("inviteId");
+      if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
 
-// Parse query string
-const url = new URL(window.location.href);
-const d = url.searchParams.get("d") || "";
-const subtitle = document.getElementById("subtitle");
-const details = document.getElementById("details");
+      const url = new URL(window.location.href);
+      const d = url.searchParams.get("d") || "";
+      const subtitle = document.getElementById("subtitle");
+      const details = document.getElementById("details");
 
-// Decode and display party details if payload exists
-if (d) {
-  try {
-    const party = decodeInviteData(d);
-    subtitle.textContent = party.t || "You're invited!";
+      if (d) {
+        try {
+          const party = decodeInviteData(d);
+          subtitle.textContent = party.t || "You're invited!";
 
-    const rows = [];
-    if (party.dt) rows.push(`<p><b>When:</b> ${party.dt}</p>`);
-    if (party.l) rows.push(`<p><b>Where:</b> ${party.l}</p>`);
-    if (party.a) rows.push(`<p>${party.a}</p>`);
+          const rows = [];
+          if (party.dt) rows.push(`<p><b>When:</b> ${party.dt}</p>`);
+          if (party.l) rows.push(`<p><b>Where:</b> ${party.l}</p>`);
+          if (party.a) rows.push(`<p>${party.a}</p>`);
 
-    details.innerHTML = rows.join("");
-  } catch (e) {
-    subtitle.textContent = "This invite looks corrupted.";
-    details.innerHTML = "<p>Please ask the host to resend it.</p>";
-    console.error("[invite] Decode error:", e);
-  }
-} else {
-  subtitle.textContent = "You're invited!";
-}
+          details.innerHTML = rows.join("");
+        } catch (e) {
+          subtitle.textContent = "This invite looks corrupted.";
+          details.innerHTML = "<p>Please ask the host to resend it.</p>";
+        }
+      } else {
+        subtitle.textContent = "You're invited!";
+      }
 
-// Build the deep link with id and d parameters
-// Use __share handler to let app decide routing
-const androidIntentLink =
-  `intent://__share?id=${encodeURIComponent(inviteId || "")}` +
-  (d ? `&d=${encodeURIComponent(d)}` : "") +
-  `#Intent;scheme=partyplusnative;package=com.anonymous.PartyPlusNative;end`;
+      const directPartyPath = `party/${encodeURIComponent(inviteId || "")}`;
+      const androidIntentLink =
+        `intent://${directPartyPath}` +
+        (d ? `?d=${encodeURIComponent(d)}` : "") +
+        `#Intent;scheme=partyplusnative;package=com.anonymous.PartyPlusNative;end`;
+      const nativeSchemeLink =
+        `partyplusnative://${directPartyPath}` + (d ? `?d=${encodeURIComponent(d)}` : "");
 
-// Configure buttons
-const openApp = document.getElementById("openApp");
-const getApp = document.getElementById("getApp");
-const debugLaunchHref = document.getElementById("debugLaunchHref");
+      const openApp = document.getElementById("openApp");
+      const getApp = document.getElementById("getApp");
 
-openApp.href = androidIntentLink;
-openApp.setAttribute("href", androidIntentLink);
-if (debugLaunchHref) debugLaunchHref.textContent = androidIntentLink;
+      const launchHref = /Android/i.test(window.navigator.userAgent)
+        ? androidIntentLink
+        : nativeSchemeLink;
 
-getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
-getApp.target = "_blank";
-getApp.rel = "noopener noreferrer";
+      openApp.href = launchHref;
+      openApp.setAttribute("href", launchHref);
 
-// ============================================================
-// AUTO-REDIRECT: Attempt to open app on page load with timeout
-// ============================================================
+      getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
+      getApp.target = "_blank";
+      getApp.rel = "noopener noreferrer";
 
-function attemptAppDeepLink() {
-  return;
-}
+      function attemptAppDeepLink() {
+        if (!inviteId) return;
+        if (!/Android/i.test(window.navigator.userAgent)) return;
 
-// Trigger auto-redirect when page is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", attemptAppDeepLink);
-} else {
-  // Page already loaded
-  attemptAppDeepLink();
-}
-</script> 
+        window.location.replace(androidIntentLink);
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", attemptAppDeepLink);
+      } else {
+        attemptAppDeepLink();
+      }
+    </script>
   </body>
 </html>

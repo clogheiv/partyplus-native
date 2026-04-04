@@ -30,9 +30,7 @@ export default function LoadPartiesScreen() {
       try {
         remoteParties = await getRemoteParties();
         await Promise.all(remoteParties.map((party) => upsertParty(party)));
-      } catch (error) {
-        console.warn("[load parties remote fetch failed]", error);
-      }
+      } catch {}
 
       const mergedById = new Map<string, Party>();
       for (const party of localParties) {
@@ -43,7 +41,6 @@ export default function LoadPartiesScreen() {
       }
 
       const list = [...mergedById.values()];
-      // newest first (your store already unshifts, but this keeps it consistent)
       const sorted = [...list].sort((a, b) =>
         (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
       );
@@ -53,7 +50,6 @@ export default function LoadPartiesScreen() {
     }
   }, []);
 
-  // Reload whenever this screen becomes active
   useFocusEffect(
     useCallback(() => {
       load();
@@ -69,7 +65,7 @@ export default function LoadPartiesScreen() {
 
   return (
     <ThemedView style={{ flex: 1, padding: 20, gap: 12 }}>
-      <ThemedText type="title">Load Parties</ThemedText>
+      <ThemedText type="title">Parties</ThemedText>
 
       {loading ? (
         <ThemedView style={{ paddingTop: 20 }}>
@@ -78,9 +74,7 @@ export default function LoadPartiesScreen() {
       ) : parties.length === 0 ? (
         <ThemedView style={{ gap: 10, paddingTop: 10 }}>
           <ThemedText type="subtitle">No saved parties yet.</ThemedText>
-          <ThemedText>
-            Create one first, then come back here to load it.
-          </ThemedText>
+          <ThemedText>Create one first, then come back here to open it.</ThemedText>
 
           <Pressable
             onPress={() => router.push("/create-party")}
@@ -92,7 +86,7 @@ export default function LoadPartiesScreen() {
               marginTop: 10,
             }}
           >
-            <ThemedText type="subtitle">Go to Create Party</ThemedText>
+            <ThemedText type="subtitle">Create Party</ThemedText>
           </Pressable>
         </ThemedView>
       ) : (
@@ -110,13 +104,11 @@ export default function LoadPartiesScreen() {
             >
               <ThemedText type="subtitle">{p.title}</ThemedText>
 
-              {!!p.location && (
-                <ThemedText>📍 {p.location}</ThemedText>
-              )}
+              {!!p.location && <ThemedText>Location: {p.location}</ThemedText>}
 
-           <ThemedText>
-  Date & Time: {p.date ? formatWhen(p.date) : "Not set"}
-</ThemedText>   
+              <ThemedText>
+                Date & Time: {p.date ? formatWhen(p.date) : "Not set"}
+              </ThemedText>
             </Pressable>
           ))}
         </ScrollView>
@@ -124,4 +116,3 @@ export default function LoadPartiesScreen() {
     </ThemedView>
   );
 }
-

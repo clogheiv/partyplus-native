@@ -5,13 +5,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   Linking,
   Platform,
   Pressable,
   ScrollView,
-  Text,
   TextInput,
+  UIManager,
   View,
+  findNodeHandle,
 } from "react-native";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
@@ -21,14 +23,6 @@ import { createUuid, ensureUserId } from "../../src/lib/ids";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../../src/lib/supabase";
-
-function trackInviteOpen(partyId: string) {
-  // console.log("Invite opened", {
-  //   partyId,
-  //   source: "app",
-  //   ts: new Date().toISOString(),
-  // });
-}
 
 function decodeInvitePayload(d: string | undefined) {
   if (!d) return null;
@@ -88,17 +82,13 @@ function wait(ms: number) {
 async function applyLoadedParty(
   nextParty: Party,
   setParty: (party: Party) => void,
-  setIsHost: (value: boolean) => void,
-  setDebugHost: (value: string) => void
+  setIsHost: (value: boolean) => void
 ) {
   await setCurrentPartyId(nextParty.id);
   setParty(nextParty);
 
   const storedUserId = await ensureUserId();
   setIsHost(Boolean(storedUserId && nextParty.hostId === storedUserId));
-  setDebugHost(
-    `storedUserId=${storedUserId ?? "null"} | found.hostId=${nextParty.hostId ?? "null"} | isHost=${storedUserId && nextParty.hostId === storedUserId ? "true" : "false"}`
-  );
 
   return storedUserId;
 }
@@ -106,29 +96,23 @@ async function applyLoadedParty(
 export default function PartyGuestViewScreen() {
   const navigation = useNavigation();
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
+  const rsvpNameInputRef = useRef<TextInput>(null);
+  const whatToBringYRef = useRef(0);
+  const claimPromptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
   const didCanonicalizeRef = useRef(false);
 
-  useEffect(() => {
-    if (id) {
-      trackInviteOpen(id);
-    }
-  }, [id]);
-
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
-  const [debugHost, setDebugHost] = useState("");
   const [rsvpName, setRsvpName] = useState("");
   const [rsvpStatus, setRsvpStatus] = useState<PartyRsvpStatus | null>(null);
   const [attendeeCountText, setAttendeeCountText] = useState("1");
   const [savingRsvp, setSavingRsvp] = useState(false);
-  const debugInvite =
-    `id=${id ?? "<missing>"} | hasD=${typeof d === "string" && d.length > 0 ? "true" : "false"} | ` +
-    `dLen=${typeof d === "string" ? d.length : 0} | supabase=${isSupabaseConfigured ? "true" : "false"}`;
 
   const partyName =
     (party?.title ?? (party as any)?.t ?? "").toString().trim() || "Party";
@@ -148,9 +132,7 @@ export default function PartyGuestViewScreen() {
               items: remoteItems,
             });
           }
-        } catch (error) {
-          console.warn("[party remote load failed]", { attempt: attempt + 1, error });
-        }
+        } catch {}
 
         if (attempt === 0) {
           await wait(remoteRetryDelayMs);
@@ -175,8 +157,7 @@ export default function PartyGuestViewScreen() {
           const storedUserId = await applyLoadedParty(
             normalizedRemote,
             setParty,
-            setIsHost,
-            setDebugHost
+            setIsHost
           );
           setCurrentUserId(storedUserId);
           if (!didCanonicalizeRef.current && typeof d === "string" && d.length > 0) {
@@ -193,8 +174,7 @@ export default function PartyGuestViewScreen() {
           const storedUserId = await applyLoadedParty(
             normalized,
             setParty,
-            setIsHost,
-            setDebugHost
+            setIsHost
           );
           setCurrentUserId(storedUserId);
 
@@ -239,8 +219,7 @@ export default function PartyGuestViewScreen() {
           const storedUserId = await applyLoadedParty(
             hydrated,
             setParty,
-            setIsHost,
-            setDebugHost
+            setIsHost
           );
           setCurrentUserId(storedUserId);
           if (!didCanonicalizeRef.current && typeof d === "string" && d.length > 0) {
@@ -295,9 +274,7 @@ export default function PartyGuestViewScreen() {
                 items: remoteItems,
               });
             });
-          } catch (error) {
-            console.warn("[party realtime refresh failed]", error);
-          }
+          } catch {}
         }
       )
       .subscribe();
@@ -335,9 +312,7 @@ export default function PartyGuestViewScreen() {
                 rsvps: remoteRsvps.length ? remoteRsvps : undefined,
               });
             });
-          } catch (error) {
-            console.warn("[party rsvp realtime refresh failed]", error);
-          }
+          } catch {}
         }
       )
       .subscribe();
@@ -359,6 +334,9 @@ export default function PartyGuestViewScreen() {
     if (!party?.rsvps?.length || !currentUserId) return null;
     return party.rsvps.find((rsvp) => rsvp.id === currentUserId) ?? null;
   }, [currentUserId, party?.rsvps]);
+
+  const canClaimItems =
+    currentUserRsvp?.status === "yes" && currentUserRsvp.name.trim().length > 0;
 
   const rsvpSummary = useMemo(() => {
     const summary = { yes: 0, maybe: 0, no: 0 };
@@ -397,6 +375,99 @@ export default function PartyGuestViewScreen() {
     await Linking.openURL(url);
   };
 
+  function scrollToWhatToBring() {
+    scrollRef.current?.scrollTo({
+      y: Math.max(whatToBringYRef.current - 20, 0),
+      animated: true,
+    });
+  }
+
+  function scrollToRsvpNameField() {
+    const inputNode = rsvpNameInputRef.current
+      ? findNodeHandle(rsvpNameInputRef.current)
+      : null;
+    const scrollNode = scrollRef.current ? findNodeHandle(scrollRef.current) : null;
+
+    if (!inputNode || !scrollNode) return;
+
+    setTimeout(() => {
+      UIManager.measureLayout(
+        inputNode,
+        scrollNode,
+        () => {},
+        (_x, y) => {
+          scrollRef.current?.scrollTo({
+            y: Math.max(y - 20, 0),
+            animated: true,
+          });
+        }
+      );
+    }, 120);
+  }
+
+  function clearClaimPromptTimer() {
+    if (!claimPromptTimerRef.current) return;
+    clearTimeout(claimPromptTimerRef.current);
+    claimPromptTimerRef.current = null;
+  }
+
+  function scheduleClaimCompletionPrompt() {
+    if (!currentUserRsvp || currentUserRsvp.status !== "yes") return;
+
+    clearClaimPromptTimer();
+    claimPromptTimerRef.current = setTimeout(() => {
+      claimPromptTimerRef.current = null;
+      Alert.alert("Done choosing items?", "", [
+        {
+          text: "Done",
+          onPress: () => {
+            router.replace("/");
+          },
+        },
+        {
+          text: "Still choosing",
+          onPress: () => {
+            scheduleClaimCompletionPrompt();
+          },
+        },
+      ]);
+    }, 3000);
+  }
+
+  function showRsvpConfirmation(status: PartyRsvpStatus) {
+    const goHome = () => {
+      router.replace("/");
+    };
+
+    if (status === "yes") {
+      Alert.alert("Yay! You're coming to the party!", "", [
+        {
+          text: "Claim items to bring",
+          onPress: () => {
+            setTimeout(() => {
+              scrollToWhatToBring();
+            }, 50);
+          },
+        },
+        { text: "Close", onPress: goHome },
+      ]);
+      return;
+    }
+
+    if (status === "no") {
+      Alert.alert("Thanks for letting us know.", "", [{ text: "Close", onPress: goHome }]);
+      return;
+    }
+
+    Alert.alert("Thanks for your response.", "", [{ text: "Close", onPress: goHome }]);
+  }
+
+  useEffect(() => {
+    return () => {
+      clearClaimPromptTimer();
+    };
+  }, []);
+
   async function saveRsvp() {
     if (!party) return;
 
@@ -418,6 +489,7 @@ export default function PartyGuestViewScreen() {
 
     setSavingRsvp(true);
     try {
+      let saveSucceeded = true;
       const userId = currentUserId || (await ensureUserId());
       if (!currentUserId) {
         setCurrentUserId(userId);
@@ -447,12 +519,58 @@ export default function PartyGuestViewScreen() {
             setParty(normalizedRemote);
             await upsertParty(normalizedRemote);
           }
-        } catch (error) {
-          console.warn("[party rsvp save failed]", error);
+        } catch {
+          saveSucceeded = false;
         }
+      }
+
+      if (saveSucceeded) {
+        Keyboard.dismiss();
+        showRsvpConfirmation(rsvpStatus);
       }
     } finally {
       setSavingRsvp(false);
+    }
+  }
+
+  async function toggleItemClaim(itemId: string) {
+    if (!party || !currentUserRsvp || !canClaimItems) return;
+
+    clearClaimPromptTimer();
+    const me = currentUserRsvp.name.trim();
+    const updatedItems = party.items.map((item) => {
+      if (item.id !== itemId) return item;
+
+      const claimedBy = item.claimedBy ?? null;
+      if (!claimedBy) return { ...item, claimedBy: me };
+      if (claimedBy === me) return { ...item, claimedBy: undefined };
+      return item;
+    });
+
+    const nextParty = normalizePartyForView({
+      ...party,
+      items: updatedItems,
+    });
+
+    setParty(nextParty);
+    await upsertParty(nextParty);
+
+    let claimSaved = true;
+    if (isSupabaseConfigured) {
+      try {
+        const remoteParty = await updateRemoteParty(nextParty);
+        if (remoteParty) {
+          const normalizedRemote = normalizePartyForView(remoteParty);
+          setParty(normalizedRemote);
+          await upsertParty(normalizedRemote);
+        }
+      } catch {
+        claimSaved = false;
+      }
+    }
+
+    if (claimSaved) {
+      scheduleClaimCompletionPrompt();
     }
   }
 
@@ -473,18 +591,11 @@ export default function PartyGuestViewScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
       >
-        <Text style={{ padding: 8, fontSize: 12 }}>
-          DEBUG: {debugHost || "(empty)"}
-        </Text>
-        <Text style={{ padding: 8, fontSize: 12 }}>
-          INVITE DEBUG: {debugInvite}
-        </Text>
-
-        <ThemedText type="title">Invite</ThemedText>
-        <ThemedText>{"Couldn't find that party."}</ThemedText>
+        <ThemedText type="title">Party not found</ThemedText>
+        <ThemedText>This party could not be loaded.</ThemedText>
 
         <Pressable
-          onPress={() => router.replace("/share")}
+          onPress={() => router.replace("/")}
           style={{
             borderWidth: 1,
             borderRadius: 12,
@@ -494,7 +605,7 @@ export default function PartyGuestViewScreen() {
           }}
         >
           <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
-            Go to Share
+            Go Home
           </ThemedText>
         </Pressable>
       </ScrollView>
@@ -515,42 +626,16 @@ export default function PartyGuestViewScreen() {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={{ flex: 1 }}
       contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 100 }}
+      keyboardShouldPersistTaps="handled"
     >
-      <Text style={{ padding: 8, fontSize: 12 }}>
-        HOST DEBUG {"->"} {debugHost}
-      </Text>
-
       <ThemedText type="title">{partyName}</ThemedText>
 
       {isHost ? (
         <Pressable
           onPress={() => router.push(`/(tabs)/create-party?id=${party.id}`)}
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-            alignSelf: "flex-start",
-            marginTop: 10,
-            marginBottom: 6,
-          }}
-        >
-          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
-            Edit Party
-          </ThemedText>
-        </Pressable>
-      ) : null}
-
-      {isHost ? (
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: "/pick-action",
-              params: { id: party.id, isHost: isHost ? "true" : "false" },
-            })
-          }
           style={{
             borderWidth: 1,
             borderRadius: 12,
@@ -601,7 +686,10 @@ export default function PartyGuestViewScreen() {
       )}
 
       {!!party.notes?.trim() && (
-        <ThemedView style={{ padding: 14, borderRadius: 16 }}>
+        <ThemedView style={{ padding: 14, borderRadius: 16, gap: 8 }}>
+          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+            Notes
+          </ThemedText>
           <ThemedText style={{ opacity: 0.8 }}>{party.notes.trim()}</ThemedText>
         </ThemedView>
       )}
@@ -617,9 +705,23 @@ export default function PartyGuestViewScreen() {
           <ThemedText>No: {rsvpSummary.no}</ThemedText>
         </ThemedView>
 
+        <ThemedView style={{ padding: 12, borderRadius: 12, gap: 6 }}>
+          {(party.rsvps ?? []).length ? (
+            (party.rsvps ?? []).map((rsvp) => (
+              <ThemedText key={rsvp.id}>
+                {rsvp.name} - {rsvp.status === "yes" ? "Yes" : rsvp.status === "no" ? "No" : "Maybe"} - {rsvp.attendeeCount}
+              </ThemedText>
+            ))
+          ) : (
+            <ThemedText style={{ opacity: 0.7 }}>No RSVPs yet.</ThemedText>
+          )}
+        </ThemedView>
+
         <TextInput
+          ref={rsvpNameInputRef}
           value={rsvpName}
           onChangeText={setRsvpName}
+          onFocus={scrollToRsvpNameField}
           placeholder="Your name"
           placeholderTextColor="#666"
           autoCapitalize="words"
@@ -691,20 +793,36 @@ export default function PartyGuestViewScreen() {
         </Pressable>
       </ThemedView>
 
-      <ThemedText type="subtitle">What to bring</ThemedText>
+      <View
+        onLayout={(event) => {
+          whatToBringYRef.current = event.nativeEvent.layout.y;
+        }}
+      >
+        <ThemedText type="subtitle">What to bring</ThemedText>
+      </View>
+
+      {!canClaimItems ? (
+        <ThemedText style={{ opacity: 0.75 }}>
+          RSVP Yes to claim items.
+        </ThemedText>
+      ) : null}
 
       {party.items?.length ? (
         <View style={{ gap: 10 }}>
           {party.items.map((it, index) => {
             const claimed = !!it.claimedBy;
+            const claimedByYou = claimed && it.claimedBy === currentUserRsvp?.name.trim();
 
             return (
-              <ThemedView
+              <Pressable
                 key={it.id ?? `${it.name}-${index}`}
+                onPress={() => toggleItemClaim(it.id)}
+                disabled={!canClaimItems || (claimed && !claimedByYou)}
                 style={{
                   padding: 14,
                   borderRadius: 16,
-                  opacity: claimed ? 0.55 : 1,
+                  borderWidth: 1,
+                  opacity: !canClaimItems ? 0.7 : claimed ? 0.55 : 1,
                 }}
               >
                 <ThemedText style={{ fontSize: 18, fontWeight: "700" }}>
@@ -713,9 +831,14 @@ export default function PartyGuestViewScreen() {
                 {claimed ? (
                   <ThemedText style={{ opacity: 0.85 }}>
                     Claimed by {it.claimedBy}
+                    {claimedByYou ? " (you)" : ""}
+                  </ThemedText>
+                ) : canClaimItems ? (
+                  <ThemedText style={{ opacity: 0.75 }}>
+                    Tap to claim
                   </ThemedText>
                 ) : null}
-              </ThemedView>
+              </Pressable>
             );
           })}
         </View>
