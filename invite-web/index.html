@@ -68,6 +68,25 @@
         font-size: 12px;
         opacity: 0.75;
       }
+      .fallback {
+        margin-top: 16px;
+        padding: 14px;
+        border: 1px solid #2c4260;
+        border-radius: 12px;
+        background: #101726;
+      }
+      .fallback-title {
+        margin: 0 0 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #f8fbff;
+      }
+      .fallback-text {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #d9e5ff;
+      }
     </style>
   </head>
   <body>
@@ -85,6 +104,12 @@
         </div>
 
         <p class="tiny">Tip: If PartyPlus isn't installed yet, this page will still load.</p>
+        <div class="fallback">
+          <p class="fallback-title">If PartyPlus doesn't open automatically</p>
+          <p class="fallback-text">
+            Open the app and use <b>Pick a Party</b> after opening this invite.
+          </p>
+        </div>
       </div>
     </div>
 
@@ -133,39 +158,19 @@
       }
 
       const directPartyPath = `party/${encodeURIComponent(inviteId || "")}`;
-      const androidIntentLink =
-        `intent://${directPartyPath}` +
-        (d ? `?d=${encodeURIComponent(d)}` : "") +
-        `#Intent;scheme=partyplusnative;package=com.anonymous.PartyPlusNative;end`;
-      const nativeSchemeLink =
-        `partyplusnative://${directPartyPath}` + (d ? `?d=${encodeURIComponent(d)}` : "");
+      const nativeSchemeLink = `partyplusnative://${directPartyPath}`;
 
       const openApp = document.getElementById("openApp");
       const getApp = document.getElementById("getApp");
-
-      const launchHref = /Android/i.test(window.navigator.userAgent)
-        ? androidIntentLink
-        : nativeSchemeLink;
-
-      openApp.href = launchHref;
-      openApp.setAttribute("href", launchHref);
+      openApp.href = nativeSchemeLink;
+      openApp.setAttribute("href", nativeSchemeLink);
 
       getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
       getApp.target = "_blank";
       getApp.rel = "noopener noreferrer";
 
-      function attemptAppDeepLink() {
-        if (!inviteId) return;
-        if (!/Android/i.test(window.navigator.userAgent)) return;
-
-        window.location.replace(androidIntentLink);
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", attemptAppDeepLink);
-      } else {
-        attemptAppDeepLink();
-      }
+      // Preview-stage flow: always open the web invite first, then let the user
+      // launch the app with one explicit custom-scheme tap.
     </script>
   </body>
 </html>
