@@ -14,12 +14,15 @@ import {
   Pressable,
   Share,
   ScrollView,
+  StyleSheet,
   TextInput,
-  UIManager
+  UIManager,
+  View,
 } from "react-native";
 
 
 import React, { useEffect, useRef, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createRemoteParty, replaceRemotePartyItems } from "../../src/data/parties";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
 import { buildShareMessage } from "../../src/lib/inviteShare";
@@ -32,11 +35,11 @@ if (Platform.OS === "android") {
 
 const inputStyle = {
   borderWidth: 1,
-  borderColor: "#888",
-  borderRadius: 10,
-  padding: 12,
-  backgroundColor: "#F2F2F2",
-  color: "#000",
+  borderColor: "#243554",
+  borderRadius: 16,
+  padding: 14,
+  backgroundColor: "#132038",
+  color: "#f6efe7",
 };
 
 const inputStyleMultiline = {
@@ -47,6 +50,7 @@ const inputStyleMultiline = {
 
 export default function CreatePartyScreen() {
   const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
   const itemInputRef = useRef<TextInput>(null);
   const notesInputRef = useRef<TextInput>(null);
@@ -124,11 +128,13 @@ const isEditing = !!partyId;
   item: string;
   index: number;
   } | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
 // 🔹 STEP 2 — Toast animation + timer refs
 const toastAnim = useRef(new Animated.Value(0)).current;
 const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 useEffect(() => {
   const showSub = Keyboard.addListener("keyboardDidShow", (e: any) => {
 
@@ -187,6 +193,26 @@ useEffect(() => {
   };
 }, [lastRemoved, toastAnim]);
 
+useEffect(() => {
+  if (actionFeedbackTimerRef.current) {
+    clearTimeout(actionFeedbackTimerRef.current);
+    actionFeedbackTimerRef.current = null;
+  }
+
+  if (!actionFeedback) return;
+
+  actionFeedbackTimerRef.current = setTimeout(() => {
+    setActionFeedback(null);
+  }, 2200);
+
+  return () => {
+    if (actionFeedbackTimerRef.current) {
+      clearTimeout(actionFeedbackTimerRef.current);
+      actionFeedbackTimerRef.current = null;
+    }
+  };
+}, [actionFeedback]);
+
   const resetCreateForm = async () => {
   await AsyncStorage.removeItem("currentPartyId");
   setTitle("");
@@ -200,6 +226,9 @@ useEffect(() => {
   setPickerMode("date");
   setIsDirty(false);
   setLastRemoved(null);
+  requestAnimationFrame(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  });
 };
 
 const handleStartNewParty = async () => {
@@ -458,8 +487,10 @@ if (!hostIds.includes(party.id)) {
   await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
 }
 
+    setActionFeedback("Party saved 🎉");
+
     Alert.alert(
-      "Party saved",
+      "Party saved 🎉",
       "Would you like to share it now?",
       [
         {
@@ -504,7 +535,7 @@ return (
   behavior={Platform.OS === "ios" ? "padding" : "height"}
   keyboardVerticalOffset={headerHeight}
 >
-  <ThemedView style={{ flex: 1 }}>
+  <ThemedView style={{ flex: 1, backgroundColor: "#08111f" }}>
     {lastRemoved && (
   <ThemedView
     style={{
@@ -539,17 +570,43 @@ return (
   </ThemedView>
 )}
 
+    {actionFeedback && !lastRemoved && (
+      <ThemedView
+        style={{
+          position: "absolute",
+          left: 16,
+          right: 16,
+          bottom: keyboardHeight + Math.max(insets.bottom, 20) + 16,
+          paddingVertical: 12,
+          paddingHorizontal: 14,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: "#2f61f3",
+          backgroundColor: "#101a2b",
+          zIndex: 998,
+        }}
+      >
+        <ThemedText style={{ color: "#f6efe7", fontWeight: "700" }}>
+          {actionFeedback}
+        </ThemedText>
+      </ThemedView>
+    )}
+
 
    <ScrollView
   ref={scrollRef}
   style={{ flex: 1 }}
-  contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 320 }}
+  contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 320 }}
   keyboardShouldPersistTaps="handled"
 >
- 
-      <ThemedText type="title">{isEditing ? "Edit Party" : "Create Party"}</ThemedText>
+      <View style={styles.heroCard}>
+        <ThemedText style={styles.eyebrow}>PARTYPLUS</ThemedText>
+        <ThemedText type="title" style={styles.heroTitle}>
+          {isEditing ? "Edit Party" : "Create Party"}
+        </ThemedText>
+      </View>
 
-      <ThemedText type="subtitle">Party title</ThemedText>
+      <ThemedText type="subtitle" style={styles.sectionLabel}>Party title</ThemedText>
       <TextInput
         value={title}
         onChangeText={(t) => {
@@ -563,7 +620,7 @@ return (
         style={inputStyle}
       />
 
-      <ThemedText type="subtitle">Location</ThemedText>
+      <ThemedText type="subtitle" style={styles.sectionLabel}>Location</ThemedText>
       <TextInput
         value={location}
         onChangeText={(t) => {
@@ -574,14 +631,14 @@ return (
         placeholderTextColor="#555"
         style={inputStyle}
       />
-<ThemedText type="subtitle">Date & Time</ThemedText>
+<ThemedText type="subtitle" style={styles.sectionLabel}>Date & Time</ThemedText>
 
 <Pressable
 onPress={() => {
   if (Platform.OS === "web") {
     Alert.alert(
       "Date picker works on phone",
-      "On web, the native date/time picker isn’t supported. Use Expo Go on your phone to set date & time."
+      "On web, the native date/time picker isn't supported. Use Expo Go on your phone to set date & time."
     );
     return;
   }
@@ -589,16 +646,10 @@ onPress={() => {
   setShowPicker(true);
 }}
  
-  style={{
-  padding: 12,
-  borderWidth: 1,
-  borderColor: "#ccc",
-  borderRadius: 8,
-  backgroundColor: "#fff",
-}}
+  style={styles.inputButton}
 
 >
- <ThemedText style={{ color: "#000" }}>
+ <ThemedText style={styles.inputButtonText}>
   {partyDate ? partyDate.toLocaleString() : "Set date & time"}
 
 </ThemedText>
@@ -640,7 +691,7 @@ onPress={() => {
   />
 )}
 
-      <ThemedText type="subtitle">Notes</ThemedText>
+      <ThemedText type="subtitle" style={styles.sectionLabel}>Notes</ThemedText>
       <TextInput
         ref={notesInputRef}
         onFocus={() => scrollToInput(notesInputRef)}
@@ -655,7 +706,7 @@ onPress={() => {
         style={inputStyleMultiline}
       />
 
-      <ThemedText type="subtitle">What to bring</ThemedText>
+      <ThemedText type="subtitle" style={styles.sectionLabel}>What to bring</ThemedText>
       <TextInput
       ref={itemInputRef}
         returnKeyType="done"
@@ -669,8 +720,8 @@ onPress={() => {
         style={inputStyle}
       />
 
-      <Pressable onPress={addItem} style={inputStyle}>
-        <ThemedText style={{ color: "#000" }}>Add Item</ThemedText>
+      <Pressable onPress={addItem} style={styles.addItemButton}>
+        <ThemedText style={styles.secondaryButtonText}>Add Item</ThemedText>
       </Pressable>
 
     {items.map((item, index) => (
@@ -697,28 +748,18 @@ onPress={() => {
   </ThemedView>
 ))}
 
-  <Pressable
+<Pressable
   onPress={handleStartNewParty}
-  style={{
-    marginTop: 20,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#555",
-    backgroundColor: "transparent",
-  }}
+  style={styles.secondaryButton}
 >
-  <ThemedText type="subtitle">Start New Party</ThemedText>
+  <ThemedText style={styles.secondaryButtonText}>Start New Party</ThemedText>
 </Pressable>
 <Pressable
   onPress={canSave ? handleSave : undefined}
   disabled={!canSave}
-  style={{
-    marginTop: 20,
-    opacity: canSave ? 1 : 0.35,
-  }}
+  style={[styles.primaryButton, { opacity: canSave ? 1 : 0.35 }]}
 >
-  <ThemedText type="subtitle">Save Party</ThemedText>
+  <ThemedText style={styles.primaryButtonText}>Save Party</ThemedText>
 </Pressable>
 
 
@@ -729,3 +770,79 @@ onPress={() => {
   </>
 );
 }
+
+const styles = StyleSheet.create({
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    color: "#ff9f87",
+  },
+  heroCard: {
+    padding: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    gap: 8,
+    shadowColor: "#020617",
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  heroTitle: {
+    color: "#f6efe7",
+  },
+  sectionLabel: {
+    color: "#dfe7f5",
+  },
+  inputButton: {
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    backgroundColor: "#132038",
+  },
+  inputButtonText: {
+    color: "#f6efe7",
+  },
+  addItemButton: {
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    backgroundColor: "#101a2b",
+    alignItems: "center",
+  },
+  secondaryButton: {
+    marginTop: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    alignItems: "center",
+  },
+  secondaryButtonText: {
+    color: "#f6efe7",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  primaryButton: {
+    marginTop: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#2f61f3",
+    backgroundColor: "#2f61f3",
+    alignItems: "center",
+  },
+  primaryButtonText: {
+    color: "#f6efe7",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+});

@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { setCurrentPartyId } from "@/src/lib/partyStore";
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert, Pressable } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 
 export default function PickActionScreen() {
   const params = useLocalSearchParams<{ id?: string; isHost?: string }>();
@@ -10,9 +10,18 @@ export default function PickActionScreen() {
   const isHost = params.isHost === "true";
 
   return (
-    <ThemedView style={{ flex: 1, padding: 20, gap: 14, justifyContent: "center" }}>
-      <ThemedText type="title">Choose an action</ThemedText>
+    <ThemedView style={styles.screen}>
+      <View style={styles.header}>
+        <ThemedText style={styles.eyebrow}>PARTYPLUS</ThemedText>
+        <ThemedText type="title" style={styles.title}>
+          Choose an action
+        </ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Open the party page, share the invite, or edit party details.
+        </ThemedText>
+      </View>
 
+      <View style={styles.actions}>
       <Pressable
         onPress={() => {
           if (id) {
@@ -22,10 +31,11 @@ export default function PickActionScreen() {
 
           router.push("/share");
         }}
-        style={{ borderWidth: 1, borderRadius: 14, padding: 14 }}
+        style={styles.primaryCard}
       >
-        <ThemedText type="subtitle">Join</ThemedText>
-        <ThemedText style={{ opacity: 0.7 }}>
+        <ThemedText style={styles.primaryLabel}>OPEN</ThemedText>
+        <ThemedText type="subtitle" style={styles.primaryTitle}>Join</ThemedText>
+        <ThemedText style={styles.primaryBody}>
           Open the party page to RSVP and claim items
         </ThemedText>
       </Pressable>
@@ -40,10 +50,13 @@ export default function PickActionScreen() {
           await setCurrentPartyId(id);
           router.push("/share");
         }}
-        style={{ borderWidth: 1, borderRadius: 14, padding: 14 }}
+        style={styles.secondaryCard}
       >
-        <ThemedText type="subtitle">Share</ThemedText>
-        <ThemedText style={{ opacity: 0.7 }}>Copy or send this invite</ThemedText>
+        <ThemedText style={styles.secondaryLabel}>SEND</ThemedText>
+        <ThemedText type="subtitle" style={styles.secondaryTitle}>
+          Share
+        </ThemedText>
+        <ThemedText style={styles.secondaryBody}>Copy or send this invite</ThemedText>
       </Pressable>
 
       <Pressable
@@ -58,18 +71,115 @@ export default function PickActionScreen() {
   router.push(`/create-party?id=${id}`);
 }}
 
-        style={{ borderWidth: 1, borderRadius: 14, padding: 14 }}
+        style={styles.secondaryCard}
       >
-        <ThemedText type="subtitle">Edit</ThemedText>
-        <ThemedText style={{ opacity: 0.7 }}>Change details and items</ThemedText>
+        <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
+        <ThemedText type="subtitle" style={styles.secondaryTitle}>
+          Edit
+        </ThemedText>
+        <ThemedText style={styles.secondaryBody}>Change details and items</ThemedText>
       </Pressable>
 
       <Pressable
         onPress={() => router.back()}
-        style={{ borderWidth: 1, borderRadius: 14, padding: 14, opacity: 0.8 }}
+        style={styles.backButton}
       >
-        <ThemedText>Back</ThemedText>
+        <ThemedText style={styles.backText}>Back</ThemedText>
       </Pressable>
+      </View>
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    justifyContent: "center",
+    backgroundColor: "#08111f",
+  },
+  header: {
+    gap: 7,
+    marginBottom: 20,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    color: "#ff9f87",
+  },
+  title: {
+    color: "#f6efe7",
+  },
+  subtitle: {
+    color: "#afbdd5",
+  },
+  actions: {
+    gap: 14,
+  },
+  primaryCard: {
+    borderWidth: 1,
+    borderColor: "#2f61f3",
+    borderRadius: 24,
+    padding: 18,
+    backgroundColor: "#2f61f3",
+    gap: 6,
+    shadowColor: "#17379c",
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
+  },
+  primaryLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    color: "rgba(255,255,255,0.74)",
+  },
+  primaryTitle: {
+    color: "#fff",
+  },
+  primaryBody: {
+    color: "rgba(255,255,255,0.84)",
+  },
+  secondaryCard: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 24,
+    padding: 18,
+    gap: 6,
+    backgroundColor: "#101a2b",
+    shadowColor: "#020617",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  secondaryLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    color: "#ff9f87",
+  },
+  secondaryTitle: {
+    color: "#f6efe7",
+  },
+  secondaryBody: {
+    color: "#afbdd5",
+  },
+  backButton: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 18,
+    padding: 15,
+    opacity: 0.9,
+    alignItems: "center",
+    marginTop: 6,
+    backgroundColor: "#101a2b",
+  },
+  backText: {
+    color: "#dfe7f5",
+    fontWeight: "600",
+  },
+});

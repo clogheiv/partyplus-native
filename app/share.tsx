@@ -11,6 +11,7 @@ import {
   Pressable,
   ScrollView,
   Share,
+  StyleSheet,
   View,
 } from "react-native";
 import { ThemedText } from "../components/themed-text";
@@ -177,7 +178,7 @@ export default function ShareScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center" }}>
+      <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#08111f" }}>
         <ActivityIndicator />
       </ThemedView>
     );
@@ -205,15 +206,20 @@ export default function ShareScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, gap: 14, paddingBottom: 28 }}
+      style={{ flex: 1, backgroundColor: "#08111f" }}
+      contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 20, gap: 16, paddingBottom: 34 }}
     >
-      <View style={{ gap: 6 }}>
-        <ThemedText style={{ fontSize: 13, fontWeight: "800", opacity: 0.7 }}>
-          Party
+      <ThemedView style={styles.heroCard}>
+        <ThemedText style={styles.eyebrow}>
+          SHARE INVITE
         </ThemedText>
-        <ThemedText type="title">{party.title}</ThemedText>
-      </View>
+        <ThemedText type="title" style={styles.heroTitle}>
+          {party.title}
+        </ThemedText>
+        <ThemedText style={styles.heroBody}>
+          Copy the invite link or send it with your phone's share sheet.
+        </ThemedText>
+      </ThemedView>
 
       {isHost ? (
         <Pressable
@@ -223,37 +229,25 @@ export default function ShareScreen() {
               params: { id: party.id },
             })
           }
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 10,
-            marginTop: 10,
-            alignSelf: "flex-start",
-          }}
+          style={styles.secondaryButton}
         >
-          <ThemedText>Edit this party</ThemedText>
+          <ThemedText style={styles.secondaryButtonText}>Edit this party</ThemedText>
         </Pressable>
       ) : null}
 
-      <ThemedView style={{ gap: 8, padding: 12, borderRadius: 16, borderWidth: 1 }}>
-        <ThemedText type="subtitle">Party details</ThemedText>
+      <ThemedView style={styles.detailsCard}>
+        <ThemedText type="subtitle" style={styles.detailsTitle}>
+          Party details
+        </ThemedText>
 
         <ThemedView style={{ gap: 6 }}>
           {!!party.location && (
             <View style={{ gap: 8 }}>
-              <ThemedText>{party.location}</ThemedText>
+              <ThemedText style={styles.detailsText}>{party.location}</ThemedText>
 
               <Pressable
                 onPress={() => openInMaps(party.location!)}
-                style={{
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  alignSelf: "flex-start",
-                  backgroundColor: "rgba(239, 13, 13, 0.85)",
-                  borderColor: "rgba(220, 38, 38, 0.45)",
-                }}
+                style={styles.mapButton}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Ionicons name="location-outline" size={18} color="#fff" />
@@ -265,51 +259,137 @@ export default function ShareScreen() {
             </View>
           )}
 
-          {!!party.notes && <ThemedText>{party.notes}</ThemedText>}
+          {!!party.notes && <ThemedText style={styles.notesText}>{party.notes}</ThemedText>}
         </ThemedView>
       </ThemedView>
 
-      <Pressable
-        onPress={handleCopyInvite}
-        style={{
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          borderRadius: 12,
-          alignItems: "center",
-          marginTop: 12,
-          marginBottom: 12,
-        }}
-      >
-        <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
-          Copy Invite
-        </ThemedText>
-      </Pressable>
+      <View style={{ gap: 10 }}>
+        <Pressable
+          onPress={handleCopyInvite}
+          style={styles.secondaryButtonFull}
+        >
+          <ThemedText style={styles.secondaryButtonText}>
+            Copy Invite
+          </ThemedText>
+        </Pressable>
 
-      <Pressable
-        onPress={handleNativeShare}
-        style={{
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          borderRadius: 12,
-          alignItems: "center",
-          marginBottom: 12,
-        }}
-      >
-        <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
-          Share Invite
-        </ThemedText>
-      </Pressable>
+        <Pressable
+          onPress={handleNativeShare}
+          style={styles.primaryButtonFull}
+        >
+          <ThemedText style={styles.primaryButtonText}>
+            Share Invite
+          </ThemedText>
+        </Pressable>
+      </View>
 
-      <ThemedText style={{ opacity: 0.75 }}>
+      <ThemedText style={styles.footerCopy}>
         RSVP and item claims happen on the party screen.
       </ThemedText>
 
       <Pressable
         onPress={() => router.push("/load-parties")}
-        style={{ borderWidth: 1, borderRadius: 12, padding: 12, alignSelf: "flex-start", marginTop: 12 }}
+        style={styles.secondaryButton}
       >
-        <ThemedText>Go to Parties</ThemedText>
+        <ThemedText style={styles.secondaryButtonText}>Go to Parties</ThemedText>
       </Pressable>
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    color: "#ff9f87",
+  },
+  heroCard: {
+    gap: 8,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    shadowColor: "#020617",
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  heroTitle: {
+    color: "#f6efe7",
+  },
+  heroBody: {
+    color: "#afbdd5",
+    lineHeight: 22,
+  },
+  detailsCard: {
+    gap: 10,
+    padding: 18,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+  },
+  detailsTitle: {
+    color: "#f6efe7",
+  },
+  detailsText: {
+    color: "#dfe7f5",
+  },
+  notesText: {
+    color: "#afbdd5",
+    lineHeight: 21,
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignSelf: "flex-start",
+    backgroundColor: "#101a2b",
+  },
+  secondaryButtonFull: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#f6efe7",
+  },
+  primaryButtonFull: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#2f61f3",
+    backgroundColor: "#2f61f3",
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#f6efe7",
+  },
+  mapButton: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignSelf: "flex-start",
+    backgroundColor: "#2f61f3",
+    borderColor: "#2f61f3",
+  },
+  footerCopy: {
+    color: "#afbdd5",
+    lineHeight: 21,
+  },
+});

@@ -29,9 +29,7 @@ export function buildInviteData(party: Party) {
 }
 
 export function buildInviteLink(party: Party) {
-  return `https://partyplus-invite.netlify.app/i/${party.id}?d=${encodeURIComponent(
-    buildInviteData(party)
-  )}`;
+  return `https://partyplus.app/i/${party.id}`;
 }
 
 export function buildShareMessage(party: Party) {
@@ -80,24 +78,29 @@ export function buildShareMessage(party: Party) {
   const itemsPreview = items.length
     ? [
         "",
-        "What to bring",
+        "Bring list:",
         ...shown.map((name) => {
           const key = name.toLowerCase();
           const count = counts.get(key) ?? 1;
-          return `- ${name}${count > 1 ? ` (x${count})` : ""}`;
+          return `• ${name}${count > 1 ? ` (x${count})` : ""}`;
         }),
-        ...(remaining > 0 ? [`...and ${remaining} more`] : []),
+        ...(remaining > 0 ? [`• and ${remaining} more`] : []),
       ].join("\n")
     : "";
 
+  const intro = `You're invited to ${title}!`;
+  const closing = items.length
+    ? "Open the invite below to RSVP and claim something to bring:"
+    : "Open the invite below to RSVP:";
+
   return [
-    title,
+    intro,
     when,
     where,
     notes,
     itemsPreview,
     "",
-    "Open in PartyPlus to RSVP and claim an item:",
+    closing,
     buildInviteLink(party),
   ]
     .filter(Boolean)

@@ -4,6 +4,7 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 
 const PARTIES_TABLE = "parties";
 const PARTY_ITEMS_TABLE = "party_items";
+const PARTY_RSVPS_TABLE = "party_rsvps";
 const PARTY_ITEM_COLUMNS = "id, party_id, name, qty, claimed_by, sort_order";
 
 type PartyRow = {
@@ -204,6 +205,28 @@ export async function updateRemoteParty(party: Party): Promise<Party | null> {
     replaceRemotePartyRsvps(party.id, party.rsvps ?? []),
   ]);
   return getRemotePartyById(party.id);
+}
+
+export async function deleteRemoteParty(partyId: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
+
+  const { error: rsvpDeleteError } = await supabase
+    .from(PARTY_RSVPS_TABLE)
+    .delete()
+    .eq("party_id", partyId);
+  if (rsvpDeleteError) throw rsvpDeleteError;
+
+  const { error: itemDeleteError } = await supabase
+    .from(PARTY_ITEMS_TABLE)
+    .delete()
+    .eq("party_id", partyId);
+  if (itemDeleteError) throw itemDeleteError;
+
+  const { error: partyDeleteError } = await supabase
+    .from(PARTIES_TABLE)
+    .delete()
+    .eq("id", partyId);
+  if (partyDeleteError) throw partyDeleteError;
 }
 
 export async function replaceRemotePartyItems(partyId: string, items: PartyItem[]): Promise<PartyItem[]> {

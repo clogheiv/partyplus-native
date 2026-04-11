@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Buffer } from "buffer";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, usePathname, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,17 +10,20 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   TextInput,
   UIManager,
   View,
   findNodeHandle,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
-import { getRemotePartyById, getRemotePartyItems, updateRemoteParty } from "../../src/data/parties";
+import { deleteRemoteParty, getRemotePartyById, getRemotePartyItems, updateRemoteParty } from "../../src/data/parties";
 import { getRemotePartyRsvps } from "../../src/data/partyRsvps";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
-import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
+import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../../src/lib/supabase";
 
@@ -95,7 +98,9 @@ async function applyLoadedParty(
 
 export default function PartyGuestViewScreen() {
   const navigation = useNavigation();
+  const pathname = usePathname();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
   const rsvpNameInputRef = useRef<TextInput>(null);
   const whatToBringYRef = useRef(0);
@@ -113,6 +118,9 @@ export default function PartyGuestViewScreen() {
   const [rsvpStatus, setRsvpStatus] = useState<PartyRsvpStatus | null>(null);
   const [attendeeCountText, setAttendeeCountText] = useState("1");
   const [savingRsvp, setSavingRsvp] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [deletingParty, setDeletingParty] = useState(false);
+  const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const partyName =
     (party?.title ?? (party as any)?.t ?? "").toString().trim() || "Party";
@@ -465,8 +473,22 @@ export default function PartyGuestViewScreen() {
   useEffect(() => {
     return () => {
       clearClaimPromptTimer();
+      if (actionFeedbackTimerRef.current) {
+        clearTimeout(actionFeedbackTimerRef.current);
+      }
     };
   }, []);
+
+  function showActionFeedback(message: string) {
+    if (actionFeedbackTimerRef.current) {
+      clearTimeout(actionFeedbackTimerRef.current);
+    }
+    setActionFeedback(message);
+    actionFeedbackTimerRef.current = setTimeout(() => {
+      setActionFeedback(null);
+      actionFeedbackTimerRef.current = null;
+    }, 2200);
+  }
 
   async function saveRsvp() {
     if (!party) return;
@@ -526,6 +548,13 @@ export default function PartyGuestViewScreen() {
 
       if (saveSucceeded) {
         Keyboard.dismiss();
+        showActionFeedback(
+          rsvpStatus === "yes"
+            ? "✓ You're going"
+            : rsvpStatus === "no"
+              ? "✓ You're not going"
+              : "✓ Maybe noted"
+        );
         showRsvpConfirmation(rsvpStatus);
       }
     } finally {
@@ -551,6 +580,7 @@ export default function PartyGuestViewScreen() {
       ...party,
       items: updatedItems,
     });
+    const updatedItem = updatedItems.find((item) => item.id === itemId);
 
     setParty(nextParty);
     await upsertParty(nextParty);
@@ -570,15 +600,66 @@ export default function PartyGuestViewScreen() {
     }
 
     if (claimSaved) {
+      if (updatedItem) {
+        showActionFeedback(
+          updatedItem.claimedBy === me
+            ? `✓ You're bringing ${updatedItem.name}`
+            : `✓ Removed ${updatedItem.name}`
+        );
+      }
       scheduleClaimCompletionPrompt();
     }
   }
 
+  async function handleDeleteParty() {
+    if (!party || deletingParty) return;
+    if (!isHost) return;
+
+    setDeletingParty(true);
+    try {
+      if (isSupabaseConfigured) {
+        await deleteRemoteParty(party.id);
+      }
+
+      await deletePartyById(party.id);
+
+      const raw = await AsyncStorage.getItem("hostPartyIds");
+      const hostIds: string[] = raw ? JSON.parse(raw) : [];
+      const nextHostIds = hostIds.filter((entry) => entry !== party.id);
+      if (nextHostIds.length !== hostIds.length) {
+        await AsyncStorage.setItem("hostPartyIds", JSON.stringify(nextHostIds));
+      }
+
+      router.replace("/");
+    } catch {
+      Alert.alert("Delete failed", "Could not delete this party.");
+    } finally {
+      setDeletingParty(false);
+    }
+  }
+
+  function confirmDeleteParty() {
+    Alert.alert(
+      "Delete party?",
+      "This will permanently remove this party.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            void handleDeleteParty();
+          },
+        },
+      ]
+    );
+  }
+
   if (loading) {
     return (
-      <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center" }}>
+      <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#08111f" }}>
         <ActivityIndicator />
-        <ThemedText style={{ textAlign: "center", marginTop: 12 }}>
+        <ThemedText style={{ textAlign: "center", marginTop: 12, color: "#afbdd5" }}>
           Loading party...
         </ThemedText>
       </ThemedView>
@@ -623,61 +704,66 @@ export default function PartyGuestViewScreen() {
 
   const canOpenMaps =
     rawLocation.length >= 6 || rawLocation.includes(" ");
+  const footerInset = Math.max(insets.bottom, 20) + 12;
+  const footerHeight = isHost ? 132 : 74;
+
+  function goBackToPreviousScreen() {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    router.replace("/");
+  }
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={{ flex: 1 }}
-      contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 100 }}
-      keyboardShouldPersistTaps="handled"
-    >
-      <ThemedText type="title">{partyName}</ThemedText>
+    <View style={{ flex: 1, backgroundColor: "#08111f" }}>
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1, backgroundColor: "#08111f" }}
+        contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: footerHeight + footerInset + 32 }}
+        keyboardShouldPersistTaps="handled"
+      >
+      <View style={styles.heroCard}>
+        <ThemedText style={styles.eyebrow}>
+          PARTY
+        </ThemedText>
+        <ThemedText type="title" style={styles.heroTitle}>
+          {partyName}
+        </ThemedText>
+        {!!whenText && (
+          <ThemedText style={styles.heroBody}>When: {whenText}</ThemedText>
+        )}
+      </View>
 
       {isHost ? (
-        <Pressable
-          onPress={() => router.push(`/(tabs)/create-party?id=${party.id}`)}
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-            alignSelf: "flex-start",
-            marginTop: 10,
-            marginBottom: 6,
-          }}
-        >
-          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
-            Edit Party
-          </ThemedText>
-        </Pressable>
+        <View style={styles.hostActions}>
+          <Pressable
+            onPress={() => router.push(`/(tabs)/create-party?id=${party.id}`)}
+            style={styles.secondaryButton}
+          >
+            <ThemedText style={styles.secondaryButtonText}>
+              Edit Party
+            </ThemedText>
+          </Pressable>
+        </View>
       ) : null}
 
-      {!!whenText && <ThemedText>When: {whenText}</ThemedText>}
-
       {!!party.location?.trim() && (
-        <ThemedView style={{ padding: 14, borderRadius: 16, gap: 10 }}>
-          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+        <ThemedView style={styles.sectionCard}>
+          <ThemedText style={styles.sectionHeading}>
             Where
           </ThemedText>
 
-          <ThemedText>{displayLocation}</ThemedText>
+          <ThemedText style={styles.sectionBodyStrong}>{displayLocation}</ThemedText>
 
           {canOpenMaps ? (
             <Pressable
               onPress={() => openInMaps(rawLocation)}
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                alignItems: "center",
-                borderRadius: 12,
-                paddingVertical: 12,
-                paddingHorizontal: 14,
-                borderWidth: 1,
-                alignSelf: "flex-start",
-              }}
+              style={[styles.secondaryButton, styles.inlineButton]}
             >
               <Ionicons name="location-outline" size={18} />
-              <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+              <ThemedText style={styles.secondaryButtonText}>
                 Open in Maps
               </ThemedText>
             </Pressable>
@@ -686,34 +772,43 @@ export default function PartyGuestViewScreen() {
       )}
 
       {!!party.notes?.trim() && (
-        <ThemedView style={{ padding: 14, borderRadius: 16, gap: 8 }}>
-          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+        <ThemedView style={styles.sectionCard}>
+          <ThemedText style={styles.sectionHeading}>
             Notes
           </ThemedText>
-          <ThemedText style={{ opacity: 0.8 }}>{party.notes.trim()}</ThemedText>
+          <ThemedText style={styles.sectionBody}>{party.notes.trim()}</ThemedText>
         </ThemedView>
       )}
 
-      <ThemedView style={{ padding: 14, borderRadius: 16, gap: 10 }}>
-        <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+      <ThemedView style={styles.sectionCard}>
+        <ThemedText style={styles.sectionHeading}>
           Your RSVP
         </ThemedText>
 
-        <ThemedView style={{ padding: 12, borderRadius: 12, gap: 6 }}>
-          <ThemedText>Yes: {rsvpSummary.yes}</ThemedText>
-          <ThemedText>Maybe: {rsvpSummary.maybe}</ThemedText>
-          <ThemedText>No: {rsvpSummary.no}</ThemedText>
-        </ThemedView>
+        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+          <ThemedView style={styles.summaryChip}>
+            <ThemedText style={styles.summaryLabel}>Yes</ThemedText>
+            <ThemedText style={styles.summaryValue}>{rsvpSummary.yes}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.summaryChip}>
+            <ThemedText style={styles.summaryLabel}>Maybe</ThemedText>
+            <ThemedText style={styles.summaryValue}>{rsvpSummary.maybe}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.summaryChip}>
+            <ThemedText style={styles.summaryLabel}>No</ThemedText>
+            <ThemedText style={styles.summaryValue}>{rsvpSummary.no}</ThemedText>
+          </ThemedView>
+        </View>
 
-        <ThemedView style={{ padding: 12, borderRadius: 12, gap: 6 }}>
+        <ThemedView style={styles.innerCard}>
           {(party.rsvps ?? []).length ? (
             (party.rsvps ?? []).map((rsvp) => (
-              <ThemedText key={rsvp.id}>
+              <ThemedText key={rsvp.id} style={styles.rsvpListText}>
                 {rsvp.name} - {rsvp.status === "yes" ? "Yes" : rsvp.status === "no" ? "No" : "Maybe"} - {rsvp.attendeeCount}
               </ThemedText>
             ))
           ) : (
-            <ThemedText style={{ opacity: 0.7 }}>No RSVPs yet.</ThemedText>
+            <ThemedText style={styles.sectionBody}>No RSVPs yet.</ThemedText>
           )}
         </ThemedView>
 
@@ -725,32 +820,27 @@ export default function PartyGuestViewScreen() {
           placeholder="Your name"
           placeholderTextColor="#666"
           autoCapitalize="words"
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
-            color: "#000",
-            backgroundColor: "#fff",
-          }}
+          style={styles.input}
         />
 
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
           {(["yes", "maybe", "no"] as PartyRsvpStatus[]).map((status) => {
             const selected = rsvpStatus === status;
             return (
               <Pressable
                 key={status}
                 onPress={() => setRsvpStatus(status)}
-                style={{
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  paddingVertical: 10,
-                  paddingHorizontal: 14,
-                  backgroundColor: selected ? "#ddd" : "transparent",
-                }}
+                style={[
+                  styles.rsvpChoice,
+                  selected ? styles.rsvpChoiceSelected : null,
+                ]}
               >
-                <ThemedText style={{ fontWeight: "600" }}>
+                <ThemedText
+                  style={{
+                    fontWeight: "600",
+                    color: selected ? "#f6efe7" : "#dfe7f5",
+                  }}
+                >
                   {status === "yes" ? "Yes" : status === "no" ? "No" : "Maybe"}
                 </ThemedText>
               </Pressable>
@@ -765,29 +855,18 @@ export default function PartyGuestViewScreen() {
           placeholderTextColor="#666"
           keyboardType="number-pad"
           inputMode="numeric"
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
-            color: "#000",
-            backgroundColor: "#fff",
-          }}
+          style={styles.input}
         />
 
         <Pressable
           onPress={saveRsvp}
           disabled={savingRsvp}
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
-            opacity: savingRsvp ? 0.6 : 1,
-            alignSelf: "flex-start",
-          }}
+          style={[
+            styles.primaryButton,
+            { opacity: savingRsvp ? 0.6 : 1, alignSelf: "flex-start" },
+          ]}
         >
-          <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+          <ThemedText style={{ fontSize: 16, fontWeight: "700", color: "#fff" }}>
             {savingRsvp ? "Saving..." : "Save RSVP"}
           </ThemedText>
         </Pressable>
@@ -798,11 +877,13 @@ export default function PartyGuestViewScreen() {
           whatToBringYRef.current = event.nativeEvent.layout.y;
         }}
       >
-        <ThemedText type="subtitle">What to bring</ThemedText>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          What to bring
+        </ThemedText>
       </View>
 
       {!canClaimItems ? (
-        <ThemedText style={{ opacity: 0.75 }}>
+        <ThemedText style={styles.sectionBody}>
           RSVP Yes to claim items.
         </ThemedText>
       ) : null}
@@ -818,23 +899,21 @@ export default function PartyGuestViewScreen() {
                 key={it.id ?? `${it.name}-${index}`}
                 onPress={() => toggleItemClaim(it.id)}
                 disabled={!canClaimItems || (claimed && !claimedByYou)}
-                style={{
-                  padding: 14,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  opacity: !canClaimItems ? 0.7 : claimed ? 0.55 : 1,
-                }}
+                style={[
+                  styles.itemCard,
+                  { opacity: !canClaimItems ? 0.7 : claimed ? 0.55 : 1 },
+                ]}
               >
-                <ThemedText style={{ fontSize: 18, fontWeight: "700" }}>
+                <ThemedText style={{ fontSize: 18, fontWeight: "700", color: "#f6efe7" }}>
                   {it.name}
                 </ThemedText>
                 {claimed ? (
-                  <ThemedText style={{ opacity: 0.85 }}>
+                  <ThemedText style={styles.sectionBodyStrong}>
                     Claimed by {it.claimedBy}
                     {claimedByYou ? " (you)" : ""}
                   </ThemedText>
                 ) : canClaimItems ? (
-                  <ThemedText style={{ opacity: 0.75 }}>
+                  <ThemedText style={styles.sectionBody}>
                     Tap to claim
                   </ThemedText>
                 ) : null}
@@ -843,34 +922,277 @@ export default function PartyGuestViewScreen() {
           })}
         </View>
       ) : (
-        <ThemedText>No items listed yet.</ThemedText>
+        <ThemedText style={{ color: "#adc0df" }}>No items listed yet.</ThemedText>
       )}
 
       {Platform.OS === "web" ? (
-        <ThemedView style={{ padding: 14, borderRadius: 16, gap: 10 }}>
-          <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
-            Want to claim items?
-          </ThemedText>
-          <ThemedText style={{ opacity: 0.85 }}>
+        <ThemedView style={styles.sectionCard}>
+        <ThemedText style={{ fontSize: 16, fontWeight: "700", color: "#f6efe7" }}>
+          Want to claim items?
+        </ThemedText>
+          <ThemedText style={styles.sectionBodyStrong}>
             {"Open this party in PartyPlus to claim what you're bringing."}
           </ThemedText>
 
           <Pressable
             onPress={() => router.replace("/share")}
-            style={{
-              borderWidth: 1,
-              borderRadius: 12,
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              alignSelf: "flex-start",
-            }}
+            style={styles.secondaryButton}
           >
-            <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+            <ThemedText style={styles.secondaryButtonText}>
               Open in PartyPlus
             </ThemedText>
           </Pressable>
         </ThemedView>
       ) : null}
-    </ScrollView>
+      </ScrollView>
+
+      {actionFeedback ? (
+        <ThemedView
+          style={{
+            position: "absolute",
+            left: 16,
+            right: 16,
+            bottom: footerHeight + footerInset + 12,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: "#2f61f3",
+            backgroundColor: "#101a2b",
+          }}
+        >
+          <ThemedText style={{ color: "#f6efe7", fontWeight: "700" }}>
+            {actionFeedback}
+          </ThemedText>
+        </ThemedView>
+      ) : null}
+
+      <View
+        style={[
+          styles.bottomActions,
+          {
+            paddingBottom: footerInset,
+          },
+        ]}
+      >
+        <Pressable onPress={goBackToPreviousScreen} style={styles.footerSecondaryButton}>
+          <ThemedText style={styles.secondaryButtonText}>Back</ThemedText>
+        </Pressable>
+
+        {isHost ? (
+          <Pressable
+            onPress={confirmDeleteParty}
+            disabled={deletingParty}
+            style={[styles.footerDeleteButton, deletingParty ? styles.deleteButtonDisabled : null]}
+          >
+            <ThemedText style={styles.deleteButtonText}>
+              {deletingParty ? "Deleting..." : "Delete Party"}
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  heroCard: {
+    padding: 20,
+    borderRadius: 26,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    shadowColor: "#020617",
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#ff9f87",
+    letterSpacing: 0.8,
+  },
+  heroTitle: {
+    color: "#f6efe7",
+  },
+  heroBody: {
+    color: "#afbdd5",
+    lineHeight: 22,
+  },
+  sectionCard: {
+    padding: 18,
+    borderRadius: 24,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    shadowColor: "#020617",
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  sectionHeading: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#f6efe7",
+  },
+  sectionBody: {
+    color: "#afbdd5",
+    lineHeight: 21,
+  },
+  sectionBodyStrong: {
+    color: "#dfe7f5",
+    lineHeight: 21,
+  },
+  innerCard: {
+    padding: 12,
+    borderRadius: 16,
+    gap: 6,
+    backgroundColor: "#132038",
+    borderWidth: 1,
+    borderColor: "#243554",
+  },
+  rsvpListText: {
+    lineHeight: 20,
+    color: "#dfe7f5",
+  },
+  secondaryButton: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignSelf: "flex-start",
+    backgroundColor: "#101a2b",
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#f6efe7",
+  },
+  inlineButton: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+  },
+  primaryButton: {
+    borderWidth: 1,
+    borderColor: "#2f61f3",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#2f61f3",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    color: "#f6efe7",
+    backgroundColor: "#132038",
+  },
+  rsvpChoice: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: "#101a2b",
+  },
+  rsvpChoiceSelected: {
+    backgroundColor: "#2f61f3",
+    borderColor: "#2f61f3",
+  },
+  summaryChip: {
+    minWidth: 86,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#132038",
+    gap: 2,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#ff9f87",
+  },
+  summaryValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#f6efe7",
+  },
+  hostActions: {
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  deleteButton: {
+    borderWidth: 1,
+    borderColor: "#b42318",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignSelf: "flex-start",
+    backgroundColor: "#5f1515",
+  },
+  deleteButtonDisabled: {
+    opacity: 0.65,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#ffe4e1",
+  },
+  itemCard: {
+    padding: 16,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    gap: 6,
+    shadowColor: "#020617",
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  },
+  sectionTitle: {
+    color: "#f6efe7",
+  },
+  bottomActions: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 12,
+    paddingHorizontal: 20,
+    gap: 10,
+    backgroundColor: "#08111f",
+    borderTopWidth: 1,
+    borderTopColor: "#243554",
+  },
+  footerSecondaryButton: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    backgroundColor: "#101a2b",
+  },
+  footerDeleteButton: {
+    borderWidth: 1,
+    borderColor: "#b42318",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    backgroundColor: "#5f1515",
+  },
+});

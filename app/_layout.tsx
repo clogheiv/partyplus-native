@@ -17,9 +17,10 @@ export const unstable_settings = {
 const prefix = Linking.createURL('/');
 
 export const linking = {
-  prefixes: [prefix, 'partyplusnative://', 'partyplus://', 'https://partyplus-invite.netlify.app'],
+  prefixes: [prefix, 'partyplusnative://'],
   config: {
     screens: {
+      'i/[id]': 'i/:id',
       'party/[id]': 'party/:id',
       '(tabs)': '',
       '(tabs)/create-party': 'create-party',
@@ -47,6 +48,16 @@ function getRouteLabel(route: Href | null) {
   }
 
   return route.pathname;
+}
+
+function routeToDebugString(route: Href | null) {
+  if (!route) return null;
+  if (typeof route === 'string') return route;
+  try {
+    return JSON.stringify(route);
+  } catch {
+    return route.pathname;
+  }
 }
 
 export default function RootLayout() {
@@ -139,6 +150,7 @@ export default function RootLayout() {
         <View style={{ flex: 1 }}>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="i/[id]" options={{ title: 'Invite' }} />
             <Stack.Screen name="__share" options={{ title: 'Invite' }} />
             <Stack.Screen name="party/[id]" options={{ title: 'Party' }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />

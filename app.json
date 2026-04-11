@@ -1,47 +1,23 @@
 {
   "expo": {
-    "name": "PartyPlusNative",
+    "name": "PartyPlus",
     "slug": "PartyPlusNative",
-    "scheme": ["partyplusnative", "partyplus"],
+    "scheme": "partyplusnative",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-  "adaptiveIcon": {
-    "backgroundColor": "#E5E4FE",
-    "foregroundImage": "./assets/images/android-icon-foreground.png",
-    "backgroundImage": "./assets/images/android-icon-background.png",
-    "monochromeImage": "./assets/images/android-icon-monochrome.png"
-  },
-  "package": "com.anonymous.PartyPlusNative",
-  "intentFilters": [
-    {
-      "action": "VIEW",
-      "data": [
-        {
-          "scheme": "https",
-          "host": "partyplus-invite.netlify.app",
-          "pathPrefix": "/i/"
-        }
-      ],
-      "category": ["BROWSABLE", "DEFAULT"]
+      "adaptiveIcon": {
+        "backgroundColor": "#0b0f14",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "package": "com.partyplus.app"
     },
-    {
-      "action": "VIEW",
-      "data": [
-        {
-          "scheme": "partyplusnative"
-        }
-      ],
-      "category": ["BROWSABLE", "DEFAULT"]
-    }
-  ]
-},
 
     "web": {
       "output": "static",
