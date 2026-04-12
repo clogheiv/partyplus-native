@@ -80,12 +80,6 @@ export default function PickActionScreen() {
         <ThemedText style={styles.secondaryBody}>Change details and items</ThemedText>
       </Pressable>
 
-      <Pressable
-        onPress={() => router.back()}
-        style={styles.backButton}
-      >
-        <ThemedText style={styles.backText}>Back</ThemedText>
-      </Pressable>
       </View>
     </ThemedView>
   );
@@ -167,19 +161,5 @@ const styles = StyleSheet.create({
   },
   secondaryBody: {
     color: "#afbdd5",
-  },
-  backButton: {
-    borderWidth: 1,
-    borderColor: "#243554",
-    borderRadius: 18,
-    padding: 15,
-    opacity: 0.9,
-    alignItems: "center",
-    marginTop: 6,
-    backgroundColor: "#101a2b",
-  },
-  backText: {
-    color: "#dfe7f5",
-    fontWeight: "600",
   },
 });

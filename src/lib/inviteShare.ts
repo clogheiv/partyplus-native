@@ -29,7 +29,9 @@ export function buildInviteData(party: Party) {
 }
 
 export function buildInviteLink(party: Party) {
-  return `https://partyplus.app/i/${party.id}`;
+  return `https://partyplus-invite.netlify.app/i/${party.id}?d=${encodeURIComponent(
+    buildInviteData(party)
+  )}`;
 }
 
 export function buildShareMessage(party: Party) {
