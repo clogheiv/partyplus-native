@@ -14,6 +14,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
 import { routeFromUrl } from "../src/lib/deepLinkRouting";
@@ -24,6 +25,7 @@ import type { Party as PartyType } from "../src/lib/partyTypes";
 
 export default function ShareScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ d?: string; id?: string }>();
   const rootNavState = useRootNavigationState();
   const inviteId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -188,7 +190,11 @@ export default function ShareScreen() {
     return (
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
+        contentContainerStyle={{
+          padding: 20,
+          gap: 12,
+          paddingBottom: Math.max(insets.bottom, 20) + 60,
+        }}
       >
         <ThemedText type="title">Share Invite</ThemedText>
         <ThemedText>No party selected yet.</ThemedText>
@@ -207,7 +213,12 @@ export default function ShareScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: "#08111f" }}
-      contentContainerStyle={{ paddingHorizontal: 18, paddingTop: 20, gap: 16, paddingBottom: 34 }}
+      contentContainerStyle={{
+        paddingHorizontal: 18,
+        paddingTop: 20,
+        gap: 16,
+        paddingBottom: Math.max(insets.bottom, 20) + 14,
+      }}
     >
       <ThemedView style={styles.heroCard}>
         <ThemedText style={styles.eyebrow}>
@@ -217,7 +228,7 @@ export default function ShareScreen() {
           {party.title}
         </ThemedText>
         <ThemedText style={styles.heroBody}>
-          Copy the invite link or send it with your phone's share sheet.
+          Copy the invite link or send it with your phone&apos;s share sheet.
         </ThemedText>
       </ThemedView>
 

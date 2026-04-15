@@ -8,7 +8,7 @@ export default function NotFoundScreen() {
     <View style={styles.container}>
       <ThemedText type="title">Item not found</ThemedText>
       <ThemedText style={styles.text}>
-        This screen doesn't exist.
+        This screen doesn&apos;t exist.
       </ThemedText>
 
       <Link href="/" style={styles.link}>

@@ -671,23 +671,8 @@ onPress={() => {
   <DateTimePicker
     value={partyDate ?? new Date()}
     mode={pickerMode}
-    onChange={(event, selected) => {
-      if (!selected) {
-        setShowPicker(false);
-        return;
-      }
-
-      setPartyDate(selected);
-
-      if (Platform.OS === "android") {
-        if (pickerMode === "date") {
-          setPickerMode("time");
-          setShowPicker(true);
-        } else {
-          setShowPicker(false);
-        }
-      }
-    }}
+    display={Platform.OS === "ios" ? "spinner" : "default"}
+    onChange={onChangePicker}
   />
 )}
 

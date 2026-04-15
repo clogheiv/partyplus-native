@@ -158,9 +158,7 @@
       }
 
       const directPartyPath = `party/${encodeURIComponent(inviteId || "")}`;
-      const nativeSchemeLink = d
-        ? `partyplusnative://${directPartyPath}?d=${encodeURIComponent(d)}`
-        : `partyplusnative://${directPartyPath}`;
+      const nativeSchemeLink = `partyplusnative://${directPartyPath}`;
 
       const openApp = document.getElementById("openApp");
       const getApp = document.getElementById("getApp");

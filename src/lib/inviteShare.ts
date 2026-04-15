@@ -84,9 +84,9 @@ export function buildShareMessage(party: Party) {
         ...shown.map((name) => {
           const key = name.toLowerCase();
           const count = counts.get(key) ?? 1;
-          return `• ${name}${count > 1 ? ` (x${count})` : ""}`;
+          return `- ${name}${count > 1 ? ` (x${count})` : ""}`;
         }),
-        ...(remaining > 0 ? [`• and ${remaining} more`] : []),
+        ...(remaining > 0 ? [`- and ${remaining} more`] : []),
       ].join("\n")
     : "";
 
