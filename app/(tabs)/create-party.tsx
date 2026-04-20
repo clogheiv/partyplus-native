@@ -1,7 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { useFocusEffect } from "@react-navigation/native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
@@ -10,9 +12,9 @@ import {
   Animated, findNodeHandle, Keyboard,
   KeyboardAvoidingView,
   LayoutAnimation,
+  Modal,
   Platform,
   Pressable,
-  Share,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -25,7 +27,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createRemoteParty, replaceRemotePartyItems } from "../../src/data/parties";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
-import { buildShareMessage } from "../../src/lib/inviteShare";
+import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
 
@@ -51,6 +53,7 @@ const inputStyleMultiline = {
 export default function CreatePartyScreen() {
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
+  const isIos = Platform.OS === "ios";
   const scrollRef = useRef<ScrollView>(null);
   const itemInputRef = useRef<TextInput>(null);
   const notesInputRef = useRef<TextInput>(null);
@@ -71,6 +74,8 @@ const isEditing = !!partyId;
   const [partyDate, setPartyDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState<"date" | "time">("date");
+  const [iosPickerVisible, setIosPickerVisible] = useState(false);
+  const [iosPickerDraft, setIosPickerDraft] = useState(new Date());
   useEffect(() => {
   if (!isEditing) return;
 
@@ -93,28 +98,92 @@ const isEditing = !!partyId;
   })();
 }, [isEditing, partyId]);
 
-  const onChangePicker = (_event: any, selected?: Date) => {
-  if (!selected) {
+  const mergeDatePart = (baseDate: Date | null, nextDate: Date) => {
+  const base = baseDate ?? new Date();
+  const next = new Date(base);
+  next.setFullYear(
+    nextDate.getFullYear(),
+    nextDate.getMonth(),
+    nextDate.getDate()
+  );
+  return next;
+};
+
+const mergeTimePart = (baseDate: Date | null, nextTime: Date) => {
+  const base = baseDate ?? new Date();
+  const next = new Date(base);
+  next.setHours(nextTime.getHours(), nextTime.getMinutes(), 0, 0);
+  return next;
+};
+
+const closeIosPicker = () => {
+  setIosPickerVisible(false);
+  setPickerMode("date");
+};
+
+const openDateTimePicker = () => {
+  if (Platform.OS === "web") {
+    Alert.alert(
+      "Date picker works on phone",
+      "On web, the native date/time picker isn't supported. Use Expo Go on your phone to set date & time."
+    );
+    return;
+  }
+
+  Keyboard.dismiss();
+
+  if (isIos) {
+    setIosPickerDraft(partyDate ?? new Date());
+    setPickerMode("date");
+    setIosPickerVisible(true);
+    return;
+  }
+
+  setPickerMode("date");
+  setShowPicker(true);
+};
+
+  const onChangePicker = (
+  event: DateTimePickerEvent,
+  selected?: Date
+) => {
+  if (event.type === "dismissed" || !selected) {
     setShowPicker(false);
+    setPickerMode("date");
     return;
   }
 
   if (pickerMode === "date") {
-    const base = partyDate ?? new Date();
-    const next = new Date(selected);
-    next.setHours(base.getHours(), base.getMinutes(), 0, 0);
-    setPartyDate(next);
-
+    setPartyDate(mergeDatePart(partyDate, selected));
+    setIsDirty(true);
     setPickerMode("time");
     setShowPicker(true);
     return;
   }
 
-  const base = partyDate ?? new Date();
-  const next = new Date(base);
-  next.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
-  setPartyDate(next);
+  setPartyDate(mergeTimePart(partyDate, selected));
+  setIsDirty(true);
   setShowPicker(false);
+  setPickerMode("date");
+};
+
+const onChangeIosPicker = (
+  _event: DateTimePickerEvent,
+  selected?: Date
+) => {
+  if (!selected) return;
+
+  setIosPickerDraft((current) =>
+    pickerMode === "date"
+      ? mergeDatePart(current, selected)
+      : mergeTimePart(current, selected)
+  );
+};
+
+const confirmIosPicker = () => {
+  setPartyDate(iosPickerDraft);
+  setIsDirty(true);
+  closeIosPicker();
 };
 
   const [webDateText, setWebDateText] = useState("");
@@ -224,6 +293,8 @@ useEffect(() => {
   setItemText("");
   setShowPicker(false);
   setPickerMode("date");
+  setIosPickerVisible(false);
+  setIosPickerDraft(new Date());
   setIsDirty(false);
   setLastRemoved(null);
   requestAnimationFrame(() => {
@@ -407,6 +478,16 @@ function confirmRemoveItem(index: number) {
   );
 }
 
+  async function handleShareSavedParty(party: Party, id: string) {
+    try {
+      await sharePartyInvite(party);
+    } catch {
+      Alert.alert("Share failed", "Could not open the share sheet.");
+    } finally {
+      router.replace(`/party/${id}`);
+    }
+  }
+
   async function handleSave() {
     const cleanTitle = title.trim();
     if (!cleanTitle) {
@@ -501,14 +582,8 @@ if (!hostIds.includes(party.id)) {
         },
         {
           text: "Share now",
-          onPress: async () => {
-            try {
-              await Share.share({ message: buildShareMessage(party) });
-            } catch {
-              Alert.alert("Share failed", "Could not open the share sheet.");
-            } finally {
-              router.replace(`/party/${id}`);
-            }
+          onPress: () => {
+            void handleShareSavedParty(party, id);
           },
         },
       ],
@@ -634,17 +709,7 @@ return (
 <ThemedText type="subtitle" style={styles.sectionLabel}>Date & Time</ThemedText>
 
 <Pressable
-onPress={() => {
-  if (Platform.OS === "web") {
-    Alert.alert(
-      "Date picker works on phone",
-      "On web, the native date/time picker isn't supported. Use Expo Go on your phone to set date & time."
-    );
-    return;
-  }
-  setPickerMode("date");
-  setShowPicker(true);
-}}
+onPress={openDateTimePicker}
  
   style={styles.inputButton}
 
@@ -671,9 +736,91 @@ onPress={() => {
   <DateTimePicker
     value={partyDate ?? new Date()}
     mode={pickerMode}
-    display={Platform.OS === "ios" ? "spinner" : "default"}
+    display="default"
     onChange={onChangePicker}
   />
+)}
+
+{isIos && (
+  <Modal
+    visible={iosPickerVisible}
+    animationType="slide"
+    transparent
+    onRequestClose={closeIosPicker}
+  >
+    <View style={styles.iosPickerOverlay}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={closeIosPicker} />
+      <View
+        style={[
+          styles.iosPickerSheetWrap,
+          { paddingBottom: Math.max(insets.bottom, 16) },
+        ]}
+      >
+        <View style={styles.iosPickerSheet}>
+          <View style={styles.iosPickerHeader}>
+            <Pressable onPress={closeIosPicker} style={styles.iosPickerAction}>
+              <ThemedText style={styles.iosPickerActionText}>Cancel</ThemedText>
+            </Pressable>
+            <ThemedText style={styles.iosPickerTitle}>Set Date & Time</ThemedText>
+            <Pressable onPress={confirmIosPicker} style={styles.iosPickerAction}>
+              <ThemedText style={styles.iosPickerDoneText}>Done</ThemedText>
+            </Pressable>
+          </View>
+
+          <ThemedText style={styles.iosPickerPreview}>
+            {iosPickerDraft.toLocaleString()}
+          </ThemedText>
+
+          <View style={styles.iosPickerModeRow}>
+            <Pressable
+              onPress={() => setPickerMode("date")}
+              style={[
+                styles.iosPickerModeButton,
+                pickerMode === "date" && styles.iosPickerModeButtonActive,
+              ]}
+            >
+              <ThemedText
+                style={[
+                  styles.iosPickerModeText,
+                  pickerMode === "date" && styles.iosPickerModeTextActive,
+                ]}
+              >
+                Date
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              onPress={() => setPickerMode("time")}
+              style={[
+                styles.iosPickerModeButton,
+                pickerMode === "time" && styles.iosPickerModeButtonActive,
+              ]}
+            >
+              <ThemedText
+                style={[
+                  styles.iosPickerModeText,
+                  pickerMode === "time" && styles.iosPickerModeTextActive,
+                ]}
+              >
+                Time
+              </ThemedText>
+            </Pressable>
+          </View>
+
+          <View style={styles.iosPickerControlWrap}>
+            <DateTimePicker
+              value={iosPickerDraft}
+              mode={pickerMode}
+              display="spinner"
+              textColor="#f6efe7"
+              themeVariant="dark"
+              onChange={onChangeIosPicker}
+              style={styles.iosPickerControl}
+            />
+          </View>
+        </View>
+      </View>
+    </View>
+  </Modal>
 )}
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>Notes</ThemedText>
@@ -791,6 +938,96 @@ const styles = StyleSheet.create({
   },
   inputButtonText: {
     color: "#f6efe7",
+  },
+  iosPickerOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(3, 8, 20, 0.55)",
+  },
+  iosPickerSheetWrap: {
+    width: "100%",
+    paddingHorizontal: 16,
+  },
+  iosPickerSheet: {
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 520,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  iosPickerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  iosPickerAction: {
+    minWidth: 72,
+    paddingVertical: 8,
+  },
+  iosPickerActionText: {
+    color: "#dfe7f5",
+    fontWeight: "600",
+  },
+  iosPickerDoneText: {
+    color: "#6ee7ff",
+    fontWeight: "800",
+    textAlign: "right",
+  },
+  iosPickerTitle: {
+    flex: 1,
+    color: "#f6efe7",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "800",
+  },
+  iosPickerPreview: {
+    marginTop: 12,
+    color: "#f6efe7",
+    textAlign: "center",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  iosPickerModeRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 16,
+  },
+  iosPickerModeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#132038",
+    alignItems: "center",
+  },
+  iosPickerModeButtonActive: {
+    borderColor: "#2f61f3",
+    backgroundColor: "#16294a",
+  },
+  iosPickerModeText: {
+    color: "#dfe7f5",
+    fontWeight: "700",
+  },
+  iosPickerModeTextActive: {
+    color: "#f6efe7",
+  },
+  iosPickerControlWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 236,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  iosPickerControl: {
+    width: "100%",
+    maxWidth: 360,
+    height: 216,
   },
   addItemButton: {
     padding: 14,

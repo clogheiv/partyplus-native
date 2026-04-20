@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Install PartyPlus</title>
+    <style>
+      :root {
+        --bg-top: #f8fbff;
+        --bg-bottom: #e8f0ff;
+        --card: rgba(255, 255, 255, 0.94);
+        --text: #10203a;
+        --muted: #53627c;
+        --border: rgba(16, 32, 58, 0.1);
+        --primary: #1877f2;
+        --primary-press: #0f63cf;
+        --secondary: #eef4ff;
+        --secondary-text: #163866;
+        --shadow: 0 20px 50px rgba(19, 41, 76, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(24, 119, 242, 0.16), transparent 34%),
+          linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      }
+
+      .page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .card {
+        width: min(100%, 420px);
+        padding: 28px 20px 22px;
+        border-radius: 24px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(2rem, 7vw, 2.7rem);
+        line-height: 1.05;
+        text-align: center;
+      }
+
+      .steps {
+        margin: 0 0 22px;
+        padding-left: 22px;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.5;
+      }
+
+      .steps li + li {
+        margin-top: 8px;
+      }
+
+      .actions {
+        display: grid;
+        gap: 14px;
+      }
+
+      .button {
+        display: block;
+        width: 100%;
+        padding: 18px 20px;
+        border-radius: 18px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 700;
+        transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .button:active {
+        transform: scale(0.985);
+      }
+
+      .button-secondary {
+        background: var(--secondary);
+        color: var(--secondary-text);
+        border: 1px solid rgba(24, 119, 242, 0.16);
+      }
+
+      .button-primary {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 16px 28px rgba(24, 119, 242, 0.28);
+      }
+
+      .button-primary:active {
+        background: var(--primary-press);
+      }
+
+      .note {
+        margin: 16px 0 0;
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+
+      @media (min-width: 640px) {
+        .card {
+          padding: 34px 28px 26px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="card">
+        <h1>Install PartyPlus</h1>
+
+        <ol class="steps">
+          <li>Download TestFlight.</li>
+          <li>Tap Install PartyPlus.</li>
+        </ol>
+
+        <div class="actions">
+          <a
+            class="button button-secondary"
+            href="https://apps.apple.com/us/app/testflight/id899247664"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Download TestFlight
+          </a>
+
+          <a
+            class="button button-primary"
+            href="https://testflight.apple.com/join/8ezk4wWf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Install PartyPlus
+          </a>
+        </div>
+
+        <p class="note">After installing TestFlight, come back and tap Install PartyPlus.</p>
+      </section>
+    </main>
+  </body>
+</html>

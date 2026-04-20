@@ -10,7 +10,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  Share,
   StyleSheet,
   View,
 } from "react-native";
@@ -19,7 +18,7 @@ import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
 import { routeFromUrl } from "../src/lib/deepLinkRouting";
 import { ensureUserId } from "../src/lib/ids";
-import { buildShareMessage } from "../src/lib/inviteShare";
+import { buildShareMessage, sharePartyInvite } from "../src/lib/inviteShare";
 import { getCurrentPartyId, getPartyById, setCurrentPartyId, upsertParty } from "../src/lib/partyStore";
 import type { Party as PartyType } from "../src/lib/partyTypes";
 
@@ -36,6 +35,7 @@ export default function ShareScreen() {
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<PartyType | null>(null);
   const [isHost, setIsHost] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     if (!inviteId) return;
@@ -169,12 +169,15 @@ export default function ShareScreen() {
   }
 
   async function handleNativeShare() {
-    if (!party) return;
+    if (!party || sharing) return;
 
+    setSharing(true);
     try {
-      await Share.share({ message: buildShareMessage(party) });
+      await sharePartyInvite(party);
     } catch {
       Alert.alert("Share failed", "Could not open the share sheet.");
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -286,7 +289,8 @@ export default function ShareScreen() {
 
         <Pressable
           onPress={handleNativeShare}
-          style={styles.primaryButtonFull}
+          disabled={sharing}
+          style={[styles.primaryButtonFull, sharing ? { opacity: 0.7 } : null]}
         >
           <ThemedText style={styles.primaryButtonText}>
             Share Invite

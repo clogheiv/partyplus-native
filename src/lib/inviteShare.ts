@@ -1,4 +1,5 @@
 import { encode as b64encode } from "base-64";
+import { InteractionManager, Keyboard, Platform, Share } from "react-native";
 import type { Party } from "./partyTypes";
 
 function toBase64Url(input: string) {
@@ -6,6 +7,16 @@ function toBase64Url(input: string) {
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/g, "");
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function waitForInteractions() {
+  return new Promise<void>((resolve) => {
+    InteractionManager.runAfterInteractions(() => resolve());
+  });
 }
 
 export function buildInviteData(party: Party) {
@@ -84,9 +95,9 @@ export function buildShareMessage(party: Party) {
         ...shown.map((name) => {
           const key = name.toLowerCase();
           const count = counts.get(key) ?? 1;
-          return `- ${name}${count > 1 ? ` (x${count})` : ""}`;
+          return `• ${name}${count > 1 ? ` (x${count})` : ""}`;
         }),
-        ...(remaining > 0 ? [`- and ${remaining} more`] : []),
+        ...(remaining > 0 ? [`• and ${remaining} more`] : []),
       ].join("\n")
     : "";
 
@@ -107,4 +118,42 @@ export function buildShareMessage(party: Party) {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+export function buildSharePayload(party: Party) {
+  const message = buildShareMessage(party).trim();
+  const url = buildInviteLink(party).trim();
+
+  if (!message) {
+    throw new Error("Invite share message is empty.");
+  }
+
+  if (!url) {
+    throw new Error("Invite share link is empty.");
+  }
+
+  return { message, url };
+}
+
+export async function sharePartyInvite(party: Party) {
+  const { message, url } = buildSharePayload(party);
+
+  Keyboard.dismiss();
+
+  if (Platform.OS === "ios") {
+    await waitForInteractions();
+    await wait(75);
+
+    return Share.share(
+      {
+        message,
+        url,
+      },
+      {
+        subject: party.title?.trim() || "Party Invite",
+      }
+    );
+  }
+
+  return Share.share({ message });
 }
