@@ -5,7 +5,7 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 const PARTIES_TABLE = "parties";
 const PARTY_ITEMS_TABLE = "party_items";
 const PARTY_RSVPS_TABLE = "party_rsvps";
-const PARTY_ITEM_COLUMNS = "id, party_id, name, qty, claimed_by, sort_order";
+const PARTY_ITEM_COLUMNS = "id, party_id, name, qty, claimed_by, claimed_by_user_id, sort_order";
 
 type PartyRow = {
   id: string;
@@ -28,6 +28,7 @@ type PartyItemRow = {
   name: string;
   qty: string | null;
   claimed_by: string | null;
+  claimed_by_user_id: string | null;
   sort_order: number | null;
 };
 
@@ -56,6 +57,7 @@ type PartyItemInsertRow = {
   name: string;
   qty: string | null;
   claimed_by: string | null;
+  claimed_by_user_id: string | null;
   sort_order: number;
 };
 
@@ -121,6 +123,7 @@ function toPartyItem(item: PartyItemRow): PartyItem {
     name: item.name,
     qty: item.qty ?? undefined,
     claimedBy: item.claimed_by ?? undefined,
+    claimedByUserId: item.claimed_by_user_id ?? undefined,
   };
 }
 
@@ -131,6 +134,7 @@ function toPartyItemInsertRows(partyId: string, items: PartyItem[]): PartyItemIn
     name: item.name,
     qty: toNullableText(item.qty),
     claimed_by: toNullableText(item.claimedBy),
+    claimed_by_user_id: toNullableText(item.claimedByUserId),
     sort_order: index,
   }));
 }

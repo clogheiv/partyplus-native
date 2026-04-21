@@ -32,6 +32,7 @@ export function buildInviteData(party: Party) {
           name: it.name ?? "",
           qty: it.qty ?? undefined,
           claimedBy: it.claimedBy ?? undefined,
+          claimedByUserId: it.claimedByUserId ?? undefined,
         }))
       : [],
   };

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Buffer } from "buffer";
-import { useLocalSearchParams, useNavigation, usePathname, useRouter } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,6 +23,7 @@ import { ThemedView } from "../../components/themed-view";
 import { deleteRemoteParty, getRemotePartyById, getRemotePartyItems, updateRemoteParty } from "../../src/data/parties";
 import { getRemotePartyRsvps } from "../../src/data/partyRsvps";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
+import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
 import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../../src/lib/supabase";
@@ -48,7 +49,7 @@ function decodeInvitePayload(d: string | undefined) {
 }
 
 function normalizePartyForView(input: any): Party {
-  return {
+  const normalized = {
     ...input,
     title: input?.title ?? "Party",
     date: input?.date ?? undefined,
@@ -72,10 +73,13 @@ function normalizePartyForView(input: any): Party {
           ...it,
           qty: it?.qty ?? undefined,
           claimedBy: it?.claimedBy ?? undefined,
+          claimedByUserId: it?.claimedByUserId ?? it?.claimed_by_user_id ?? undefined,
           createdBy: it?.createdBy ?? undefined,
         }))
       : [],
   };
+
+  return reconcilePartyState(normalized);
 }
 
 function wait(ms: number) {
@@ -98,7 +102,6 @@ async function applyLoadedParty(
 
 export default function PartyGuestViewScreen() {
   const navigation = useNavigation();
-  const pathname = usePathname();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
@@ -219,6 +222,7 @@ export default function PartyGuestViewScreen() {
                     ...it,
                     id: it.id ?? createUuid(),
                     claimedBy: it.claimedBy ?? undefined,
+                    claimedByUserId: it.claimedByUserId ?? undefined,
                   }))
               : [],
           });
@@ -249,7 +253,7 @@ export default function PartyGuestViewScreen() {
     };
 
     run();
-  }, [d, id]);
+  }, [d, id, router]);
 
   useEffect(() => {
     navigation.setOptions({ title: partyName });
@@ -372,7 +376,7 @@ export default function PartyGuestViewScreen() {
 
     setRsvpStatus(null);
     setAttendeeCountText("1");
-  }, [currentUserId, currentUserRsvp?.updatedAt]);
+  }, [currentUserId, currentUserRsvp]);
 
   const openInMaps = async (address: string) => {
     const q = encodeURIComponent(address.trim());
@@ -525,10 +529,7 @@ export default function PartyGuestViewScreen() {
         updatedAt: new Date().toISOString(),
       };
 
-      const nextParty = normalizePartyForView({
-        ...party,
-        rsvps: [...(party.rsvps ?? []).filter((rsvp) => rsvp.id !== userId), nextRsvp],
-      });
+      const nextParty = applyRsvpForUser(party, userId, nextRsvp);
 
       setParty(nextParty);
       await upsertParty(nextParty);
@@ -567,20 +568,8 @@ export default function PartyGuestViewScreen() {
 
     clearClaimPromptTimer();
     const me = currentUserRsvp.name.trim();
-    const updatedItems = party.items.map((item) => {
-      if (item.id !== itemId) return item;
-
-      const claimedBy = item.claimedBy ?? null;
-      if (!claimedBy) return { ...item, claimedBy: me };
-      if (claimedBy === me) return { ...item, claimedBy: undefined };
-      return item;
-    });
-
-    const nextParty = normalizePartyForView({
-      ...party,
-      items: updatedItems,
-    });
-    const updatedItem = updatedItems.find((item) => item.id === itemId);
+    const nextParty = toggleItemClaimForUser(party, itemId, currentUserRsvp.id, me);
+    const updatedItem = nextParty.items.find((item) => item.id === itemId);
 
     setParty(nextParty);
     await upsertParty(nextParty);
@@ -892,7 +881,9 @@ export default function PartyGuestViewScreen() {
         <View style={{ gap: 10 }}>
           {party.items.map((it, index) => {
             const claimed = !!it.claimedBy;
-            const claimedByYou = claimed && it.claimedBy === currentUserRsvp?.name.trim();
+            const claimedByYou =
+              !!currentUserRsvp &&
+              itemClaimMatchesUser(it, currentUserRsvp.id, currentUserRsvp.name);
 
             return (
               <Pressable

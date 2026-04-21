@@ -44,6 +44,8 @@ const inputStyle = {
   color: "#f6efe7",
 };
 
+const inputPlaceholderColor = "#8ea4c5";
+
 const inputStyleMultiline = {
   ...inputStyle,
   minHeight: 90,
@@ -545,6 +547,7 @@ function confirmRemoveItem(index: number) {
     name,
     qty: "",
     claimedBy: undefined,
+    claimedByUserId: undefined,
     createdBy: undefined,
   };
 }),
@@ -690,7 +693,7 @@ return (
 }}
 
         placeholder="Fin's Birthday Bash"
-        placeholderTextColor="#555"
+        placeholderTextColor={inputPlaceholderColor}
         autoCapitalize="words"
         style={inputStyle}
       />
@@ -703,7 +706,7 @@ return (
   setIsDirty(true);
 }}
         placeholder="123 River Rd / Our house / The camp"
-        placeholderTextColor="#555"
+        placeholderTextColor={inputPlaceholderColor}
         style={inputStyle}
       />
 <ThemedText type="subtitle" style={styles.sectionLabel}>Date & Time</ThemedText>
@@ -725,7 +728,7 @@ onPress={openDateTimePicker}
     value={webDateText}
     onChangeText={setWebDateText}
     placeholder="YYYY-MM-DDTHH:MM (or use picker if supported)"
-    placeholderTextColor="#555"
+    placeholderTextColor={inputPlaceholderColor}
     style={inputStyle}
     inputMode="numeric"
   />
@@ -833,7 +836,7 @@ onPress={openDateTimePicker}
   setIsDirty(true);
 }}
         placeholder="Start time, parking, what to bring, etc."
-        placeholderTextColor="#555"
+        placeholderTextColor={inputPlaceholderColor}
         multiline
         style={inputStyleMultiline}
       />
@@ -847,7 +850,7 @@ onPress={openDateTimePicker}
         value={itemText}
         onChangeText={setItemText}
         placeholder="Chips, ice, drinks, chairs..."
-        placeholderTextColor="#555"
+        placeholderTextColor={inputPlaceholderColor}
         blurOnSubmit={false}
         style={inputStyle}
       />

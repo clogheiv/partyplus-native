@@ -104,6 +104,7 @@ export default function ShareScreen() {
                 ? decoded.items.map((it: any) => ({
                     ...it,
                     claimedBy: it?.claimedBy ?? undefined,
+                    claimedByUserId: it?.claimedByUserId ?? undefined,
                   }))
                 : decoded?.items ?? [],
             };

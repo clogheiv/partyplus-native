@@ -3,6 +3,7 @@ export type PartyItem = {
   name: string;
   qty?: string;
   claimedBy?: string;
+  claimedByUserId?: string;
   createdBy?: string;
 };
 
