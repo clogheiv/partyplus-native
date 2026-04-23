@@ -21,6 +21,12 @@ function waitForInteractions() {
 
 export function buildInviteData(party: Party) {
   const payload = {
+    id: party.id,
+    title: party.title ?? "",
+    date: party.date ?? "",
+    location: party.location ?? "",
+    notes: party.notes ?? "",
+    hostId: party.hostId ?? "",
     t: party.title ?? "",
     dt: party.date ?? "",
     l: party.location ?? "",
@@ -138,6 +144,12 @@ export function buildSharePayload(party: Party) {
 
 export async function sharePartyInvite(party: Party) {
   const { message, url } = buildSharePayload(party);
+  console.log("[invite] sharePayload", {
+    partyId: party.id,
+    url,
+    messageLength: message.length,
+    itemCount: party.items?.length ?? 0,
+  });
 
   Keyboard.dismiss();
 

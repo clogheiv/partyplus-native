@@ -6,6 +6,7 @@ const PARTIES_TABLE = "parties";
 const PARTY_ITEMS_TABLE = "party_items";
 const PARTY_RSVPS_TABLE = "party_rsvps";
 const PARTY_ITEM_COLUMNS = "id, party_id, name, qty, claimed_by, claimed_by_user_id, sort_order";
+const PARTY_ITEM_COLUMNS_LEGACY = "id, party_id, name, qty, claimed_by, sort_order";
 
 type PartyRow = {
   id: string;
@@ -68,6 +69,15 @@ function nowISO() {
 function toNullableText(value?: string) {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
+}
+
+function isMissingClaimOwnerColumnError(error: unknown) {
+  const message =
+    typeof error === "object" && error && "message" in error
+      ? String((error as { message?: unknown }).message ?? "")
+      : "";
+
+  return message.includes("claimed_by_user_id");
 }
 
 function toPartyInsertRow(party: Party): PartyInsertRow {
@@ -139,6 +149,17 @@ function toPartyItemInsertRows(partyId: string, items: PartyItem[]): PartyItemIn
   }));
 }
 
+function toLegacyPartyItemInsertRows(partyId: string, items: PartyItem[]) {
+  return items.map((item, index) => ({
+    id: item.id,
+    party_id: partyId,
+    name: item.name,
+    qty: toNullableText(item.qty),
+    claimed_by: toNullableText(item.claimedBy),
+    sort_order: index,
+  }));
+}
+
 export async function createRemoteParty(party: Party): Promise<Party | null> {
   if (!isSupabaseConfigured) return null;
 
@@ -147,8 +168,11 @@ export async function createRemoteParty(party: Party): Promise<Party | null> {
     .upsert(toPartyInsertRow(party), { onConflict: "id" });
   if (error) throw error;
 
-  await replaceRemotePartyRsvps(party.id, party.rsvps ?? []);
-  return party;
+  await Promise.all([
+    replaceRemotePartyItems(party.id, party.items ?? []),
+    replaceRemotePartyRsvps(party.id, party.rsvps ?? []),
+  ]);
+  return getRemotePartyById(party.id);
 }
 
 export async function getRemotePartyById(id: string): Promise<Party | null> {
@@ -246,7 +270,17 @@ export async function replaceRemotePartyItems(partyId: string, items: PartyItem[
     .from(PARTY_ITEMS_TABLE)
     .insert(toPartyItemInsertRows(partyId, nextItems));
 
-  if (insertError) throw insertError;
+  if (insertError) {
+    if (!isMissingClaimOwnerColumnError(insertError)) {
+      throw insertError;
+    }
+
+    const { error: legacyInsertError } = await supabase
+      .from(PARTY_ITEMS_TABLE)
+      .insert(toLegacyPartyItemInsertRows(partyId, nextItems));
+
+    if (legacyInsertError) throw legacyInsertError;
+  }
 
   return getRemotePartyItems(partyId);
 }
@@ -260,7 +294,23 @@ export async function getRemotePartyItems(partyId: string): Promise<PartyItem[]>
     .eq("party_id", partyId)
     .order("sort_order", { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    if (!isMissingClaimOwnerColumnError(error)) {
+      throw error;
+    }
+
+    const { data: legacyData, error: legacyError } = await supabase
+      .from(PARTY_ITEMS_TABLE)
+      .select(PARTY_ITEM_COLUMNS_LEGACY)
+      .eq("party_id", partyId)
+      .order("sort_order", { ascending: true });
+
+    if (legacyError) throw legacyError;
+
+    return (legacyData ?? []).map((item) =>
+      toPartyItem({ ...(item as PartyItemRow), claimed_by_user_id: null })
+    );
+  }
 
   return (data ?? []).map((item) => toPartyItem(item as PartyItemRow));
 }

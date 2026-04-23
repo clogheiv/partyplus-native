@@ -77,8 +77,10 @@ export default function RootLayout() {
     const captureInitial = async () => {
       try {
         const initialUrl = await Linking.getInitialURL();
+        console.log("[deep-link] initialUrl", initialUrl);
         if (initialUrl) {
           const r = routeFromUrl(initialUrl);
+          console.log("[deep-link] initialRoute", routeToDebugString(r));
           if (r) {
             const routeLabel = getRouteLabel(r);
             setPendingRoute(r);
@@ -92,7 +94,9 @@ export default function RootLayout() {
     };
 
     const captureIncoming = (e: { url: string }) => {
+      console.log("[deep-link] incomingUrl", e.url);
       const r = routeFromUrl(e.url);
+      console.log("[deep-link] incomingRoute", routeToDebugString(r));
       if (r) {
         const routeLabel = getRouteLabel(r);
         didInitialReplaceRef.current = false;
@@ -117,6 +121,7 @@ export default function RootLayout() {
 
     didInitialReplaceRef.current = true;
     const target = pendingRoute;
+    console.log("[deep-link] navigatingTo", routeToDebugString(target));
 
     router.replace(target as any);
   }, [initialLinkResolved, pendingRoute, rootNavState?.key]);

@@ -20,8 +20,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
-import { deleteRemoteParty, getRemotePartyById, getRemotePartyItems, updateRemoteParty } from "../../src/data/parties";
+import {
+  deleteRemoteParty,
+  getRemotePartyById,
+  getRemotePartyItems,
+  replaceRemotePartyItems,
+} from "../../src/data/parties";
 import { getRemotePartyRsvps } from "../../src/data/partyRsvps";
+import { replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
 import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
 import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -82,6 +88,24 @@ function normalizePartyForView(input: any): Party {
   return reconcilePartyState(normalized);
 }
 
+function inviteItemsToPartyItems(items: any): Party["items"] {
+  return Array.isArray(items)
+    ? items.map((it: any) => ({
+        ...it,
+        id: it?.id ?? createUuid(),
+        qty: it?.qty ?? undefined,
+        claimedBy: it?.claimedBy ?? undefined,
+        claimedByUserId: it?.claimedByUserId ?? it?.claimed_by_user_id ?? undefined,
+        createdBy: it?.createdBy ?? undefined,
+      }))
+    : [];
+}
+
+function timestampValue(value?: string) {
+  const timestamp = Date.parse(value ?? "");
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -131,19 +155,34 @@ export default function PartyGuestViewScreen() {
   useEffect(() => {
     const minInviteLoadingMs = id ? 2400 : 0;
     const remoteRetryDelayMs = 900;
+    console.log("[party] routeParams", {
+      id,
+      hasPayload: Boolean(d),
+      payloadLength: d?.length ?? 0,
+    });
 
     async function loadRemotePartyWithRetry(partyId: string) {
       for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
+          console.log("[party] remoteFetchAttempt", { partyId, attempt });
           const remoteParty = await getRemotePartyById(partyId);
           if (remoteParty) {
             const remoteItems = await getRemotePartyItems(partyId);
+            console.log("[party] remoteFetchSuccess", {
+              partyId,
+              title: remoteParty.title,
+              items: remoteItems.length,
+              rsvps: remoteParty.rsvps?.length ?? 0,
+            });
             return normalizePartyForView({
               ...remoteParty,
               items: remoteItems,
             });
           }
-        } catch {}
+          console.log("[party] remoteFetchEmpty", { partyId, attempt });
+        } catch (error) {
+          console.log("[party] remoteFetchFailed", { partyId, attempt, error });
+        }
 
         if (attempt === 0) {
           await wait(remoteRetryDelayMs);
@@ -162,11 +201,70 @@ export default function PartyGuestViewScreen() {
           return;
         }
 
+        const found = await getPartyById(String(id));
+        console.log("[party] localLookupById", {
+          id: String(id),
+          found: Boolean(found),
+          hasPayload: Boolean(d),
+        });
+
+        const invite = decodeInvitePayload(d);
+        console.log("[party] invitePayloadDecoded", {
+          id: String(id),
+          decoded: Boolean(invite),
+          keys: invite ? Object.keys(invite) : [],
+        });
+
         const normalizedRemote = await loadRemotePartyWithRetry(String(id));
         if (normalizedRemote) {
-          await upsertParty(normalizedRemote as any);
+          const localFallbackItems = Array.isArray(found?.items) ? found.items : [];
+          const inviteFallbackItems = inviteItemsToPartyItems(invite?.items);
+          const shouldRepairFromLocal =
+            !normalizedRemote.items.length &&
+            localFallbackItems.length > 0 &&
+            timestampValue(found?.updatedAt) >= timestampValue(normalizedRemote.updatedAt);
+          const shouldRepairFromInvite =
+            !normalizedRemote.items.length &&
+            !shouldRepairFromLocal &&
+            inviteFallbackItems.length > 0;
+
+          let hydratedRemote = normalizedRemote;
+
+          if (shouldRepairFromLocal || shouldRepairFromInvite) {
+            const fallbackItems = shouldRepairFromLocal ? localFallbackItems : inviteFallbackItems;
+            console.log("[party] repairingMissingRemoteItems", {
+              id: String(id),
+              source: shouldRepairFromLocal ? "local" : "invite",
+              itemCount: fallbackItems.length,
+            });
+
+            hydratedRemote = normalizePartyForView({
+              ...normalizedRemote,
+              items: fallbackItems,
+            });
+
+            if (isSupabaseConfigured) {
+              try {
+                const repairedItems = await replaceRemotePartyItems(
+                  hydratedRemote.id,
+                  hydratedRemote.items ?? []
+                );
+                hydratedRemote = normalizePartyForView({
+                  ...hydratedRemote,
+                  items: repairedItems,
+                });
+              } catch (error) {
+                console.log("[party] remoteItemRepairFailed", {
+                  id: String(id),
+                  error,
+                });
+              }
+            }
+          }
+
+          await upsertParty(hydratedRemote as any);
           const storedUserId = await applyLoadedParty(
-            normalizedRemote,
+            hydratedRemote,
             setParty,
             setIsHost
           );
@@ -177,8 +275,6 @@ export default function PartyGuestViewScreen() {
           }
           return;
         }
-
-        const found = await getPartyById(String(id));
 
         if (found && !d) {
           const normalized = normalizePartyForView(found);
@@ -202,8 +298,6 @@ export default function PartyGuestViewScreen() {
           }
           return;
         }
-
-         const invite = decodeInvitePayload(d);
         if (invite) {
           const hydrated = normalizePartyForView({
             id: String(id),
@@ -217,14 +311,7 @@ export default function PartyGuestViewScreen() {
               undefined,
             notes: invite.notes ?? undefined,
             hostId: invite.hostId ?? invite.host?.id ?? undefined,
-            items: Array.isArray(invite.items)
-                ? invite.items.map((it: any, index: number) => ({
-                    ...it,
-                    id: it.id ?? createUuid(),
-                    claimedBy: it.claimedBy ?? undefined,
-                    claimedByUserId: it.claimedByUserId ?? undefined,
-                  }))
-              : [],
+            items: inviteItemsToPartyItems(invite.items),
           });
 
           await upsertParty(hydrated as any);
@@ -247,6 +334,7 @@ export default function PartyGuestViewScreen() {
         }
 
         setParty(null);
+        console.log("[party] loadFailed", { id: String(id), hasPayload: Boolean(d) });
       } finally {
         setLoading(false);
       }
@@ -536,13 +624,18 @@ export default function PartyGuestViewScreen() {
 
       if (isSupabaseConfigured) {
         try {
-          const remoteParty = await updateRemoteParty(nextParty);
-          if (remoteParty) {
-            const normalizedRemote = normalizePartyForView(remoteParty);
-            setParty(normalizedRemote);
-            await upsertParty(normalizedRemote);
-          }
-        } catch {
+          const remoteRsvps = await replaceRemotePartyRsvps(
+            nextParty.id,
+            nextParty.rsvps ?? []
+          );
+          const normalizedRemote = normalizePartyForView({
+            ...nextParty,
+            rsvps: remoteRsvps.length ? remoteRsvps : undefined,
+          });
+          setParty(normalizedRemote);
+          await upsertParty(normalizedRemote);
+        } catch (error) {
+          console.log("[party] saveRsvpRemoteFailed", { id: nextParty.id, error });
           saveSucceeded = false;
         }
       }
@@ -577,13 +670,18 @@ export default function PartyGuestViewScreen() {
     let claimSaved = true;
     if (isSupabaseConfigured) {
       try {
-        const remoteParty = await updateRemoteParty(nextParty);
-        if (remoteParty) {
-          const normalizedRemote = normalizePartyForView(remoteParty);
-          setParty(normalizedRemote);
-          await upsertParty(normalizedRemote);
-        }
-      } catch {
+        const remoteItems = await replaceRemotePartyItems(
+          nextParty.id,
+          nextParty.items ?? []
+        );
+        const normalizedRemote = normalizePartyForView({
+          ...nextParty,
+          items: remoteItems,
+        });
+        setParty(normalizedRemote);
+        await upsertParty(normalizedRemote);
+      } catch (error) {
+        console.log("[party] toggleItemClaimRemoteFailed", { id: nextParty.id, error });
         claimSaved = false;
       }
     }

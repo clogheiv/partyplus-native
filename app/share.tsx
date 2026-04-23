@@ -16,7 +16,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
-import { routeFromUrl } from "../src/lib/deepLinkRouting";
 import { ensureUserId } from "../src/lib/ids";
 import { buildShareMessage, sharePartyInvite } from "../src/lib/inviteShare";
 import { getCurrentPartyId, getPartyById, setCurrentPartyId, upsertParty } from "../src/lib/partyStore";
@@ -38,50 +37,16 @@ export default function ShareScreen() {
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
+    console.log("[share] params", { inviteId, hasPayload: Boolean(dParam), payloadLength: dParam.length });
     if (!inviteId) return;
     if (!rootNavState?.key) return;
 
     const t = setTimeout(() => {
+      console.log("[share] redirectingToParty", { inviteId, hasPayload: Boolean(dParam) });
       router.replace({ pathname: "/party/[id]", params: { id: inviteId, d: dParam } });
     }, 0);
 
     return () => clearTimeout(t);
-  }, [dParam, inviteId, rootNavState?.key, router]);
-
-  useEffect(() => {
-    if (inviteId && dParam) return;
-    if (!rootNavState?.key) return;
-
-    let cancelled = false;
-
-    const recoverInitialInvite = async () => {
-      const initialUrl = await Linking.getInitialURL();
-      if (!initialUrl || cancelled) return;
-
-      const target = routeFromUrl(initialUrl);
-      if (!target || typeof target === "string") return;
-      if (target.pathname !== "/party/[id]") return;
-
-      const recoveredId = Array.isArray(target.params?.id)
-        ? target.params.id[0]
-        : target.params?.id;
-      const recoveredD = Array.isArray(target.params?.d)
-        ? target.params.d[0]
-        : target.params?.d;
-
-      if (!recoveredId) return;
-
-      router.replace({
-        pathname: "/party/[id]",
-        params: { id: recoveredId, d: recoveredD },
-      });
-    };
-
-    void recoverInitialInvite();
-
-    return () => {
-      cancelled = true;
-    };
   }, [dParam, inviteId, rootNavState?.key, router]);
 
   useEffect(() => {
@@ -97,6 +62,11 @@ export default function ShareScreen() {
             while (b64.length % 4) b64 += "=";
             const json = decodeURIComponent(b64decode(b64));
             const decoded = JSON.parse(json);
+            console.log("[share] decodedPayload", {
+              inviteId,
+              keys: Object.keys(decoded ?? {}),
+              hasItems: Array.isArray(decoded?.items),
+            });
             next = {
               ...decoded,
               id: decoded?.id ?? decoded?.i ?? inviteId,
@@ -112,22 +82,30 @@ export default function ShareScreen() {
               await upsertParty(next as PartyType);
               await setCurrentPartyId(next.id);
             }
-          } catch {}
+          } catch (error) {
+            console.log("[share] decodePayloadFailed", error);
+          }
         }
 
         if (!next && inviteId) {
           const stored = await getPartyById(inviteId);
+          console.log("[share] localLookupByInviteId", { inviteId, found: Boolean(stored) });
           next = (stored as PartyType) ?? null;
           if (next?.id) await setCurrentPartyId(next.id);
         }
 
         if (!next) {
           const currentPartyId = await getCurrentPartyId();
+          console.log("[share] currentPartyIdFallback", currentPartyId);
           if (!currentPartyId) {
             setParty(null);
             return;
           }
           const stored = await getPartyById(currentPartyId);
+          console.log("[share] localLookupByCurrentPartyId", {
+            currentPartyId,
+            found: Boolean(stored),
+          });
           next = (stored as PartyType) ?? null;
         }
 

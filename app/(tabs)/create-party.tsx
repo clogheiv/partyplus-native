@@ -25,7 +25,7 @@ import {
 
 import React, { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createRemoteParty, replaceRemotePartyItems } from "../../src/data/parties";
+import { createRemoteParty } from "../../src/data/parties";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -557,11 +557,22 @@ function confirmRemoveItem(index: number) {
     };
 
     await upsertParty(party);
+
     try {
       await createRemoteParty(party);
-      await replaceRemotePartyItems(party.id, party.items ?? []);
-    } catch {
+    } catch (error) {
+      console.log("[create-party] remoteSaveFailed", {
+        partyId: party.id,
+        itemCount: party.items.length,
+        error,
+      });
+      Alert.alert(
+        "Cloud sync failed",
+        "This party was saved on this device, but items did not sync to Supabase. Please try saving again before sharing."
+      );
+      return;
     }
+
     await setCurrentPartyId(id);
    // Mark this party as "host-owned" on this device
 const raw = await AsyncStorage.getItem("hostPartyIds");
@@ -935,12 +946,13 @@ const styles = StyleSheet.create({
   inputButton: {
     padding: 14,
     borderWidth: 1,
-    borderColor: "#243554",
+    borderColor: "#36527f",
     borderRadius: 16,
-    backgroundColor: "#132038",
+    backgroundColor: "#142544",
   },
   inputButtonText: {
-    color: "#f6efe7",
+    color: "#f8fbff",
+    fontWeight: "700",
   },
   iosPickerOverlay: {
     flex: 1,
