@@ -1,13 +1,5 @@
-import { encode as b64encode } from "base-64";
 import { InteractionManager, Keyboard, Platform, Share } from "react-native";
 import type { Party } from "./partyTypes";
-
-function toBase64Url(input: string) {
-  return b64encode(input)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-}
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,37 +11,8 @@ function waitForInteractions() {
   });
 }
 
-export function buildInviteData(party: Party) {
-  const payload = {
-    id: party.id,
-    title: party.title ?? "",
-    date: party.date ?? "",
-    location: party.location ?? "",
-    notes: party.notes ?? "",
-    hostId: party.hostId ?? "",
-    t: party.title ?? "",
-    dt: party.date ?? "",
-    l: party.location ?? "",
-    a: "",
-    la: null,
-    ln: null,
-    items: Array.isArray(party.items)
-      ? party.items.map((it) => ({
-          name: it.name ?? "",
-          qty: it.qty ?? undefined,
-          claimedBy: it.claimedBy ?? undefined,
-          claimedByUserId: it.claimedByUserId ?? undefined,
-        }))
-      : [],
-  };
-
-  return toBase64Url(JSON.stringify(payload));
-}
-
 export function buildInviteLink(party: Party) {
-  return `https://partyplus-invite.netlify.app/i/${party.id}?d=${encodeURIComponent(
-    buildInviteData(party)
-  )}`;
+  return `https://partyplus-invite.netlify.app/i/${party.id}`;
 }
 
 export function buildShareMessage(party: Party) {
@@ -73,6 +36,7 @@ export function buildShareMessage(party: Party) {
   const where = party.location?.trim() ? `Where: ${party.location.trim()}` : "";
   const notes = party.notes?.trim() ? `Notes: ${party.notes.trim()}` : "";
   const items = party.items ?? [];
+  const inviteLink = buildInviteLink(party);
 
   const counts = new Map<string, number>();
   for (const it of items) {
@@ -102,9 +66,9 @@ export function buildShareMessage(party: Party) {
         ...shown.map((name) => {
           const key = name.toLowerCase();
           const count = counts.get(key) ?? 1;
-          return `• ${name}${count > 1 ? ` (x${count})` : ""}`;
+          return `- ${name}${count > 1 ? ` (x${count})` : ""}`;
         }),
-        ...(remaining > 0 ? [`• and ${remaining} more`] : []),
+        ...(remaining > 0 ? [`- and ${remaining} more`] : []),
       ].join("\n")
     : "";
 
@@ -121,7 +85,7 @@ export function buildShareMessage(party: Party) {
     itemsPreview,
     "",
     closing,
-    buildInviteLink(party),
+    inviteLink,
   ]
     .filter(Boolean)
     .join("\n");
@@ -160,7 +124,6 @@ export async function sharePartyInvite(party: Party) {
     return Share.share(
       {
         message,
-        url,
       },
       {
         subject: party.title?.trim() || "Party Invite",
