@@ -171,22 +171,22 @@ export default function ShareScreen() {
   if (!party) {
     return (
       <ScrollView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: "#08111f" }}
         contentContainerStyle={{
           padding: 20,
           gap: 12,
           paddingBottom: Math.max(insets.bottom, 20) + 60,
         }}
       >
-        <ThemedText type="title">Share Invite</ThemedText>
-        <ThemedText>No party selected yet.</ThemedText>
-        <ThemedText>Open Parties, choose one, then share its invite.</ThemedText>
+        <ThemedText type="title" style={styles.heroTitle}>Share Invite</ThemedText>
+        <ThemedText style={styles.footerCopy}>No party selected yet.</ThemedText>
+        <ThemedText style={styles.footerCopy}>Open Parties, choose one, then share its invite.</ThemedText>
 
         <Pressable
           onPress={() => router.push("/load-parties")}
-          style={{ borderWidth: 1, borderRadius: 12, padding: 12, alignSelf: "flex-start" }}
+          style={styles.secondaryButton}
         >
-          <ThemedText>Go to Parties</ThemedText>
+          <ThemedText style={styles.secondaryButtonText}>Go to Parties</ThemedText>
         </Pressable>
       </ScrollView>
     );
@@ -233,7 +233,7 @@ export default function ShareScreen() {
           Party details
         </ThemedText>
 
-        <ThemedView style={{ gap: 6 }}>
+        <View style={styles.detailsBody}>
           {!!party.location && (
             <View style={{ gap: 8 }}>
               <ThemedText style={styles.detailsText}>{party.location}</ThemedText>
@@ -253,7 +253,7 @@ export default function ShareScreen() {
           )}
 
           {!!party.notes && <ThemedText style={styles.notesText}>{party.notes}</ThemedText>}
-        </ThemedView>
+        </View>
       </ThemedView>
 
       <View style={{ gap: 10 }}>
@@ -335,6 +335,10 @@ const styles = StyleSheet.create({
   notesText: {
     color: "#afbdd5",
     lineHeight: 21,
+  },
+  detailsBody: {
+    gap: 6,
+    backgroundColor: "transparent",
   },
   secondaryButton: {
     borderWidth: 1,

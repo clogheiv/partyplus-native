@@ -612,15 +612,24 @@ return (
   options={{
    headerLeft: () => (
   <Pressable onPress={onCancelEdit} style={{ paddingHorizontal: 12 }}>
-    <ThemedText>Cancel</ThemedText>
+    <ThemedText style={styles.headerActionText}>Cancel</ThemedText>
   </Pressable>
 ),
+  headerStyle: {
+    backgroundColor: "#08111f",
+  },
+  headerTintColor: "#f6efe7",
+  headerShadowVisible: false,
+  headerTitleStyle: {
+    color: "#f6efe7",
+    fontWeight: "700",
+  },
  
   }}
 />
 
   <KeyboardAvoidingView
-  style={{ flex: 1 }}
+  style={{ flex: 1, backgroundColor: "#08111f" }}
   behavior={Platform.OS === "ios" ? "padding" : "height"}
   keyboardVerticalOffset={headerHeight}
 >
@@ -871,11 +880,11 @@ onPress={openDateTimePicker}
       </Pressable>
 
     {items.map((item, index) => (
-  <ThemedView
+  <View
     key={`${item}-${index}`}
-    style={{ paddingVertical: 8, flexDirection: "row", alignItems: "center" }}
+    style={styles.itemRow}
   >
-    <ThemedText style={{ flex: 1 }}>
+    <ThemedText style={styles.itemRowText}>
       • {item}
     </ThemedText>
 
@@ -891,7 +900,7 @@ onPress={openDateTimePicker}
         X
       </ThemedText>
     </Pressable>
-  </ThemedView>
+  </View>
 ))}
 
 <Pressable
@@ -939,6 +948,10 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: "#f6efe7",
+  },
+  headerActionText: {
+    color: "#f6efe7",
+    fontWeight: "700",
   },
   sectionLabel: {
     color: "#dfe7f5",
@@ -1051,6 +1064,20 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: "#101a2b",
     alignItems: "center",
+  },
+  itemRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+  },
+  itemRowText: {
+    flex: 1,
+    color: "#dfe7f5",
   },
   secondaryButton: {
     marginTop: 20,

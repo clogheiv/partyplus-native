@@ -756,23 +756,17 @@ export default function PartyGuestViewScreen() {
   if (!party) {
     return (
       <ScrollView
-        style={{ flex: 1 }}
+        style={{ flex: 1, backgroundColor: "#08111f" }}
         contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
       >
-        <ThemedText type="title">Party not found</ThemedText>
-        <ThemedText>This party could not be loaded.</ThemedText>
+        <ThemedText type="title" style={styles.heroTitle}>Party not found</ThemedText>
+        <ThemedText style={styles.sectionBody}>This party could not be loaded.</ThemedText>
 
         <Pressable
           onPress={() => router.replace("/")}
-          style={{
-            borderWidth: 1,
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-            alignSelf: "flex-start",
-          }}
+          style={styles.secondaryButton}
         >
-          <ThemedText style={{ fontSize: 16, fontWeight: "600" }}>
+          <ThemedText style={styles.secondaryButtonText}>
             Go Home
           </ThemedText>
         </Pressable>

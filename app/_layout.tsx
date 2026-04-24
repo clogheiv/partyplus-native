@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { Stack, router, usePathname, useRootNavigationState, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { routeFromUrl } from '@/src/lib/deepLinkRouting';
 import { StartupDeepLinkContext } from '@/src/lib/startupDeepLinkContext';
 
@@ -15,6 +14,18 @@ export const unstable_settings = {
 };
 
 const prefix = Linking.createURL('/');
+const PARTYPLUS_NAV_THEME = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: '#2f61f3',
+    background: '#08111f',
+    card: '#08111f',
+    text: '#f6efe7',
+    border: '#243554',
+    notification: '#ff9f87',
+  },
+};
 
 export const linking = {
   prefixes: [prefix, 'partyplusnative://'],
@@ -61,7 +72,6 @@ function routeToDebugString(route: Href | null) {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const pathname = usePathname();
   const rootNavState = useRootNavigationState();
   const didInitialReplaceRef = useRef(false);
@@ -138,11 +148,19 @@ export default function RootLayout() {
   if (!initialLinkResolved) {
     return (
       <StartupDeepLinkContext.Provider value={{ initialLinkResolved, startupRoutePending }}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <ThemeProvider value={PARTYPLUS_NAV_THEME}>
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 24,
+              backgroundColor: '#08111f',
+            }}
+          >
             <ActivityIndicator />
           </View>
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
         </ThemeProvider>
       </StartupDeepLinkContext.Provider>
     );
@@ -151,10 +169,21 @@ export default function RootLayout() {
   // IMPORTANT: Stack renders on first render (no conditional early returns)
   return (
     <StartupDeepLinkContext.Provider value={{ initialLinkResolved, startupRoutePending }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <View style={{ flex: 1 }}>
-          <Stack>
+      <ThemeProvider value={PARTYPLUS_NAV_THEME}>
+        <View style={{ flex: 1, backgroundColor: '#08111f' }}>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: '#08111f' },
+              headerTintColor: '#f6efe7',
+              headerTitleStyle: { color: '#f6efe7', fontWeight: '700' },
+              headerShadowVisible: false,
+              contentStyle: { backgroundColor: '#08111f' },
+            }}
+          >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="share" options={{ title: 'Share Invite' }} />
+            <Stack.Screen name="load-parties" options={{ title: 'Parties' }} />
+            <Stack.Screen name="pick-action" options={{ title: 'Choose Action' }} />
             <Stack.Screen name="i/[id]" options={{ title: 'Invite' }} />
             <Stack.Screen name="__share" options={{ title: 'Invite' }} />
             <Stack.Screen name="party/[id]" options={{ title: 'Party' }} />
@@ -167,14 +196,14 @@ export default function RootLayout() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: 24,
-                backgroundColor: colorScheme === 'dark' ? '#000' : '#fff',
+                backgroundColor: '#08111f',
               }}
             >
               <ActivityIndicator />
             </View>
           ) : null}
         </View>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
       </ThemeProvider>
     </StartupDeepLinkContext.Provider>
   );
