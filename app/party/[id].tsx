@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert,
   Keyboard,
+  KeyboardAvoidingView,
   Linking,
   Platform,
   Pressable,
@@ -26,8 +27,7 @@ import {
   getRemotePartyItems,
   replaceRemotePartyItems,
 } from "../../src/data/parties";
-import { getRemotePartyRsvps } from "../../src/data/partyRsvps";
-import { replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
+import { getRemotePartyRsvps, replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
 import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
 import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -145,6 +145,8 @@ export default function PartyGuestViewScreen() {
   const [rsvpStatus, setRsvpStatus] = useState<PartyRsvpStatus | null>(null);
   const [attendeeCountText, setAttendeeCountText] = useState("1");
   const [savingRsvp, setSavingRsvp] = useState(false);
+  const [suggestionText, setSuggestionText] = useState("");
+  const [addingSuggestion, setAddingSuggestion] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [deletingParty, setDeletingParty] = useState(false);
   const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -505,6 +507,12 @@ export default function PartyGuestViewScreen() {
     }, 120);
   }
 
+  function scrollToSuggestionField() {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 220);
+  }
+
   function clearClaimPromptTimer() {
     if (!claimPromptTimerRef.current) return;
     clearTimeout(claimPromptTimerRef.current);
@@ -580,6 +588,15 @@ export default function PartyGuestViewScreen() {
       setActionFeedback(null);
       actionFeedbackTimerRef.current = null;
     }, 2200);
+  }
+
+  function getAttendeeCountValue() {
+    const count = Number.parseInt(attendeeCountText, 10);
+    return Number.isFinite(count) && count >= 1 ? Math.floor(count) : 1;
+  }
+
+  function changeAttendeeCount(delta: number) {
+    setAttendeeCountText(String(Math.max(1, getAttendeeCountValue() + delta)));
   }
 
   async function saveRsvp() {
@@ -698,6 +715,64 @@ export default function PartyGuestViewScreen() {
     }
   }
 
+  async function addItemSuggestion() {
+    if (!party || addingSuggestion) return;
+
+    const name = suggestionText.trim();
+    if (!name) {
+      Alert.alert("Add a suggestion", "Enter something to bring.");
+      return;
+    }
+
+    setAddingSuggestion(true);
+    try {
+      const nextParty = normalizePartyForView({
+        ...party,
+        items: [
+          ...(party.items ?? []),
+          {
+            id: createUuid(),
+            name,
+            qty: undefined,
+            claimedBy: undefined,
+            claimedByUserId: undefined,
+            createdBy: currentUserId || undefined,
+          },
+        ],
+      });
+
+      setParty(nextParty);
+      await upsertParty(nextParty);
+
+      let suggestionSaved = true;
+      if (isSupabaseConfigured) {
+        try {
+          const remoteItems = await replaceRemotePartyItems(
+            nextParty.id,
+            nextParty.items ?? []
+          );
+          const normalizedRemote = normalizePartyForView({
+            ...nextParty,
+            items: remoteItems,
+          });
+          setParty(normalizedRemote);
+          await upsertParty(normalizedRemote);
+        } catch (error) {
+          console.log("[party] addItemSuggestionRemoteFailed", { id: nextParty.id, error });
+          suggestionSaved = false;
+        }
+      }
+
+      if (suggestionSaved) {
+        setSuggestionText("");
+        Keyboard.dismiss();
+        showActionFeedback(`Added ${name}`);
+      }
+    } finally {
+      setAddingSuggestion(false);
+    }
+  }
+
   async function handleDeleteParty() {
     if (!party || deletingParty) return;
     if (!isHost) return;
@@ -798,7 +873,10 @@ export default function PartyGuestViewScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#08111f" }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: "#08111f" }}
+    >
       <ScrollView
         ref={scrollRef}
         style={{ flex: 1, backgroundColor: "#08111f" }}
@@ -863,23 +941,89 @@ export default function PartyGuestViewScreen() {
 
       <ThemedView style={styles.sectionCard}>
         <ThemedText style={styles.sectionHeading}>
-          Your RSVP
+          Let the host know
+        </ThemedText>
+        <ThemedText style={styles.sectionBody}>
+          Add your name, guest count, and response.
         </ThemedText>
 
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          <ThemedView style={styles.summaryChip}>
-            <ThemedText style={styles.summaryLabel}>Yes</ThemedText>
-            <ThemedText style={styles.summaryValue}>{rsvpSummary.yes}</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.summaryChip}>
-            <ThemedText style={styles.summaryLabel}>Maybe</ThemedText>
-            <ThemedText style={styles.summaryValue}>{rsvpSummary.maybe}</ThemedText>
-          </ThemedView>
-          <ThemedView style={styles.summaryChip}>
-            <ThemedText style={styles.summaryLabel}>No</ThemedText>
-            <ThemedText style={styles.summaryValue}>{rsvpSummary.no}</ThemedText>
-          </ThemedView>
+        <View style={styles.formSection}>
+          <ThemedText style={styles.fieldLabel}>Enter Name</ThemedText>
+          <TextInput
+            ref={rsvpNameInputRef}
+            value={rsvpName}
+            onChangeText={setRsvpName}
+            onFocus={scrollToRsvpNameField}
+            placeholder="Your name"
+            placeholderTextColor="#666"
+            autoCapitalize="words"
+            style={styles.input}
+          />
         </View>
+
+        <View style={styles.formSection}>
+          <ThemedText style={styles.fieldLabel}>Number of Guests</ThemedText>
+          <View style={styles.stepper}>
+            <Pressable
+              onPress={() => changeAttendeeCount(-1)}
+              disabled={getAttendeeCountValue() <= 1}
+              style={[
+                styles.stepperButton,
+                getAttendeeCountValue() <= 1 ? styles.stepperButtonDisabled : null,
+              ]}
+            >
+              <ThemedText style={styles.stepperButtonText}>-</ThemedText>
+            </Pressable>
+            <ThemedText style={styles.stepperValue}>{getAttendeeCountValue()}</ThemedText>
+            <Pressable
+              onPress={() => changeAttendeeCount(1)}
+              style={styles.stepperButton}
+            >
+              <ThemedText style={styles.stepperButtonText}>+</ThemedText>
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.formSection}>
+          <ThemedText style={styles.fieldLabel}>Are You Coming?</ThemedText>
+          <View style={styles.responseChoices}>
+            {(["yes", "maybe", "no"] as PartyRsvpStatus[]).map((status) => {
+              const selected = rsvpStatus === status;
+              return (
+                <Pressable
+                  key={status}
+                  onPress={() => setRsvpStatus(status)}
+                  style={[
+                    styles.rsvpChoice,
+                    selected ? styles.rsvpChoiceSelected : null,
+                  ]}
+                >
+                  <ThemedText
+                    style={{
+                      fontWeight: "600",
+                      color: selected ? "#f6efe7" : "#dfe7f5",
+                    }}
+                  >
+                    {status === "yes" ? "Yes" : status === "no" ? "No" : "Maybe"}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <Pressable
+          onPress={saveRsvp}
+          disabled={savingRsvp}
+          style={[
+            styles.primaryButton,
+            { opacity: savingRsvp ? 0.6 : 1, alignSelf: "flex-start" },
+          ]}
+        >
+          <ThemedText style={{ fontSize: 16, fontWeight: "700", color: "#fff" }}>
+            {savingRsvp ? "Saving..." : "Save My RSVP"}
+          </ThemedText>
+        </Pressable>
 
         <ThemedView style={styles.innerCard}>
           {(party.rsvps ?? []).length ? (
@@ -893,64 +1037,20 @@ export default function PartyGuestViewScreen() {
           )}
         </ThemedView>
 
-        <TextInput
-          ref={rsvpNameInputRef}
-          value={rsvpName}
-          onChangeText={setRsvpName}
-          onFocus={scrollToRsvpNameField}
-          placeholder="Your name"
-          placeholderTextColor="#666"
-          autoCapitalize="words"
-          style={styles.input}
-        />
-
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {(["yes", "maybe", "no"] as PartyRsvpStatus[]).map((status) => {
-            const selected = rsvpStatus === status;
-            return (
-              <Pressable
-                key={status}
-                onPress={() => setRsvpStatus(status)}
-                style={[
-                  styles.rsvpChoice,
-                  selected ? styles.rsvpChoiceSelected : null,
-                ]}
-              >
-                <ThemedText
-                  style={{
-                    fontWeight: "600",
-                    color: selected ? "#f6efe7" : "#dfe7f5",
-                  }}
-                >
-                  {status === "yes" ? "Yes" : status === "no" ? "No" : "Maybe"}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
+        <View style={styles.summaryRow}>
+          <ThemedView style={styles.summaryChip}>
+            <ThemedText style={styles.summaryLabel}>Yes</ThemedText>
+            <ThemedText style={styles.summaryValue}>{rsvpSummary.yes}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.summaryChip}>
+            <ThemedText style={styles.summaryLabel}>Maybe</ThemedText>
+            <ThemedText style={styles.summaryValue}>{rsvpSummary.maybe}</ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.summaryChip}>
+            <ThemedText style={styles.summaryLabel}>No</ThemedText>
+            <ThemedText style={styles.summaryValue}>{rsvpSummary.no}</ThemedText>
+          </ThemedView>
         </View>
-
-        <TextInput
-          value={attendeeCountText}
-          onChangeText={setAttendeeCountText}
-          placeholder="Attendee count"
-          placeholderTextColor="#666"
-          keyboardType="number-pad"
-          inputMode="numeric"
-          style={styles.input}
-        />
-
-        <Pressable
-          onPress={saveRsvp}
-          disabled={savingRsvp}
-          style={[
-            styles.primaryButton,
-            { opacity: savingRsvp ? 0.6 : 1, alignSelf: "flex-start" },
-          ]}
-        >
-          <ThemedText style={{ fontSize: 16, fontWeight: "700", color: "#fff" }}>
-            {savingRsvp ? "Saving..." : "Save RSVP"}
-          </ThemedText>
-        </Pressable>
       </ThemedView>
 
       <View
@@ -959,7 +1059,10 @@ export default function PartyGuestViewScreen() {
         }}
       >
         <ThemedText type="subtitle" style={styles.sectionTitle}>
-          What to bring
+          What can you bring?
+        </ThemedText>
+        <ThemedText style={[styles.sectionBody, styles.sectionIntro]}>
+          Tap Claim next to an item you want to bring. Everyone will see that it’s covered.
         </ThemedText>
       </View>
 
@@ -987,19 +1090,36 @@ export default function PartyGuestViewScreen() {
                   { opacity: !canClaimItems ? 0.7 : claimed ? 0.55 : 1 },
                 ]}
               >
-                <ThemedText style={{ fontSize: 18, fontWeight: "700", color: "#f6efe7" }}>
-                  {it.name}
-                </ThemedText>
-                {claimed ? (
-                  <ThemedText style={styles.sectionBodyStrong}>
-                    Claimed by {it.claimedBy}
-                    {claimedByYou ? " (you)" : ""}
-                  </ThemedText>
-                ) : canClaimItems ? (
-                  <ThemedText style={styles.sectionBody}>
-                    Tap to claim
-                  </ThemedText>
-                ) : null}
+                <View style={styles.itemCardHeader}>
+                  <View style={{ flex: 1, gap: 6 }}>
+                    <ThemedText style={{ fontSize: 18, fontWeight: "700", color: "#f6efe7" }}>
+                      {it.name}
+                    </ThemedText>
+                    {claimed ? (
+                      <ThemedText style={styles.sectionBodyStrong}>
+                        Claimed by {it.claimedBy}
+                        {claimedByYou ? " (you)" : ""}
+                      </ThemedText>
+                    ) : canClaimItems ? (
+                      <ThemedText style={styles.sectionBody}>
+                        Available
+                      </ThemedText>
+                    ) : null}
+                  </View>
+                  {canClaimItems ? (
+                    <View
+                      style={[
+                        styles.claimPill,
+                        claimedByYou ? styles.claimPillSelected : null,
+                        claimed && !claimedByYou ? styles.claimPillDisabled : null,
+                      ]}
+                    >
+                      <ThemedText style={styles.claimPillText}>
+                        {claimedByYou ? "Claimed" : claimed ? "Covered" : "Claim"}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                </View>
               </Pressable>
             );
           })}
@@ -1007,6 +1127,38 @@ export default function PartyGuestViewScreen() {
       ) : (
         <ThemedText style={{ color: "#adc0df" }}>No items listed yet.</ThemedText>
       )}
+
+      <ThemedView style={styles.sectionCard}>
+        <ThemedText style={styles.sectionHeading}>
+          Suggest something to bring
+        </ThemedText>
+        <ThemedText style={styles.sectionBody}>
+          Don’t see what you want to bring? Add a suggestion to the list.
+        </ThemedText>
+        <TextInput
+          value={suggestionText}
+          onChangeText={setSuggestionText}
+          placeholder="Example: chips, cups, ice"
+          placeholderTextColor="#666"
+          autoCapitalize="sentences"
+          returnKeyType="done"
+          onFocus={scrollToSuggestionField}
+          onSubmitEditing={addItemSuggestion}
+          style={styles.input}
+        />
+        <Pressable
+          onPress={addItemSuggestion}
+          disabled={addingSuggestion}
+          style={[
+            styles.secondaryButton,
+            addingSuggestion ? styles.buttonDisabled : null,
+          ]}
+        >
+          <ThemedText style={styles.secondaryButtonText}>
+            {addingSuggestion ? "Adding..." : "Add Suggestion"}
+          </ThemedText>
+        </Pressable>
+      </ThemedView>
 
       {Platform.OS === "web" ? (
         <ThemedView style={styles.sectionCard}>
@@ -1074,7 +1226,7 @@ export default function PartyGuestViewScreen() {
           </Pressable>
         ) : null}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -1157,6 +1309,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#f6efe7",
   },
+  buttonDisabled: {
+    opacity: 0.65,
+  },
   inlineButton: {
     flexDirection: "row",
     gap: 10,
@@ -1179,6 +1334,47 @@ const styles = StyleSheet.create({
     color: "#f6efe7",
     backgroundColor: "#132038",
   },
+  formSection: {
+    gap: 8,
+    marginTop: 4,
+  },
+  fieldLabel: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#dfe7f5",
+  },
+  stepper: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    backgroundColor: "#132038",
+    overflow: "hidden",
+  },
+  stepperButton: {
+    width: 48,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#101a2b",
+  },
+  stepperButtonDisabled: {
+    opacity: 0.45,
+  },
+  stepperButtonText: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#f6efe7",
+  },
+  stepperValue: {
+    minWidth: 54,
+    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#f6efe7",
+  },
   rsvpChoice: {
     borderWidth: 1,
     borderColor: "#243554",
@@ -1190,6 +1386,16 @@ const styles = StyleSheet.create({
   rsvpChoiceSelected: {
     backgroundColor: "#2f61f3",
     borderColor: "#2f61f3",
+  },
+  responseChoices: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  summaryRow: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
   },
   summaryChip: {
     minWidth: 86,
@@ -1245,8 +1451,37 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
+  itemCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  claimPill: {
+    borderWidth: 1,
+    borderColor: "#2f61f3",
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#2f61f3",
+  },
+  claimPillSelected: {
+    borderColor: "#2f61f3",
+    backgroundColor: "#132038",
+  },
+  claimPillDisabled: {
+    borderColor: "#243554",
+    backgroundColor: "#132038",
+  },
+  claimPillText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#f6efe7",
+  },
   sectionTitle: {
     color: "#f6efe7",
+  },
+  sectionIntro: {
+    marginTop: 6,
   },
   bottomActions: {
     position: "absolute",
