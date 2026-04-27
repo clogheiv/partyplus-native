@@ -3,115 +3,788 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PartyPlus Invite</title>
+    <meta
+      name="description"
+      content="PartyPlus helps hosts create a party, share one invite, collect RSVPs, and coordinate what guests bring."
+    />
+    <title>PartyPlus | Plan. Share. Celebrate Together.</title>
+    <link rel="icon" href="/assets/favicon.png" />
     <style>
+      :root {
+        --page: #08111f;
+        --panel: #101a2b;
+        --panel-strong: #132038;
+        --line: #243554;
+        --text: #f6efe7;
+        --muted: #afbdd5;
+        --soft: #dfe7f5;
+        --blue: #2f61f3;
+        --coral: #ff9f87;
+        --mint: #5eead4;
+        --gold: #ffd166;
+        --shadow: 0 22px 60px rgba(2, 6, 23, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
       body {
         margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        background: #0b0f14;
-        color: #e7eef7;
+        min-height: 100vh;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background: var(--page);
       }
-      .wrap {
-        max-width: 720px;
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background:
+          linear-gradient(140deg, rgba(47, 97, 243, 0.18), transparent 38%),
+          linear-gradient(220deg, rgba(255, 159, 135, 0.13), transparent 34%),
+          var(--page);
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .site-shell {
+        overflow: hidden;
+      }
+
+      .container {
+        width: min(1320px, calc(100% - 32px));
         margin: 0 auto;
-        padding: 28px 18px;
       }
-      .card {
-        background: #121a24;
-        border: 1px solid #223044;
-        border-radius: 16px;
-        padding: 18px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+      .hero {
+        min-height: auto;
+        padding: 22px 0 42px;
+        border-bottom: 1px solid rgba(36, 53, 84, 0.75);
       }
-      h1 {
-        margin: 0 0 8px;
-        font-size: 28px;
+
+      .hero-inner {
+        display: grid;
+        gap: 26px;
+        width: 100%;
       }
-      p {
-        margin: 10px 0;
-        line-height: 1.45;
-        color: #c9d6e6;
-      }
-      .id {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-          "Courier New", monospace;
-        background: #0b111a;
-        border: 1px solid #223044;
-        border-radius: 10px;
-        padding: 10px 12px;
-        margin-top: 10px;
-        word-break: break-all;
-      }
-      .btnrow {
+
+      .nav {
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        min-width: 0;
+      }
+
+      .brand-lockup,
+      .footer-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+      }
+
+      .brand-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        box-shadow: 0 14px 32px rgba(47, 97, 243, 0.28);
+      }
+
+      .brand-name {
+        font-size: 1.08rem;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .nav-links {
+        display: none;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 1.02rem;
+        white-space: nowrap;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+      }
+
+      .hero-content {
+        display: grid;
+        gap: 30px;
+        align-items: center;
+      }
+
+      .hero-copy {
+        display: grid;
+        justify-items: start;
+        gap: 16px;
+        max-width: 680px;
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--coral);
+        font-size: 0.88rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(3.4rem, 10vw, 7.2rem);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      .tagline {
+        margin: 0;
+        color: var(--soft);
+        font-size: clamp(1.55rem, 4vw, 3rem);
+        line-height: 1.12;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        margin: 0;
+        max-width: 620px;
+        color: var(--muted);
+        font-size: clamp(1.12rem, 2vw, 1.38rem);
+        line-height: 1.55;
+      }
+
+      .store-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 8px;
+      }
+
+      .store-button {
+        min-width: 184px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(223, 231, 245, 0.16);
+        background: #050a13;
+        color: #ffffff;
+        text-decoration: none;
+      }
+
+      .store-button[aria-disabled="true"] {
+        cursor: default;
+      }
+
+      .store-icon {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 6px;
+        background: var(--blue);
+        font-size: 0.9rem;
+        font-weight: 900;
+      }
+
+      .store-text {
+        display: grid;
+        gap: 1px;
+      }
+
+      .store-kicker {
+        color: #b7c4dc;
+        font-size: 0.75rem;
+        line-height: 1;
+      }
+
+      .store-name {
+        font-size: 1.12rem;
+        font-weight: 800;
+        line-height: 1.05;
+      }
+
+      .hero-preview {
+        display: grid;
+        justify-items: center;
+        width: 100%;
+      }
+
+      .hero-banner-card {
+        width: min(100%, 640px);
+        padding: 12px;
+        border: 1px solid rgba(175, 189, 213, 0.22);
+        border-radius: 22px;
+        background:
+          linear-gradient(180deg, rgba(47, 97, 243, 0.12), transparent),
+          rgba(16, 26, 43, 0.72);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-banner-image {
+        display: block;
+        width: 100%;
+        height: clamp(260px, 30vw, 420px);
+        object-fit: contain;
+        border-radius: 16px;
+        background: #050a13;
+      }
+
+      section {
+        padding: 52px 0;
+      }
+
+      .section-heading {
+        margin: 0 0 12px;
+        max-width: 1060px;
+        font-size: clamp(2.25rem, 4.2vw, 4.25rem);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      .section-copy {
+        margin: 0;
+        max-width: 780px;
+        color: var(--muted);
+        font-size: 1.18rem;
+        line-height: 1.6;
+      }
+
+      .screens-grid,
+      .features-grid {
+        display: grid;
+        gap: 22px;
+        margin-top: 34px;
+      }
+
+      .screenshot-card,
+      .screen-note-card,
+      .feature-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(16, 26, 43, 0.82);
+        box-shadow: 0 16px 38px rgba(2, 6, 23, 0.24);
+      }
+
+      .screenshot-card {
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .screenshot-card.featured {
+        min-height: 100%;
+      }
+
+      .real-screenshot {
+        min-height: 520px;
+        display: grid;
+        place-items: center;
+        padding: 28px;
+        background:
+          linear-gradient(180deg, rgba(47, 97, 243, 0.12), transparent),
+          var(--panel);
+      }
+
+      .screenshot-phone {
+        width: min(100%, 330px);
+        padding: 12px;
+        border-radius: 34px;
+        border: 1px solid rgba(175, 189, 213, 0.24);
+        background: #050a13;
+        box-shadow: 0 18px 44px rgba(2, 6, 23, 0.34);
+      }
+
+      .screenshot-phone img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 24px;
+      }
+
+      .screenshot-placeholder {
+        min-height: 220px;
+        padding: 16px;
+        background:
+          linear-gradient(180deg, rgba(94, 234, 212, 0.08), transparent),
+          var(--panel);
+      }
+
+      .placeholder-screen {
+        height: 100%;
+        min-height: 188px;
+        display: grid;
+        align-content: space-between;
+        gap: 18px;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(223, 231, 245, 0.12);
+        background: var(--panel-strong);
+      }
+
+      .placeholder-title {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.05rem;
+        font-weight: 900;
+      }
+
+      .placeholder-lines {
+        display: grid;
+        gap: 8px;
+      }
+
+      .placeholder-lines span {
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(175, 189, 213, 0.25);
+      }
+
+      .placeholder-lines span:nth-child(2) {
+        width: 76%;
+      }
+
+      .placeholder-lines span:nth-child(3) {
+        width: 54%;
+      }
+
+      .card-copy {
+        padding: 22px;
+      }
+
+      .card-copy h3,
+      .screen-note-card h3,
+      .feature-card h3 {
+        margin: 0 0 10px;
+        color: var(--text);
+        font-size: 1.28rem;
+      }
+
+      .card-copy p,
+      .screen-note-card p,
+      .feature-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.55;
+      }
+
+      .screens-support {
+        display: grid;
+        gap: 18px;
+      }
+
+      .screen-note-card {
+        padding: 24px;
+      }
+
+      .screen-note-kicker {
+        display: inline-flex;
+        margin-bottom: 16px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(47, 97, 243, 0.2);
+        color: var(--soft);
+        font-size: 0.86rem;
+        font-weight: 900;
+      }
+
+      .feature-card {
+        min-height: 230px;
+        display: flex;
+        flex-direction: column;
+        padding: 24px;
+      }
+
+      .feature-accent {
+        width: 34px;
+        height: 5px;
+        border-radius: 999px;
+        margin-bottom: 16px;
+        background: var(--coral);
+      }
+
+      .feature-card:nth-child(2) .feature-accent,
+      .feature-card:nth-child(5) .feature-accent {
+        background: var(--mint);
+      }
+
+      .feature-card:nth-child(3) .feature-accent {
+        background: var(--blue);
+      }
+
+      .feature-card:nth-child(4) .feature-accent {
+        background: var(--gold);
+      }
+
+      .footer {
+        padding: 28px 24px 36px;
+        border-top: 1px solid var(--line);
+      }
+
+      .footer-inner {
+        display: grid;
+        gap: 20px;
+      }
+
+      .footer-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .labs-logo {
+        width: 84px;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+
+      .footer-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .footer-links a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .invite-page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 22px;
+      }
+
+      .invite-card {
+        width: min(100%, 720px);
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+
+      .invite-card h1 {
+        font-size: 2rem;
+        line-height: 1.05;
+        margin-bottom: 8px;
+      }
+
+      .invite-id {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #0b111a;
+        color: var(--soft);
+        word-break: break-all;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
         gap: 10px;
         margin-top: 14px;
-        flex-wrap: wrap;
       }
-      a.btn {
-        display: inline-block;
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
         padding: 12px 14px;
-        border-radius: 12px;
+        border-radius: 8px;
         text-decoration: none;
-        font-weight: 700;
+        font-weight: 800;
       }
-      .primary {
-        background: #2b8cff;
-        color: #081018;
+
+      .btn-primary {
+        background: var(--blue);
+        color: #ffffff;
       }
-      .ghost {
-        border: 1px solid #2b8cff;
-        color: #b8d7ff;
+
+      .btn-secondary {
+        border: 1px solid var(--line);
+        background: var(--panel-strong);
+        color: var(--text);
       }
+
       .tiny {
-        margin-top: 14px;
-        font-size: 12px;
-        opacity: 0.75;
+        color: var(--muted);
+        font-size: 0.9rem;
       }
-      .fallback {
-        margin-top: 16px;
-        padding: 14px;
-        border: 1px solid #2c4260;
-        border-radius: 12px;
-        background: #101726;
+
+      .hidden {
+        display: none !important;
       }
-      .fallback-title {
-        margin: 0 0 8px;
-        font-size: 14px;
-        font-weight: 700;
-        color: #f8fbff;
+
+      [hidden] {
+        display: none !important;
       }
-      .fallback-text {
-        margin: 0;
-        font-size: 13px;
-        line-height: 1.5;
-        color: #d9e5ff;
+
+      @media (min-width: 700px) {
+        .nav-links {
+          display: flex;
+        }
+
+        .hero {
+          padding: 24px 0 50px;
+        }
+
+        .container {
+          width: min(1320px, calc(100% - 64px));
+        }
+
+        .hero-content {
+          grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+          gap: 48px;
+        }
+
+        .hero-preview {
+          justify-items: end;
+        }
+
+        .screens-grid {
+          grid-template-columns: minmax(0, 1.06fr) minmax(310px, 0.94fr);
+          align-items: stretch;
+        }
+
+        .features-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .footer-links {
+          justify-content: flex-end;
+        }
+
+        .footer-inner {
+          grid-template-columns: 1fr auto;
+          align-items: center;
+        }
+      }
+
+      @media (min-width: 1000px) {
+        .hero-inner {
+          gap: 34px;
+        }
+
+        .hero {
+          min-height: 0;
+          display: block;
+          padding: 26px 0 54px;
+        }
+
+        .hero-banner-card {
+          width: min(100%, 720px);
+        }
+
+        .screens-grid {
+          grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
+        }
+
+        .features-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (min-width: 1240px) {
+        .features-grid {
+          grid-template-columns: repeat(5, 1fr);
+        }
       }
     </style>
   </head>
   <body>
-    <div class="wrap">
-      <div class="card">
-        <h1>PartyPlus Invite</h1>
-        <p id="subtitle"></p>
-        <div id="details"></div>
+    <main id="landing" class="site-shell">
+      <section class="hero">
+        <div class="container hero-inner">
+          <nav class="nav" aria-label="Primary">
+            <a class="brand-lockup" href="/">
+              <img class="brand-icon" src="/assets/partyplus-icon.png" alt="PartyPlus logo" />
+              <span class="brand-name">PartyPlus</span>
+            </a>
+            <div class="nav-links">
+              <a href="#screens">Screens</a>
+              <a href="#features">Features</a>
+              <a href="#support">Support</a>
+            </div>
+          </nav>
 
-        <div class="id" id="inviteId">-</div>
+          <div class="hero-content">
+            <div class="hero-copy">
+              <p class="eyebrow">Party planning made calmer</p>
+              <h1>PartyPlus</h1>
+              <p class="tagline">Plan. Share. Celebrate Together.</p>
+              <p class="lead">
+                Create a party, send one invite, collect RSVPs, and let guests claim what to bring.
+              </p>
+              <div class="store-row" aria-label="Download PartyPlus">
+                <!-- TODO: Replace # with the final App Store URL when PartyPlus is approved. -->
+                <a class="store-button" href="#" aria-disabled="true">
+                  <span class="store-icon">A</span>
+                  <span class="store-text">
+                    <span class="store-kicker">Download on the</span>
+                    <span class="store-name">App Store</span>
+                  </span>
+                </a>
+                <!-- TODO: Replace # with the final Google Play URL when PartyPlus is approved. -->
+                <a class="store-button" href="#" aria-disabled="true">
+                  <span class="store-icon">G</span>
+                  <span class="store-text">
+                    <span class="store-kicker">Get it on</span>
+                    <span class="store-name">Google Play</span>
+                  </span>
+                </a>
+              </div>
+            </div>
 
-        <div class="btnrow">
-          <a class="btn primary" id="openApp" href="#">Open in PartyPlus</a>
-          <a class="btn ghost" id="getApp" href="#">Get the app</a>
+            <div class="hero-preview" aria-label="PartyPlus app preview">
+              <div class="hero-banner-card">
+                <img
+                  class="hero-banner-image"
+                  src="/assets/PartyPlusbanner.png"
+                  alt="PartyPlus app preview"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <p class="tiny">Tip: If PartyPlus isn't installed yet, this page will still load.</p>
-        <div class="fallback">
-          <p class="fallback-title">If PartyPlus doesn't open automatically</p>
-          <p class="fallback-text">
-            Open the app and use <b>Pick a Party</b> after opening this invite.
+      <section id="screens" class="screens">
+        <div class="container">
+          <h2 class="section-heading">A smoother flow for hosts and guests</h2>
+          <p class="section-copy">
+            The core party details stay easy to scan, so guests know exactly what to do next.
           </p>
+          <!-- TODO: Add the final screenshot at invite-web/assets/PartyPlusscreenshot1.1.png. -->
+          <div class="screens-grid">
+            <article class="screenshot-card featured">
+              <div class="real-screenshot">
+                <div class="screenshot-phone">
+                  <img
+                    src="/assets/PartyPlusscreenshot1.1.png"
+                    alt="PartyPlus create a party screen"
+                    onerror="this.closest('.real-screenshot').hidden = true; this.closest('.real-screenshot').nextElementSibling.hidden = false;"
+                  />
+                </div>
+              </div>
+              <div class="screenshot-placeholder" hidden>
+                <div class="placeholder-screen">
+                  <p class="placeholder-title">Create a party</p>
+                  <div class="placeholder-lines"><span></span><span></span><span></span></div>
+                </div>
+              </div>
+              <div class="card-copy">
+                <h3>Create a party</h3>
+                <p>Add the details guests need without turning planning into a project.</p>
+              </div>
+            </article>
+            <div class="screens-support">
+              <article class="screen-note-card">
+                <span class="screen-note-kicker">Invite</span>
+                <h3>Share one invite</h3>
+                <p>Send a single link that opens the party details for everyone.</p>
+              </article>
+              <article class="screen-note-card">
+                <span class="screen-note-kicker">RSVPs</span>
+                <h3>Track responses</h3>
+                <p>See who is coming, maybe coming, or sitting this one out.</p>
+              </article>
+              <article class="screen-note-card">
+                <span class="screen-note-kicker">Bring-list</span>
+                <h3>Claim what to bring</h3>
+                <p>Guests can cover the bring-list and suggest anything missing.</p>
+              </article>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <section id="features" class="features">
+        <div class="container">
+          <h2 class="section-heading">Keep the party details together, from the guest list to the bring-list</h2>
+          <p class="section-copy">
+            PartyPlus keeps the practical parts of hosting in one shared place, with a guest flow that feels obvious the first time.
+          </p>
+          <div class="features-grid">
+            <article class="feature-card">
+              <div class="feature-accent"></div>
+              <h3>Party details</h3>
+              <p>Create a party with date, time, location, and notes.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-accent"></div>
+              <h3>One invite link</h3>
+              <p>Share one invite link with guests through the apps you already use.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-accent"></div>
+              <h3>Guest RSVPs</h3>
+              <p>Guests can RSVP with their name and number of guests.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-accent"></div>
+              <h3>Bring-list claims</h3>
+              <p>Guests can claim what they are bringing so everyone sees what is covered.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-accent"></div>
+              <h3>Suggestions</h3>
+              <p>Guests can suggest something to bring if it is not already listed.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <footer id="support" class="footer">
+        <div class="container footer-inner">
+          <div class="footer-brand">
+            <img class="labs-logo" src="/assets/clogher%20Labs.png" alt="Clogher Labs" />
+            <span>Built by Clogher Labs</span>
+          </div>
+          <nav class="footer-links" aria-label="Footer">
+            <a href="mailto:support@partyplusapp.com">Support</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+          </nav>
+        </div>
+      </footer>
+    </main>
+
+    <main id="invite" class="invite-page hidden" hidden>
+      <section class="invite-card">
+        <h1>PartyPlus Invite</h1>
+        <p id="subtitle" class="section-copy"></p>
+        <div id="details"></div>
+        <div class="invite-id" id="inviteId">-</div>
+        <div class="btn-row">
+          <a class="btn btn-primary" id="openApp" href="#">Open in PartyPlus</a>
+          <a class="btn btn-secondary" id="getApp" href="/testflight.html">Get the app</a>
+        </div>
+        <p class="tiny">If PartyPlus is not installed yet, this page will still load.</p>
+      </section>
+    </main>
 
     <script>
       function fromBase64Url(input) {
@@ -130,49 +803,52 @@
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
 
-      const inviteIdEl = document.getElementById("inviteId");
-      if (inviteIdEl && inviteId) inviteIdEl.textContent = inviteId;
+      if (inviteId) {
+        const landing = document.getElementById("landing");
+        const invite = document.getElementById("invite");
+        landing.classList.add("hidden");
+        landing.hidden = true;
+        invite.classList.remove("hidden");
+        invite.hidden = false;
 
-      const url = new URL(window.location.href);
-      const d = url.searchParams.get("d") || "";
-      const subtitle = document.getElementById("subtitle");
-      const details = document.getElementById("details");
+        const inviteIdEl = document.getElementById("inviteId");
+        if (inviteIdEl) inviteIdEl.textContent = inviteId;
 
-      if (d) {
-        try {
-          const party = decodeInviteData(d);
-          subtitle.textContent = party.t || "You're invited!";
+        const url = new URL(window.location.href);
+        const d = url.searchParams.get("d") || "";
+        const subtitle = document.getElementById("subtitle");
+        const details = document.getElementById("details");
 
-          const rows = [];
-          if (party.dt) rows.push(`<p><b>When:</b> ${party.dt}</p>`);
-          if (party.l) rows.push(`<p><b>Where:</b> ${party.l}</p>`);
-          if (party.a) rows.push(`<p>${party.a}</p>`);
+        if (d) {
+          try {
+            const party = decodeInviteData(d);
+            subtitle.textContent = party.t || "You're invited!";
 
-          details.innerHTML = rows.join("");
-        } catch (e) {
-          subtitle.textContent = "This invite looks corrupted.";
-          details.innerHTML = "<p>Please ask the host to resend it.</p>";
+            const rows = [];
+            if (party.dt) rows.push(`<p><b>When:</b> ${party.dt}</p>`);
+            if (party.l) rows.push(`<p><b>Where:</b> ${party.l}</p>`);
+            if (party.a) rows.push(`<p>${party.a}</p>`);
+
+            details.innerHTML = rows.join("");
+          } catch (e) {
+            subtitle.textContent = "This invite looks corrupted.";
+            details.innerHTML = "<p>Please ask the host to resend it.</p>";
+          }
+        } else {
+          subtitle.textContent = "You're invited!";
         }
-      } else {
-        subtitle.textContent = "You're invited!";
+
+        const directPartyPath = `party/${encodeURIComponent(inviteId || "")}`;
+        const nativeSchemeLink = d
+          ? `partyplusnative://${directPartyPath}?d=${encodeURIComponent(d)}`
+          : `partyplusnative://${directPartyPath}`;
+
+        const openApp = document.getElementById("openApp");
+        if (openApp) {
+          openApp.href = nativeSchemeLink;
+          openApp.setAttribute("href", nativeSchemeLink);
+        }
       }
-
-      const directPartyPath = `party/${encodeURIComponent(inviteId || "")}`;
-      const nativeSchemeLink = d
-        ? `partyplusnative://${directPartyPath}?d=${encodeURIComponent(d)}`
-        : `partyplusnative://${directPartyPath}`;
-
-      const openApp = document.getElementById("openApp");
-      const getApp = document.getElementById("getApp");
-      openApp.href = nativeSchemeLink;
-      openApp.setAttribute("href", nativeSchemeLink);
-
-      getApp.href = "https://play.google.com/store/search?q=partyplus&c=apps";
-      getApp.target = "_blank";
-      getApp.rel = "noopener noreferrer";
-
-      // Preview-stage flow: always open the web invite first, then let the user
-      // launch the app with one explicit custom-scheme tap.
     </script>
   </body>
 </html>
