@@ -1,18 +1,23 @@
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 
 export default function HomeScreen() {
+  const { height, width } = useWindowDimensions();
+  const compactHeight = height < 720;
+  const logoSize = Math.min(
+    compactHeight ? 270 : 338,
+    Math.max(190, Math.round(width * 0.77))
+  );
+  const logoRadius = Math.round(logoSize * 0.2);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ThemedView style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.content}>
           <View style={styles.heroCard}>
             <ThemedText style={styles.eyebrow}>
               PARTY PLANNING, MADE SIMPLE
@@ -22,27 +27,42 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
 
-          <View style={styles.actions}>
-            <Pressable
-              onPress={() => router.push("/create-party")}
-              style={styles.primaryCard}
-            >
-              <ThemedText type="subtitle" style={styles.primaryCardTitle}>
-                Create a Party
-              </ThemedText>
-            </Pressable>
+          <View style={styles.heroActions}>
+            <Image
+              source={require("../../assets/partyplus-icon.png")}
+              style={[
+                styles.logo,
+                {
+                  width: logoSize,
+                  height: logoSize,
+                  borderRadius: logoRadius,
+                },
+              ]}
+              resizeMode="contain"
+              accessibilityLabel="PartyPlus logo"
+            />
 
-            <Pressable
-              onPress={() => router.push("/load-parties")}
-              style={styles.secondaryCard}
-            >
-              <ThemedText type="subtitle" style={styles.cardTitle}>
-                My Parties
-              </ThemedText>
-            </Pressable>
+            <View style={styles.actions}>
+              <Pressable
+                onPress={() => router.push("/create-party")}
+                style={styles.primaryCard}
+              >
+                <ThemedText type="subtitle" style={styles.primaryCardTitle}>
+                  Create a Party
+                </ThemedText>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push("/load-parties")}
+                style={styles.secondaryCard}
+              >
+                <ThemedText type="subtitle" style={styles.cardTitle}>
+                  My Parties
+                </ThemedText>
+              </Pressable>
+            </View>
           </View>
-
-        </ScrollView>
+        </View>
       </ThemedView>
     </SafeAreaView>
   );
@@ -58,10 +78,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#08111f",
   },
   content: {
+    flex: 1,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 36,
-    gap: 18,
+    paddingBottom: 28,
   },
   heroCard: {
     paddingTop: 10,
@@ -79,8 +99,20 @@ const styles = StyleSheet.create({
     fontSize: 52,
     lineHeight: 56,
   },
+  heroActions: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    paddingTop: 30,
+    width: "100%",
+  },
+  logo: {
+    flexShrink: 0,
+  },
   actions: {
+    width: "100%",
     gap: 16,
+    marginTop: 32,
   },
   secondaryCard: {
     borderWidth: 1,

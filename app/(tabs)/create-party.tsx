@@ -59,6 +59,7 @@ export default function CreatePartyScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const itemInputRef = useRef<TextInput>(null);
   const notesInputRef = useRef<TextInput>(null);
+  const savingRef = useRef(false);
   const router = useRouter();
  const params = useLocalSearchParams<{ id?: string | string[] }>();
 
@@ -201,6 +202,7 @@ const confirmIosPicker = () => {
   } | null>(null);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
 // 🔹 STEP 2 — Toast animation + timer refs
 const toastAnim = useRef(new Animated.Value(0)).current;
@@ -491,6 +493,11 @@ function confirmRemoveItem(index: number) {
   }
 
   async function handleSave() {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setIsSaving(true);
+
+    try {
     const cleanTitle = title.trim();
     if (!cleanTitle) {
       Alert.alert("Missing title", "Give your party a name first.");
@@ -603,8 +610,12 @@ if (!hostIds.includes(party.id)) {
       ],
       { cancelable: false }
     );
+    } finally {
+      savingRef.current = false;
+      setIsSaving(false);
+    }
   }
-  const canSave = title.trim().length > 0;
+  const canSave = title.trim().length > 0 && !isSaving;
 
 return (
   <>
@@ -914,7 +925,9 @@ onPress={openDateTimePicker}
   disabled={!canSave}
   style={[styles.primaryButton, { opacity: canSave ? 1 : 0.35 }]}
 >
-  <ThemedText style={styles.primaryButtonText}>Save Party</ThemedText>
+  <ThemedText style={styles.primaryButtonText}>
+    {isSaving ? "Saving..." : "Save Party"}
+  </ThemedText>
 </Pressable>
 
 
