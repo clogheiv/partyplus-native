@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="PartyPlus helps hosts create a party, share one invite, collect RSVPs, and coordinate what guests bring."
+      content="PartyPlus is a simple party planning app for birthdays, cookouts, potlucks, holidays, and family gatherings. Create an invite, track RSVPs, and let guests claim what to bring."
     />
-    <title>PartyPlus | Plan. Share. Celebrate Together.</title>
+    <title>PartyPlus | Party Planning App for RSVPs, Potlucks & Bring Lists</title>
     <link rel="icon" href="/assets/favicon.png" />
     <style>
       :root {
@@ -261,7 +261,8 @@
       }
 
       .screens-grid,
-      .features-grid {
+      .features-grid,
+      .faq-grid {
         display: grid;
         gap: 22px;
         margin-top: 34px;
@@ -269,7 +270,8 @@
 
       .screenshot-card,
       .screen-note-card,
-      .feature-card {
+      .feature-card,
+      .faq-card {
         border: 1px solid var(--line);
         border-radius: 8px;
         background: rgba(16, 26, 43, 0.82);
@@ -425,6 +427,23 @@
 
       .feature-card:nth-child(4) .feature-accent {
         background: var(--gold);
+      }
+
+      .faq-card {
+        padding: 24px;
+      }
+
+      .faq-card h3 {
+        margin: 0 0 10px;
+        color: var(--text);
+        font-size: 1.18rem;
+      }
+
+      .faq-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.03rem;
+        line-height: 1.55;
       }
 
       .footer {
@@ -621,6 +640,10 @@
           grid-template-columns: repeat(2, 1fr);
         }
 
+        .faq-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
         .footer-links {
           justify-content: flex-end;
         }
@@ -674,6 +697,7 @@
             <div class="nav-links">
               <a href="#screens">Screens</a>
               <a href="#features">Features</a>
+              <a href="#faq">FAQ</a>
               <a href="#support">Support</a>
             </div>
           </nav>
@@ -682,9 +706,12 @@
             <div class="hero-copy">
               <p class="eyebrow">Party planning made calmer</p>
               <h1>PartyPlus</h1>
-              <p class="tagline">Plan. Share. Celebrate Together.</p>
+              <p class="tagline">Plan the party. Share one invite. Keep everyone on the same page.</p>
               <p class="lead">
-                Create a party, send one invite, collect RSVPs, and let guests claim what to bring.
+                PartyPlus is a party planning app for birthdays, cookouts, potlucks,
+                holiday parties, family gatherings, and casual events. Create a party,
+                track RSVPs, manage your guest list, and organize who's bringing what
+                without digging through group texts.
               </p>
               <div class="store-row" aria-label="Download PartyPlus">
                 <a class="store-button" href="https://apps.apple.com/us/app/partyplus-866ec3/id6762475398">
@@ -724,7 +751,8 @@
         <div class="container">
           <h2 class="section-heading">A smoother flow for hosts and guests</h2>
           <p class="section-copy">
-            The core party details stay easy to scan, so guests know exactly what to do next.
+            The core party details stay easy to scan, so guests know exactly what to do next:
+            RSVP, check the bring-list, and claim something from the what to bring list.
           </p>
           <!-- TODO: Add the final screenshot at invite-web/assets/PartyPlusscreenshot1.1.png. -->
           <div class="screens-grid">
@@ -763,7 +791,7 @@
               <article class="screen-note-card">
                 <span class="screen-note-kicker">Bring-list</span>
                 <h3>Claim what to bring</h3>
-                <p>Guests can cover the bring-list and suggest anything missing.</p>
+                <p>Guests can cover the bring-list, claim items, or suggest what to bring if something is missing.</p>
               </article>
             </div>
           </div>
@@ -774,7 +802,9 @@
         <div class="container">
           <h2 class="section-heading">Keep the party details together, from the guest list to the bring-list</h2>
           <p class="section-copy">
-            PartyPlus keeps the practical parts of hosting in one shared place, with a guest flow that feels obvious the first time.
+            PartyPlus keeps the practical parts of hosting in one shared place, with a guest flow
+            that feels obvious the first time. Build an invite, track RSVPs and guest counts,
+            and give everyone a shared potluck planner instead of scattered messages.
           </p>
           <div class="features-grid">
             <article class="feature-card">
@@ -790,7 +820,7 @@
             <article class="feature-card">
               <div class="feature-accent"></div>
               <h3>Guest RSVPs</h3>
-              <p>Guests can RSVP with their name and number of guests.</p>
+              <p>Guests can RSVP with their name and number of guests, so hosts can see who is coming.</p>
             </article>
             <article class="feature-card">
               <div class="feature-accent"></div>
@@ -800,7 +830,39 @@
             <article class="feature-card">
               <div class="feature-accent"></div>
               <h3>Suggestions</h3>
-              <p>Guests can suggest something to bring if it is not already listed.</p>
+              <p>Guests can suggest something to bring if it is not already listed, keeping the what to bring list flexible.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="faq">
+        <div class="container">
+          <h2 class="section-heading">PartyPlus FAQ</h2>
+          <p class="section-copy">
+            A few quick answers for hosts planning birthdays, cookouts, potlucks,
+            family gatherings, holiday parties, game nights, and casual events.
+          </p>
+          <div class="faq-grid">
+            <article class="faq-card">
+              <h3>What is PartyPlus?</h3>
+              <p>PartyPlus is a party planning app that helps hosts create invites, track RSVPs, and organize what guests are bringing.</p>
+            </article>
+            <article class="faq-card">
+              <h3>Can PartyPlus help with potlucks?</h3>
+              <p>Yes. PartyPlus includes a shared bring-list so guests can claim items or suggest something they want to bring.</p>
+            </article>
+            <article class="faq-card">
+              <h3>Can I use PartyPlus for birthdays and cookouts?</h3>
+              <p>Yes. PartyPlus is designed for birthdays, cookouts, family gatherings, holidays, potlucks, game nights, and casual events.</p>
+            </article>
+            <article class="faq-card">
+              <h3>Does PartyPlus track RSVPs?</h3>
+              <p>Yes. Guests can RSVP so the host can see who is coming.</p>
+            </article>
+            <article class="faq-card">
+              <h3>What problem does PartyPlus solve?</h3>
+              <p>PartyPlus helps keep party details, RSVPs, guest counts, and bring-list items together instead of scattered across group texts and messages.</p>
             </article>
           </div>
         </div>
