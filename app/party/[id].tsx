@@ -17,24 +17,23 @@ import {
   View,
   findNodeHandle,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
 import {
-  createRemoteParty,
   getRemotePartyById,
   getRemotePartyItems,
   replaceRemotePartyItems,
 } from "../../src/data/parties";
 import { getRemotePartyRsvps, replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
-import { buildDuplicateParty } from "../../src/lib/duplicateParty";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
-import { sharePartyReminder } from "../../src/lib/inviteShare";
 import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../../src/lib/supabase";
+
+const ITEM_PROMPT_DELAY_MS = 3000;
+const STILL_CHOOSING_DELAY_MS = 20000;
 
 function decodeInvitePayload(d: string | undefined) {
   if (!d) return null;
@@ -114,14 +113,12 @@ function wait(ms: number) {
 
 async function applyLoadedParty(
   nextParty: Party,
-  setParty: (party: Party) => void,
-  setIsHost: (value: boolean) => void
+  setParty: (party: Party) => void
 ) {
   await setCurrentPartyId(nextParty.id);
   setParty(nextParty);
 
   const storedUserId = await ensureUserId();
-  setIsHost(Boolean(storedUserId && nextParty.hostId === storedUserId));
 
   return storedUserId;
 }
@@ -141,7 +138,6 @@ export default function PartyGuestViewScreen() {
 
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
-  const [isHost, setIsHost] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [rsvpName, setRsvpName] = useState("");
   const [rsvpStatus, setRsvpStatus] = useState<PartyRsvpStatus | null>(null);
@@ -150,10 +146,6 @@ export default function PartyGuestViewScreen() {
   const [suggestionText, setSuggestionText] = useState("");
   const [addingSuggestion, setAddingSuggestion] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
-  const [sendingReminder, setSendingReminder] = useState(false);
-  const [duplicatingParty, setDuplicatingParty] = useState(false);
-  const sendingReminderRef = useRef(false);
-  const duplicatingPartyRef = useRef(false);
   const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const partyName =
@@ -272,8 +264,7 @@ export default function PartyGuestViewScreen() {
           await upsertParty(hydratedRemote as any);
           const storedUserId = await applyLoadedParty(
             hydratedRemote,
-            setParty,
-            setIsHost
+            setParty
           );
           setCurrentUserId(storedUserId);
           if (!didCanonicalizeRef.current && typeof d === "string" && d.length > 0) {
@@ -287,8 +278,7 @@ export default function PartyGuestViewScreen() {
           const normalized = normalizePartyForView(found);
           const storedUserId = await applyLoadedParty(
             normalized,
-            setParty,
-            setIsHost
+            setParty
           );
           setCurrentUserId(storedUserId);
 
@@ -324,8 +314,7 @@ export default function PartyGuestViewScreen() {
           await upsertParty(hydrated as any);
           const storedUserId = await applyLoadedParty(
             hydrated,
-            setParty,
-            setIsHost
+            setParty
           );
           setCurrentUserId(storedUserId);
           if (!didCanonicalizeRef.current && typeof d === "string" && d.length > 0) {
@@ -524,7 +513,7 @@ export default function PartyGuestViewScreen() {
     claimPromptTimerRef.current = null;
   }
 
-  function scheduleClaimCompletionPrompt() {
+  function scheduleClaimCompletionPrompt(delayMs = ITEM_PROMPT_DELAY_MS) {
     if (!currentUserRsvp || currentUserRsvp.status !== "yes") return;
 
     clearClaimPromptTimer();
@@ -540,11 +529,11 @@ export default function PartyGuestViewScreen() {
         {
           text: "Still choosing",
           onPress: () => {
-            scheduleClaimCompletionPrompt();
+            scheduleClaimCompletionPrompt(STILL_CHOOSING_DELAY_MS);
           },
         },
       ]);
-    }, 3000);
+    }, delayMs);
   }
 
   function showRsvpConfirmation(status: PartyRsvpStatus) {
@@ -778,77 +767,6 @@ export default function PartyGuestViewScreen() {
     }
   }
 
-  async function handleDuplicateParty() {
-    if (!party || duplicatingPartyRef.current) return;
-    if (!isHost) return;
-
-    duplicatingPartyRef.current = true;
-    setDuplicatingParty(true);
-    try {
-      const ownerId = await ensureUserId();
-      const duplicate = buildDuplicateParty(party, ownerId);
-
-      await upsertParty(duplicate);
-
-      try {
-        await createRemoteParty(duplicate);
-      } catch (error) {
-        console.log("[party] duplicateRemoteSaveFailed", {
-          sourcePartyId: party.id,
-          duplicatePartyId: duplicate.id,
-          itemCount: duplicate.items.length,
-          error,
-        });
-        Alert.alert(
-          "Duplicate failed",
-          "The duplicate was saved on this device, but it did not sync to the cloud. Please try again before sharing."
-        );
-        return;
-      }
-
-      await setCurrentPartyId(duplicate.id);
-
-      const raw = await AsyncStorage.getItem("hostPartyIds");
-      const parsedHostIds = raw ? JSON.parse(raw) : [];
-      const hostIds: string[] = Array.isArray(parsedHostIds) ? parsedHostIds : [];
-      if (!hostIds.includes(duplicate.id)) {
-        hostIds.push(duplicate.id);
-        await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
-      }
-
-      router.push(`/(tabs)/create-party?id=${duplicate.id}`);
-    } catch (error) {
-      console.log("[party] duplicatePartyFailed", {
-        sourcePartyId: party?.id,
-        error,
-      });
-      Alert.alert("Duplicate failed", "Could not duplicate this party.");
-    } finally {
-      duplicatingPartyRef.current = false;
-      setDuplicatingParty(false);
-    }
-  }
-
-  async function handleSendReminder() {
-    if (!party || sendingReminderRef.current) return;
-    if (!isHost) return;
-
-    sendingReminderRef.current = true;
-    setSendingReminder(true);
-    try {
-      await sharePartyReminder(party);
-    } catch (error) {
-      console.log("[party] sendReminderFailed", {
-        partyId: party.id,
-        error,
-      });
-      Alert.alert("Reminder failed", "Could not open the share sheet for this reminder.");
-    } finally {
-      sendingReminderRef.current = false;
-      setSendingReminder(false);
-    }
-  }
-
   if (loading) {
     return (
       <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#08111f" }}>
@@ -940,37 +858,6 @@ export default function PartyGuestViewScreen() {
           <ThemedText style={styles.heroBody}>When: {whenText}</ThemedText>
         )}
       </View>
-
-      {isHost ? (
-        <View style={styles.hostActions}>
-          <Pressable
-            onPress={() => router.push(`/(tabs)/create-party?id=${party.id}`)}
-            style={styles.secondaryButton}
-          >
-            <ThemedText style={styles.secondaryButtonText}>
-              Edit Party
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={handleSendReminder}
-            disabled={sendingReminder}
-            style={[styles.secondaryButton, sendingReminder ? styles.buttonDisabled : null]}
-          >
-            <ThemedText style={styles.secondaryButtonText}>
-              {sendingReminder ? "Opening..." : "Send Reminder"}
-            </ThemedText>
-          </Pressable>
-          <Pressable
-            onPress={handleDuplicateParty}
-            disabled={duplicatingParty}
-            style={[styles.secondaryButton, duplicatingParty ? styles.buttonDisabled : null]}
-          >
-            <ThemedText style={styles.secondaryButtonText}>
-              {duplicatingParty ? "Duplicating..." : "Duplicate Party"}
-            </ThemedText>
-          </Pressable>
-        </View>
-      ) : null}
 
       {!!party.location?.trim() && (
         <ThemedView style={styles.sectionCard}>
@@ -1469,27 +1356,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#f6efe7",
-  },
-  hostActions: {
-    gap: 10,
-    alignItems: "flex-start",
-  },
-  deleteButton: {
-    borderWidth: 1,
-    borderColor: "#b42318",
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignSelf: "flex-start",
-    backgroundColor: "#5f1515",
-  },
-  deleteButtonDisabled: {
-    opacity: 0.65,
-  },
-  deleteButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffe4e1",
   },
   itemCard: {
     padding: 16,

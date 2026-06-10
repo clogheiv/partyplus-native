@@ -1,24 +1,141 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { deleteRemoteParty } from "@/src/data/parties";
-import { deletePartyById, setCurrentPartyId } from "@/src/lib/partyStore";
+import { createRemoteParty, deleteRemoteParty } from "@/src/data/parties";
+import { buildDuplicateParty } from "@/src/lib/duplicateParty";
+import { ensureUserId } from "@/src/lib/ids";
+import { sharePartyReminder } from "@/src/lib/inviteShare";
+import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "@/src/lib/partyStore";
+import type { Party } from "@/src/lib/partyTypes";
 import { isSupabaseConfigured } from "@/src/lib/supabase";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PickActionScreen() {
-  const params = useLocalSearchParams<{ id?: string; isHost?: string }>();
+  const params = useLocalSearchParams<{ id?: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const isHost = params.isHost === "true";
+  const [party, setParty] = useState<Party | null>(null);
+  const [isConfirmedHost, setIsConfirmedHost] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
+  const [duplicatingParty, setDuplicatingParty] = useState(false);
   const [deletingParty, setDeletingParty] = useState(false);
+  const sendingReminderRef = useRef(false);
+  const duplicatingPartyRef = useRef(false);
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadParty() {
+      if (!id) {
+        setParty(null);
+        setIsConfirmedHost(false);
+        return;
+      }
+
+      try {
+        const [storedParty, storedUserId] = await Promise.all([
+          getPartyById(id),
+          ensureUserId(),
+        ]);
+
+        if (!isMounted) return;
+
+        setParty(storedParty);
+        setIsConfirmedHost(Boolean(storedUserId && storedParty?.hostId === storedUserId));
+      } catch {
+        if (!isMounted) return;
+        setParty(null);
+        setIsConfirmedHost(false);
+      }
+    }
+
+    void loadParty();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
+
+  async function addHostPartyId(partyId: string) {
+    const raw = await AsyncStorage.getItem("hostPartyIds");
+    const parsedHostIds = raw ? JSON.parse(raw) : [];
+    const hostIds: string[] = Array.isArray(parsedHostIds) ? parsedHostIds : [];
+    if (!hostIds.includes(partyId)) {
+      hostIds.push(partyId);
+      await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
+    }
+  }
+
+  async function handleSendReminder() {
+    if (!party || sendingReminderRef.current) return;
+    if (!isConfirmedHost) return;
+
+    sendingReminderRef.current = true;
+    setSendingReminder(true);
+    try {
+      await sharePartyReminder(party);
+    } catch (error) {
+      console.log("[pick-action] sendReminderFailed", {
+        partyId: party.id,
+        error,
+      });
+      Alert.alert("Reminder failed", "Could not open the share sheet for this reminder.");
+    } finally {
+      sendingReminderRef.current = false;
+      setSendingReminder(false);
+    }
+  }
+
+  async function handleDuplicateParty() {
+    if (!party || duplicatingPartyRef.current) return;
+    if (!isConfirmedHost) return;
+
+    duplicatingPartyRef.current = true;
+    setDuplicatingParty(true);
+    try {
+      const ownerId = await ensureUserId();
+      const duplicate = buildDuplicateParty(party, ownerId);
+
+      await upsertParty(duplicate);
+
+      try {
+        await createRemoteParty(duplicate);
+      } catch (error) {
+        console.log("[pick-action] duplicateRemoteSaveFailed", {
+          sourcePartyId: party.id,
+          duplicatePartyId: duplicate.id,
+          itemCount: duplicate.items.length,
+          error,
+        });
+        Alert.alert(
+          "Duplicate saved on this device",
+          "The copied party was created locally, but could not sync yet."
+        );
+        return;
+      }
+
+      await setCurrentPartyId(duplicate.id);
+      await addHostPartyId(duplicate.id);
+
+      router.push(`/(tabs)/create-party?id=${duplicate.id}`);
+    } catch (error) {
+      console.log("[pick-action] duplicatePartyFailed", {
+        sourcePartyId: party?.id,
+        error,
+      });
+      Alert.alert("Duplicate failed", "Could not duplicate this party.");
+    } finally {
+      duplicatingPartyRef.current = false;
+      setDuplicatingParty(false);
+    }
+  }
 
   async function handleDeleteParty() {
     if (!id || deletingParty) return;
-    if (!isHost) {
+    if (!isConfirmedHost) {
       Alert.alert("Host only", "Only the party host can delete this party.");
       return;
     }
@@ -85,78 +202,96 @@ export default function PickActionScreen() {
         </View>
 
         <View style={styles.actions}>
-        <Pressable
-          onPress={() => {
-            if (id) {
-              router.push(`/party/${id}`);
-              return;
-            }
-
-            router.push("/share");
-          }}
-          style={styles.primaryCard}
-        >
-          <ThemedText style={styles.primaryLabel}>OPEN</ThemedText>
-          <ThemedText type="subtitle" style={styles.primaryTitle}>Join</ThemedText>
-          <ThemedText style={styles.primaryBody}>
-            Open the party page to RSVP and claim items
-          </ThemedText>
-        </Pressable>
-
-        <Pressable
-          onPress={async () => {
-            if (!id) {
-              router.push("/share");
-              return;
-            }
-
-            await setCurrentPartyId(id);
-            router.push("/share");
-          }}
-          style={styles.secondaryCard}
-        >
-          <ThemedText style={styles.secondaryLabel}>SEND</ThemedText>
-          <ThemedText type="subtitle" style={styles.secondaryTitle}>
-            Share
-          </ThemedText>
-          <ThemedText style={styles.secondaryBody}>Copy or send this invite</ThemedText>
-        </Pressable>
-
-        <Pressable
-         onPress={() => {
-    if (!id) return;
-
-    if (!isHost) {
-      Alert.alert("Host only", "Only the party host can edit this party.");
-      return;
-    }
-
-    router.push(`/create-party?id=${id}`);
-  }}
-
-          style={styles.secondaryCard}
-        >
-          <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
-          <ThemedText type="subtitle" style={styles.secondaryTitle}>
-            Edit
-          </ThemedText>
-          <ThemedText style={styles.secondaryBody}>Change details and items</ThemedText>
-        </Pressable>
-
-        {isHost ? (
           <Pressable
-            onPress={confirmDeleteParty}
-            disabled={deletingParty}
-            style={[styles.dangerCard, deletingParty ? styles.cardDisabled : null]}
-          >
-            <ThemedText style={styles.dangerLabel}>HOST</ThemedText>
-            <ThemedText type="subtitle" style={styles.dangerTitle}>
-              {deletingParty ? "Deleting..." : "Delete Party"}
-            </ThemedText>
-            <ThemedText style={styles.dangerBody}>Remove this party permanently</ThemedText>
-          </Pressable>
-        ) : null}
+            onPress={() => {
+              if (id) {
+                router.push(`/party/${id}`);
+                return;
+              }
 
+              router.push("/share");
+            }}
+            style={styles.primaryCard}
+          >
+            <ThemedText style={styles.primaryLabel}>OPEN</ThemedText>
+            <ThemedText type="subtitle" style={styles.primaryTitle}>Join Party</ThemedText>
+            <ThemedText style={styles.primaryBody}>
+              Open the party page to RSVP and claim items
+            </ThemedText>
+          </Pressable>
+
+          <Pressable
+            onPress={async () => {
+              if (!id) {
+                router.push("/share");
+                return;
+              }
+
+              await setCurrentPartyId(id);
+              router.push("/share");
+            }}
+            style={styles.secondaryCard}
+          >
+            <ThemedText style={styles.secondaryLabel}>SEND</ThemedText>
+            <ThemedText type="subtitle" style={styles.secondaryTitle}>
+              Share Party
+            </ThemedText>
+            <ThemedText style={styles.secondaryBody}>Copy or send this invite</ThemedText>
+          </Pressable>
+
+          {isConfirmedHost ? (
+            <>
+              <Pressable
+                onPress={() => {
+                  if (!id) return;
+                  router.push(`/create-party?id=${id}`);
+                }}
+                style={styles.secondaryCard}
+              >
+                <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
+                <ThemedText type="subtitle" style={styles.secondaryTitle}>
+                  Edit Party
+                </ThemedText>
+                <ThemedText style={styles.secondaryBody}>Change details and items</ThemedText>
+              </Pressable>
+
+              <Pressable
+                onPress={handleSendReminder}
+                disabled={sendingReminder}
+                style={[styles.secondaryCard, sendingReminder ? styles.cardDisabled : null]}
+              >
+                <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
+                <ThemedText type="subtitle" style={styles.secondaryTitle}>
+                  {sendingReminder ? "Opening..." : "Send Reminder"}
+                </ThemedText>
+                <ThemedText style={styles.secondaryBody}>Remind guests to RSVP and check the bring list</ThemedText>
+              </Pressable>
+
+              <Pressable
+                onPress={handleDuplicateParty}
+                disabled={duplicatingParty}
+                style={[styles.secondaryCard, duplicatingParty ? styles.cardDisabled : null]}
+              >
+                <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
+                <ThemedText type="subtitle" style={styles.secondaryTitle}>
+                  {duplicatingParty ? "Duplicating..." : "Duplicate Party"}
+                </ThemedText>
+                <ThemedText style={styles.secondaryBody}>Copy details and unclaimed bring-list items</ThemedText>
+              </Pressable>
+
+              <Pressable
+                onPress={confirmDeleteParty}
+                disabled={deletingParty}
+                style={[styles.dangerCard, deletingParty ? styles.cardDisabled : null]}
+              >
+                <ThemedText style={styles.dangerLabel}>HOST</ThemedText>
+                <ThemedText type="subtitle" style={styles.dangerTitle}>
+                  {deletingParty ? "Deleting..." : "Delete Party"}
+                </ThemedText>
+                <ThemedText style={styles.dangerBody}>Remove this party permanently</ThemedText>
+              </Pressable>
+            </>
+          ) : null}
         </View>
       </ScrollView>
     </ThemedView>
