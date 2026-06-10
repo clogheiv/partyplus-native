@@ -28,6 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createRemoteParty } from "../../src/data/parties";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
+import { PARTY_TEMPLATES, mergeTemplateItems } from "../../src/lib/partyTemplates";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
 
@@ -193,6 +194,7 @@ const confirmIosPicker = () => {
 
   const [itemText, setItemText] = useState("");
   const [items, setItems] = useState<string[]>([]);
+  const [templateChooserVisible, setTemplateChooserVisible] = useState(false);
  
 
   const [isDirty, setIsDirty] = useState(false);
@@ -480,6 +482,24 @@ function confirmRemoveItem(index: number) {
       { text: "Remove", style: "destructive", onPress: () => removeItem(index) },
     ]
   );
+}
+
+function applyTemplate(template: (typeof PARTY_TEMPLATES)[number]) {
+  const merged = mergeTemplateItems(items, template.items);
+
+  if (!merged.addedItems.length) {
+    setTemplateChooserVisible(false);
+    setActionFeedback(`${template.name} items are already on the list`);
+    return;
+  }
+
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  setItems(merged.items);
+  setIsDirty(true);
+  setActionFeedback(
+    `Added ${merged.addedItems.length} ${merged.addedItems.length === 1 ? "item" : "items"}`
+  );
+  setTemplateChooserVisible(false);
 }
 
   async function handleShareSavedParty(party: Party, id: string) {
@@ -872,6 +892,84 @@ onPress={openDateTimePicker}
         style={inputStyleMultiline}
       />
 
+      <ThemedText type="subtitle" style={styles.sectionLabel}>Party templates</ThemedText>
+      <View style={styles.templateSection}>
+        <ThemedText style={styles.templateHelperText}>
+          Need help getting started? Add a starter bring-list for common party types.
+        </ThemedText>
+        <Pressable
+          onPress={() => setTemplateChooserVisible(true)}
+          style={styles.templateApplyButton}
+        >
+          <ThemedText style={styles.secondaryButtonText}>Choose a Template</ThemedText>
+        </Pressable>
+      </View>
+
+      <Modal
+        visible={templateChooserVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setTemplateChooserVisible(false)}
+      >
+        <View style={styles.templateModalOverlay}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setTemplateChooserVisible(false)} />
+          <View
+            style={[
+              styles.templateModalWrap,
+              { paddingBottom: Math.max(insets.bottom, 16) },
+            ]}
+          >
+            <View style={styles.templateModalSheet}>
+              <View style={styles.templateModalHeader}>
+                <View style={styles.templateModalTitleWrap}>
+                  <ThemedText style={styles.templateModalTitle}>
+                    Choose a Template
+                  </ThemedText>
+                  <ThemedText style={styles.templateModalHelper}>
+                    Adds missing items only.
+                  </ThemedText>
+                </View>
+                <Pressable
+                  onPress={() => setTemplateChooserVisible(false)}
+                  style={styles.templateModalClose}
+                >
+                  <ThemedText style={styles.iosPickerActionText}>Cancel</ThemedText>
+                </Pressable>
+              </View>
+
+              <View style={styles.templateList}>
+                {PARTY_TEMPLATES.map((template) => {
+                  const preview = `${template.items.slice(0, 4).join(", ")}...`;
+
+                  return (
+                    <Pressable
+                      key={template.id}
+                      onPress={() => applyTemplate(template)}
+                      style={styles.templateCard}
+                    >
+                      <View style={styles.templateCardTextWrap}>
+                        <ThemedText style={styles.templateCardTitle}>
+                          {template.name}
+                        </ThemedText>
+                        <ThemedText style={styles.templateCardPreview}>
+                          {preview}
+                        </ThemedText>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <Pressable
+                onPress={() => setTemplateChooserVisible(false)}
+                style={styles.templateModalCancelButton}
+              >
+                <ThemedText style={styles.secondaryButtonText}>Cancel</ThemedText>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <ThemedText type="subtitle" style={styles.sectionLabel}>What to bring</ThemedText>
       <TextInput
       ref={itemInputRef}
@@ -1069,6 +1167,98 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 360,
     height: 216,
+  },
+  templateSection: {
+    gap: 10,
+  },
+  templateHelperText: {
+    color: "#afbdd5",
+    lineHeight: 21,
+  },
+  templateList: {
+    gap: 10,
+  },
+  templateCard: {
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    backgroundColor: "#101a2b",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  templateCardTextWrap: {
+    flex: 1,
+    gap: 4,
+  },
+  templateCardTitle: {
+    color: "#f6efe7",
+    fontWeight: "800",
+    fontSize: 16,
+  },
+  templateCardPreview: {
+    color: "#afbdd5",
+    lineHeight: 20,
+  },
+  templateApplyButton: {
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    backgroundColor: "#101a2b",
+    alignItems: "center",
+  },
+  templateModalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(3, 8, 20, 0.55)",
+  },
+  templateModalWrap: {
+    width: "100%",
+    paddingHorizontal: 16,
+  },
+  templateModalSheet: {
+    alignSelf: "center",
+    width: "100%",
+    maxWidth: 560,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#243554",
+    backgroundColor: "#101a2b",
+    padding: 16,
+    gap: 12,
+  },
+  templateModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  templateModalTitleWrap: {
+    flex: 1,
+    gap: 4,
+  },
+  templateModalTitle: {
+    color: "#f6efe7",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  templateModalHelper: {
+    color: "#afbdd5",
+    lineHeight: 20,
+  },
+  templateModalClose: {
+    paddingVertical: 4,
+    paddingLeft: 8,
+  },
+  templateModalCancelButton: {
+    padding: 13,
+    borderWidth: 1,
+    borderColor: "#243554",
+    borderRadius: 16,
+    backgroundColor: "#101a2b",
+    alignItems: "center",
   },
   addItemButton: {
     padding: 14,
