@@ -446,6 +446,55 @@
         line-height: 1.55;
       }
 
+      .cross-promo {
+        padding-top: 12px;
+      }
+
+      .cross-promo-card {
+        display: grid;
+        gap: 18px;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(16, 26, 43, 0.82);
+        box-shadow: 0 16px 38px rgba(2, 6, 23, 0.24);
+      }
+
+      .cross-promo-copy {
+        display: grid;
+        gap: 8px;
+      }
+
+      .cross-promo-copy h2 {
+        margin: 0;
+        color: var(--text);
+        font-size: clamp(1.55rem, 2.8vw, 2.35rem);
+        line-height: 1.1;
+      }
+
+      .cross-promo-copy p {
+        margin: 0;
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.55;
+      }
+
+      .cross-promo-button {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 13px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--blue);
+        background: var(--blue);
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 800;
+      }
+
       .footer {
         padding: 28px 24px 36px;
         border-top: 1px solid var(--line);
@@ -642,6 +691,11 @@
 
         .faq-grid {
           grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cross-promo-card {
+          grid-template-columns: 1fr auto;
+          align-items: center;
         }
 
         .footer-links {
@@ -868,6 +922,19 @@
         </div>
       </section>
 
+      <section class="cross-promo" aria-labelledby="crossPromoTitle">
+        <div class="container">
+          <article class="cross-promo-card">
+            <div class="cross-promo-copy">
+              <p class="eyebrow">Also from Clogher Labs</p>
+              <h2 id="crossPromoTitle">PixelPages</h2>
+              <p>PixelPages creates personalized illustrated stories for kids, with cozy stories families can read together.</p>
+            </div>
+            <a class="cross-promo-button" href="https://pixelpagesapp.com" target="_blank" rel="noopener">Visit PixelPages</a>
+          </article>
+        </div>
+      </section>
+
       <footer id="support" class="footer">
         <div class="container footer-inner">
           <div class="footer-brand">
@@ -1033,7 +1100,7 @@
             </section>
             <section class="legal-section">
               <h2>Contact</h2>
-              <p>Users can contact support at <a href="mailto:support@partyplusapp.com">support@partyplusapp.com</a> for privacy questions or deletion requests.</p>
+              <p>Users can contact support at <a href="mailto:clogherlabs@gmail.com">clogherlabs@gmail.com</a> for privacy questions or deletion requests.</p>
             </section>
           `,
           terms: `
@@ -1041,7 +1108,7 @@
             <p class="legal-date">PartyPlus terms placeholder</p>
             <section class="legal-section">
               <h2>Coming Soon</h2>
-              <p>PartyPlus terms will be posted here. For now, contact <a href="mailto:support@partyplusapp.com">support@partyplusapp.com</a> with questions.</p>
+              <p>PartyPlus terms will be posted here. For now, contact <a href="mailto:clogherlabs@gmail.com">clogherlabs@gmail.com</a> with questions.</p>
             </section>
           `,
           support: `
@@ -1049,7 +1116,7 @@
             <p class="legal-date">PartyPlus support</p>
             <section class="legal-section">
               <h2>Contact</h2>
-              <p>Email <a href="mailto:support@partyplusapp.com">support@partyplusapp.com</a> for help with PartyPlus, privacy questions, or deletion requests.</p>
+              <p>Email <a href="mailto:clogherlabs@gmail.com">clogherlabs@gmail.com</a> for help with PartyPlus, privacy questions, or deletion requests.</p>
             </section>
           `,
         };
