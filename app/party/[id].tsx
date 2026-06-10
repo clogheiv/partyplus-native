@@ -23,7 +23,6 @@ import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
 import {
   createRemoteParty,
-  deleteRemoteParty,
   getRemotePartyById,
   getRemotePartyItems,
   replaceRemotePartyItems,
@@ -33,7 +32,7 @@ import { buildDuplicateParty } from "../../src/lib/duplicateParty";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
 import { sharePartyReminder } from "../../src/lib/inviteShare";
 import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
-import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
+import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../../src/lib/supabase";
 
@@ -153,7 +152,6 @@ export default function PartyGuestViewScreen() {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [sendingReminder, setSendingReminder] = useState(false);
   const [duplicatingParty, setDuplicatingParty] = useState(false);
-  const [deletingParty, setDeletingParty] = useState(false);
   const sendingReminderRef = useRef(false);
   const duplicatingPartyRef = useRef(false);
   const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -780,33 +778,6 @@ export default function PartyGuestViewScreen() {
     }
   }
 
-  async function handleDeleteParty() {
-    if (!party || deletingParty) return;
-    if (!isHost) return;
-
-    setDeletingParty(true);
-    try {
-      if (isSupabaseConfigured) {
-        await deleteRemoteParty(party.id);
-      }
-
-      await deletePartyById(party.id);
-
-      const raw = await AsyncStorage.getItem("hostPartyIds");
-      const hostIds: string[] = raw ? JSON.parse(raw) : [];
-      const nextHostIds = hostIds.filter((entry) => entry !== party.id);
-      if (nextHostIds.length !== hostIds.length) {
-        await AsyncStorage.setItem("hostPartyIds", JSON.stringify(nextHostIds));
-      }
-
-      router.replace("/");
-    } catch {
-      Alert.alert("Delete failed", "Could not delete this party.");
-    } finally {
-      setDeletingParty(false);
-    }
-  }
-
   async function handleDuplicateParty() {
     if (!party || duplicatingPartyRef.current) return;
     if (!isHost) return;
@@ -878,23 +849,6 @@ export default function PartyGuestViewScreen() {
     }
   }
 
-  function confirmDeleteParty() {
-    Alert.alert(
-      "Delete party?",
-      "This will permanently remove this party.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => {
-            void handleDeleteParty();
-          },
-        },
-      ]
-    );
-  }
-
   if (loading) {
     return (
       <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#08111f" }}>
@@ -939,7 +893,7 @@ export default function PartyGuestViewScreen() {
   const canOpenMaps =
     rawLocation.length >= 6 || rawLocation.includes(" ");
   const footerInset = Math.max(insets.bottom, 20) + 12;
-  const footerHeight = isHost ? 132 : 74;
+  const footerHeight = 74;
 
   function goBackToPreviousScreen() {
     if (navigation.canGoBack()) {
@@ -948,6 +902,20 @@ export default function PartyGuestViewScreen() {
     }
 
     router.replace("/");
+  }
+
+  function confirmLeaveParty() {
+    Alert.alert(
+      "Leave party?",
+      "You'll return to the previous screen. Any saved RSVPs or claimed items will stay saved.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Leave",
+          onPress: goBackToPreviousScreen,
+        },
+      ]
+    );
   }
 
   return (
@@ -1306,21 +1274,10 @@ export default function PartyGuestViewScreen() {
           },
         ]}
       >
-        <Pressable onPress={goBackToPreviousScreen} style={styles.footerSecondaryButton}>
+        <Pressable onPress={confirmLeaveParty} style={styles.footerSecondaryButton}>
           <ThemedText style={styles.secondaryButtonText}>Back</ThemedText>
         </Pressable>
 
-        {isHost ? (
-          <Pressable
-            onPress={confirmDeleteParty}
-            disabled={deletingParty}
-            style={[styles.footerDeleteButton, deletingParty ? styles.deleteButtonDisabled : null]}
-          >
-            <ThemedText style={styles.deleteButtonText}>
-              {deletingParty ? "Deleting..." : "Delete Party"}
-            </ThemedText>
-          </Pressable>
-        ) : null}
       </View>
     </KeyboardAvoidingView>
   );
@@ -1599,14 +1556,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     alignItems: "center",
     backgroundColor: "#101a2b",
-  },
-  footerDeleteButton: {
-    borderWidth: 1,
-    borderColor: "#b42318",
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    alignItems: "center",
-    backgroundColor: "#5f1515",
   },
 });
