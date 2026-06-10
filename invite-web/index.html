@@ -460,6 +460,20 @@
         box-shadow: 0 16px 38px rgba(2, 6, 23, 0.24);
       }
 
+      .cross-promo-image-wrap {
+        overflow: hidden;
+        border: 1px solid rgba(223, 231, 245, 0.14);
+        border-radius: 8px;
+        background: #050a13;
+      }
+
+      .cross-promo-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+      }
+
       .cross-promo-copy {
         display: grid;
         gap: 8px;
@@ -694,8 +708,12 @@
         }
 
         .cross-promo-card {
-          grid-template-columns: 1fr auto;
+          grid-template-columns: minmax(220px, 0.36fr) 1fr auto;
           align-items: center;
+        }
+
+        .cross-promo-image-wrap {
+          max-width: 320px;
         }
 
         .footer-links {
@@ -925,6 +943,13 @@
       <section class="cross-promo" aria-labelledby="crossPromoTitle">
         <div class="container">
           <article class="cross-promo-card">
+            <div class="cross-promo-image-wrap">
+              <img
+                class="cross-promo-image"
+                src="/assets/pixelpages-child-reading-promo.png"
+                alt="PixelPages personalized storybook app for kids"
+              />
+            </div>
             <div class="cross-promo-copy">
               <p class="eyebrow">Also from Clogher Labs</p>
               <h2 id="crossPromoTitle">PixelPages</h2>
