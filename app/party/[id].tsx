@@ -31,6 +31,7 @@ import {
 import { getRemotePartyRsvps, replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
 import { buildDuplicateParty } from "../../src/lib/duplicateParty";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
+import { sharePartyReminder } from "../../src/lib/inviteShare";
 import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
 import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
@@ -150,8 +151,10 @@ export default function PartyGuestViewScreen() {
   const [suggestionText, setSuggestionText] = useState("");
   const [addingSuggestion, setAddingSuggestion] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [sendingReminder, setSendingReminder] = useState(false);
   const [duplicatingParty, setDuplicatingParty] = useState(false);
   const [deletingParty, setDeletingParty] = useState(false);
+  const sendingReminderRef = useRef(false);
   const duplicatingPartyRef = useRef(false);
   const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -855,6 +858,26 @@ export default function PartyGuestViewScreen() {
     }
   }
 
+  async function handleSendReminder() {
+    if (!party || sendingReminderRef.current) return;
+    if (!isHost) return;
+
+    sendingReminderRef.current = true;
+    setSendingReminder(true);
+    try {
+      await sharePartyReminder(party);
+    } catch (error) {
+      console.log("[party] sendReminderFailed", {
+        partyId: party.id,
+        error,
+      });
+      Alert.alert("Reminder failed", "Could not open the share sheet for this reminder.");
+    } finally {
+      sendingReminderRef.current = false;
+      setSendingReminder(false);
+    }
+  }
+
   function confirmDeleteParty() {
     Alert.alert(
       "Delete party?",
@@ -958,6 +981,15 @@ export default function PartyGuestViewScreen() {
           >
             <ThemedText style={styles.secondaryButtonText}>
               Edit Party
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            onPress={handleSendReminder}
+            disabled={sendingReminder}
+            style={[styles.secondaryButton, sendingReminder ? styles.buttonDisabled : null]}
+          >
+            <ThemedText style={styles.secondaryButtonText}>
+              {sendingReminder ? "Opening..." : "Send Reminder"}
             </ThemedText>
           </Pressable>
           <Pressable

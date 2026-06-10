@@ -15,24 +15,24 @@ export function buildInviteLink(party: Party) {
   return `https://partyplus-invite.netlify.app/i/${party.id}`;
 }
 
+function formatPartyWhen(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+
+  return d.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function buildShareMessage(party: Party) {
   const title = party.title?.trim() || "Party";
 
-  const formatWhen = (iso: string) => {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-
-    return d.toLocaleString(undefined, {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
-
-  const when = party.date ? `When: ${formatWhen(party.date)}` : "";
+  const when = party.date ? `When: ${formatPartyWhen(party.date)}` : "";
   const where = party.location?.trim() ? `Where: ${party.location.trim()}` : "";
   const notes = party.notes?.trim() ? `Notes: ${party.notes.trim()}` : "";
   const items = party.items ?? [];
@@ -91,6 +91,24 @@ export function buildShareMessage(party: Party) {
     .join("\n");
 }
 
+export function buildReminderMessage(party: Party) {
+  const title = party.title?.trim() || "Party";
+  const when = party.date ? `When: ${formatPartyWhen(party.date)}` : "";
+  const inviteLink = buildInviteLink(party);
+
+  return [
+    `Reminder for ${title}!`,
+    "",
+    when,
+    "",
+    "Please RSVP and check the bring list when you get a chance:",
+    inviteLink,
+  ]
+    .filter((line, index, lines) => line || lines[index - 1])
+    .join("\n")
+    .trim();
+}
+
 export function buildSharePayload(party: Party) {
   const message = buildShareMessage(party).trim();
   const url = buildInviteLink(party).trim();
@@ -101,6 +119,21 @@ export function buildSharePayload(party: Party) {
 
   if (!url) {
     throw new Error("Invite share link is empty.");
+  }
+
+  return { message, url };
+}
+
+export function buildReminderPayload(party: Party) {
+  const message = buildReminderMessage(party).trim();
+  const url = buildInviteLink(party).trim();
+
+  if (!message) {
+    throw new Error("Reminder share message is empty.");
+  }
+
+  if (!url) {
+    throw new Error("Reminder invite link is empty.");
   }
 
   return { message, url };
@@ -127,6 +160,33 @@ export async function sharePartyInvite(party: Party) {
       },
       {
         subject: party.title?.trim() || "Party Invite",
+      }
+    );
+  }
+
+  return Share.share({ message });
+}
+
+export async function sharePartyReminder(party: Party) {
+  const { message, url } = buildReminderPayload(party);
+  console.log("[invite] reminderSharePayload", {
+    partyId: party.id,
+    url,
+    messageLength: message.length,
+  });
+
+  Keyboard.dismiss();
+
+  if (Platform.OS === "ios") {
+    await waitForInteractions();
+    await wait(75);
+
+    return Share.share(
+      {
+        message,
+      },
+      {
+        subject: `${party.title?.trim() || "Party"} Reminder`,
       }
     );
   }
