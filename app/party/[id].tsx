@@ -22,12 +22,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
 import {
+  createRemoteParty,
   deleteRemoteParty,
   getRemotePartyById,
   getRemotePartyItems,
   replaceRemotePartyItems,
 } from "../../src/data/parties";
 import { getRemotePartyRsvps, replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
+import { buildDuplicateParty } from "../../src/lib/duplicateParty";
 import { createUuid, ensureUserId } from "../../src/lib/ids";
 import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
 import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -148,7 +150,9 @@ export default function PartyGuestViewScreen() {
   const [suggestionText, setSuggestionText] = useState("");
   const [addingSuggestion, setAddingSuggestion] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+  const [duplicatingParty, setDuplicatingParty] = useState(false);
   const [deletingParty, setDeletingParty] = useState(false);
+  const duplicatingPartyRef = useRef(false);
   const actionFeedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const partyName =
@@ -800,6 +804,57 @@ export default function PartyGuestViewScreen() {
     }
   }
 
+  async function handleDuplicateParty() {
+    if (!party || duplicatingPartyRef.current) return;
+    if (!isHost) return;
+
+    duplicatingPartyRef.current = true;
+    setDuplicatingParty(true);
+    try {
+      const ownerId = await ensureUserId();
+      const duplicate = buildDuplicateParty(party, ownerId);
+
+      await upsertParty(duplicate);
+
+      try {
+        await createRemoteParty(duplicate);
+      } catch (error) {
+        console.log("[party] duplicateRemoteSaveFailed", {
+          sourcePartyId: party.id,
+          duplicatePartyId: duplicate.id,
+          itemCount: duplicate.items.length,
+          error,
+        });
+        Alert.alert(
+          "Duplicate failed",
+          "The duplicate was saved on this device, but it did not sync to the cloud. Please try again before sharing."
+        );
+        return;
+      }
+
+      await setCurrentPartyId(duplicate.id);
+
+      const raw = await AsyncStorage.getItem("hostPartyIds");
+      const parsedHostIds = raw ? JSON.parse(raw) : [];
+      const hostIds: string[] = Array.isArray(parsedHostIds) ? parsedHostIds : [];
+      if (!hostIds.includes(duplicate.id)) {
+        hostIds.push(duplicate.id);
+        await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
+      }
+
+      router.push(`/(tabs)/create-party?id=${duplicate.id}`);
+    } catch (error) {
+      console.log("[party] duplicatePartyFailed", {
+        sourcePartyId: party?.id,
+        error,
+      });
+      Alert.alert("Duplicate failed", "Could not duplicate this party.");
+    } finally {
+      duplicatingPartyRef.current = false;
+      setDuplicatingParty(false);
+    }
+  }
+
   function confirmDeleteParty() {
     Alert.alert(
       "Delete party?",
@@ -903,6 +958,15 @@ export default function PartyGuestViewScreen() {
           >
             <ThemedText style={styles.secondaryButtonText}>
               Edit Party
+            </ThemedText>
+          </Pressable>
+          <Pressable
+            onPress={handleDuplicateParty}
+            disabled={duplicatingParty}
+            style={[styles.secondaryButton, duplicatingParty ? styles.buttonDisabled : null]}
+          >
+            <ThemedText style={styles.secondaryButtonText}>
+              {duplicatingParty ? "Duplicating..." : "Duplicate Party"}
             </ThemedText>
           </Pressable>
         </View>
