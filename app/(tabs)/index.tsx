@@ -1,5 +1,12 @@
 import { router } from "expo-router";
-import { Image, Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
@@ -17,7 +24,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ThemedView style={styles.screen}>
-        <View style={styles.content}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.heroCard}>
             <ThemedText style={styles.eyebrow}>
               PARTY PLANNING, MADE SIMPLE
@@ -46,6 +57,9 @@ export default function HomeScreen() {
               <Pressable
                 onPress={() => router.push("/create-party")}
                 style={styles.primaryCard}
+                accessibilityRole="button"
+                accessibilityLabel="Create a Party"
+                accessibilityHint="Opens the form to create a new party"
               >
                 <ThemedText type="subtitle" style={styles.primaryCardTitle}>
                   Create a Party
@@ -55,6 +69,9 @@ export default function HomeScreen() {
               <Pressable
                 onPress={() => router.push("/load-parties")}
                 style={styles.secondaryCard}
+                accessibilityRole="button"
+                accessibilityLabel="My Parties"
+                accessibilityHint="Opens your saved parties"
               >
                 <ThemedText type="subtitle" style={styles.cardTitle}>
                   My Parties
@@ -62,7 +79,7 @@ export default function HomeScreen() {
               </Pressable>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </ThemedView>
     </SafeAreaView>
   );
@@ -77,8 +94,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#08111f",
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 28,
