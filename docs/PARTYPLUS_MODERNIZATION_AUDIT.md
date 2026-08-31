@@ -1,7 +1,7 @@
 # PartyPlus modernization and quality audit
 
-Audit date: 2026-08-31  
-Audit base: `origin/backup/share-working` at `510430c04df1013e0f5825f70cc0d5caf4a4309b`  
+Audit date: 2026-08-31
+Audit base: `origin/backup/share-working` at `510430c04df1013e0f5825f70cc0d5caf4a4309b`
 Audit branch: `audit/modernization-2026-08-31`
 
 ## Scope and verification limits
