@@ -394,3 +394,38 @@ Baseline checks:
 3. **Reliability/accessibility device batch:** H6, M1, M4, M5, full VoiceOver/TalkBack and large-text matrix.
 4. **Maintenance release batch:** SDK 54 patch alignment, advisory reevaluation, manifest cleanup, dead-code removal, and centralized tokens.
 5. **Product batch:** timezone decision, privacy-reviewed analytics, then measured feature experiments.
+
+## First safe batch completion
+
+Completed on `audit/modernization-2026-08-31`:
+
+- Preserved bring-list item IDs and claim ownership by item name rather than array position during host edits, with duplicate-name and rename behavior covered by regression tests.
+- Added client-side host checks before loading or saving an existing party in the edit route while retaining compatibility for legacy parties with no `hostId`.
+- Consolidated duplicate edit initialization, resolved the baseline hook warning, and made invalid web dates abort rather than silently save without a date.
+- Added explicit local-only/not-synced alerts for RSVP, claim/unclaim, and suggestion failures.
+- Added a My Parties failure state with Retry and a loading gate for party actions.
+- Added screen-reader roles, labels, hints, selected/disabled/busy states, and live feedback semantics to the core create/edit, saved-party, action, share, RSVP, stepper, claim, suggestion, and back controls.
+- Improved RSVP/suggestion placeholder contrast.
+- Replaced decoded invite-payload `innerHTML` rendering with text-only DOM construction.
+- Made Supabase auth storage safe during Expo web static rendering without changing native session persistence.
+
+Verification after changes:
+
+- `npm test`: 4/4 regression tests passed.
+- `npm run lint`: passed with zero warnings/errors.
+- `npx tsc --noEmit`: passed.
+- `git diff --check`: passed for audit changes; remaining working-tree changes predate the audit.
+- `npx expo export --platform all`: Android, iOS, and web bundles/static routes exported successfully.
+- No database migration, dependency upgrade, production configuration change, deployment, merge, store build, or production data operation was performed.
+
+Not locally verified:
+
+- Physical iOS/Android create, save, edit, load, duplicate, share-sheet, invite-open, RSVP, claim, and unclaim journeys.
+- VoiceOver/TalkBack focus order, maximum system text, keyboard overlap, notch/safe-area behavior, tablet sizes, or orientation changes.
+- Multi-device realtime races, offline recovery, production RLS/policies, and production invite-site deployment.
+
+Pull-request assessment:
+
+- The audit branch commits are ready for review as a narrow, reversible PR.
+- The PR should not be treated as production-merge ready until the physical-device core-journey/accessibility matrix is completed.
+- C1, C2, and C3 require a separately approved Supabase integrity/security project before PartyPlus can be considered fully remediated.
