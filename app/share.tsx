@@ -185,6 +185,8 @@ export default function ShareScreen() {
         <Pressable
           onPress={() => router.push("/load-parties")}
           style={styles.secondaryButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go to saved parties"
         >
           <ThemedText style={styles.secondaryButtonText}>Go to Parties</ThemedText>
         </Pressable>
@@ -223,6 +225,8 @@ export default function ShareScreen() {
             })
           }
           style={styles.secondaryButton}
+          accessibilityRole="button"
+          accessibilityLabel="Edit this party"
         >
           <ThemedText style={styles.secondaryButtonText}>Edit this party</ThemedText>
         </Pressable>
@@ -241,6 +245,8 @@ export default function ShareScreen() {
               <Pressable
                 onPress={() => openInMaps(party.location!)}
                 style={styles.mapButton}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${party.location} in Maps`}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Ionicons name="location-outline" size={18} color="#fff" />
@@ -260,6 +266,8 @@ export default function ShareScreen() {
         <Pressable
           onPress={handleCopyInvite}
           style={styles.secondaryButtonFull}
+          accessibilityRole="button"
+          accessibilityLabel="Copy invite"
         >
           <ThemedText style={styles.secondaryButtonText}>
             Copy Invite
@@ -270,6 +278,9 @@ export default function ShareScreen() {
           onPress={handleNativeShare}
           disabled={sharing}
           style={[styles.primaryButtonFull, sharing ? { opacity: 0.7 } : null]}
+          accessibilityRole="button"
+          accessibilityLabel="Share invite"
+          accessibilityState={{ disabled: sharing, busy: sharing }}
         >
           <ThemedText style={styles.primaryButtonText}>
             Share Invite
@@ -284,6 +295,8 @@ export default function ShareScreen() {
       <Pressable
         onPress={() => router.push("/load-parties")}
         style={styles.secondaryButton}
+        accessibilityRole="button"
+        accessibilityLabel="Go to saved parties"
       >
         <ThemedText style={styles.secondaryButtonText}>Go to Parties</ThemedText>
       </Pressable>

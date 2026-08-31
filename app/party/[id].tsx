@@ -648,6 +648,10 @@ export default function PartyGuestViewScreen() {
         } catch (error) {
           console.log("[party] saveRsvpRemoteFailed", { id: nextParty.id, error });
           saveSucceeded = false;
+          Alert.alert(
+            "RSVP not synced",
+            "Your RSVP was saved on this device, but other guests may not see it yet. Check your connection and try saving again."
+          );
         }
       }
 
@@ -694,6 +698,10 @@ export default function PartyGuestViewScreen() {
       } catch (error) {
         console.log("[party] toggleItemClaimRemoteFailed", { id: nextParty.id, error });
         claimSaved = false;
+        Alert.alert(
+          "Claim not synced",
+          "This change was saved on this device, but other guests may not see it yet. Check your connection and try again."
+        );
       }
     }
 
@@ -754,6 +762,10 @@ export default function PartyGuestViewScreen() {
         } catch (error) {
           console.log("[party] addItemSuggestionRemoteFailed", { id: nextParty.id, error });
           suggestionSaved = false;
+          Alert.alert(
+            "Suggestion not synced",
+            "Your suggestion was saved on this device, but other guests may not see it yet. Check your connection and try again."
+          );
         }
       }
 
@@ -769,7 +781,11 @@ export default function PartyGuestViewScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#08111f" }}>
+      <ThemedView
+        style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#08111f" }}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading party"
+      >
         <ActivityIndicator />
         <ThemedText style={{ textAlign: "center", marginTop: 12, color: "#afbdd5" }}>
           Loading party...
@@ -906,9 +922,10 @@ export default function PartyGuestViewScreen() {
             onChangeText={setRsvpName}
             onFocus={scrollToRsvpNameField}
             placeholder="Your name"
-            placeholderTextColor="#666"
+            placeholderTextColor="#8ea4c5"
             autoCapitalize="words"
             style={styles.input}
+            accessibilityLabel="RSVP name"
           />
         </View>
 
@@ -918,6 +935,9 @@ export default function PartyGuestViewScreen() {
             <Pressable
               onPress={() => changeAttendeeCount(-1)}
               disabled={getAttendeeCountValue() <= 1}
+              accessibilityRole="button"
+              accessibilityLabel="Decrease guest count"
+              accessibilityState={{ disabled: getAttendeeCountValue() <= 1 }}
               style={[
                 styles.stepperButton,
                 getAttendeeCountValue() <= 1 ? styles.stepperButtonDisabled : null,
@@ -929,6 +949,8 @@ export default function PartyGuestViewScreen() {
             <Pressable
               onPress={() => changeAttendeeCount(1)}
               style={styles.stepperButton}
+              accessibilityRole="button"
+              accessibilityLabel="Increase guest count"
             >
               <ThemedText style={styles.stepperButtonText}>+</ThemedText>
             </Pressable>
@@ -944,6 +966,9 @@ export default function PartyGuestViewScreen() {
                 <Pressable
                   key={status}
                   onPress={() => setRsvpStatus(status)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={status === "yes" ? "Yes" : status === "no" ? "No" : "Maybe"}
+                  accessibilityState={{ selected }}
                   style={[
                     styles.rsvpChoice,
                     selected ? styles.rsvpChoiceSelected : null,
@@ -966,6 +991,9 @@ export default function PartyGuestViewScreen() {
         <Pressable
           onPress={saveRsvp}
           disabled={savingRsvp}
+          accessibilityRole="button"
+          accessibilityLabel="Save my RSVP"
+          accessibilityState={{ disabled: savingRsvp, busy: savingRsvp }}
           style={[
             styles.primaryButton,
             { opacity: savingRsvp ? 0.6 : 1, alignSelf: "flex-start" },
@@ -1036,6 +1064,19 @@ export default function PartyGuestViewScreen() {
                 key={it.id ?? `${it.name}-${index}`}
                 onPress={() => toggleItemClaim(it.id)}
                 disabled={!canClaimItems || (claimed && !claimedByYou)}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  claimedByYou
+                    ? `Unclaim ${it.name}`
+                    : claimed
+                      ? `${it.name}, claimed by ${it.claimedBy}`
+                      : `Claim ${it.name}`
+                }
+                accessibilityHint={claimedByYou ? "Removes your claim" : undefined}
+                accessibilityState={{
+                  disabled: !canClaimItems || (claimed && !claimedByYou),
+                  selected: claimedByYou,
+                }}
                 style={[
                   styles.itemCard,
                   { opacity: !canClaimItems ? 0.7 : claimed ? 0.55 : 1 },
@@ -1090,16 +1131,20 @@ export default function PartyGuestViewScreen() {
           value={suggestionText}
           onChangeText={setSuggestionText}
           placeholder="Example: chips, cups, ice"
-          placeholderTextColor="#666"
+          placeholderTextColor="#8ea4c5"
           autoCapitalize="sentences"
           returnKeyType="done"
           onFocus={scrollToSuggestionField}
           onSubmitEditing={addItemSuggestion}
           style={styles.input}
+          accessibilityLabel="Item suggestion"
         />
         <Pressable
           onPress={addItemSuggestion}
           disabled={addingSuggestion}
+          accessibilityRole="button"
+          accessibilityLabel="Add item suggestion"
+          accessibilityState={{ disabled: addingSuggestion, busy: addingSuggestion }}
           style={[
             styles.secondaryButton,
             addingSuggestion ? styles.buttonDisabled : null,
@@ -1146,6 +1191,8 @@ export default function PartyGuestViewScreen() {
             borderColor: "#2f61f3",
             backgroundColor: "#101a2b",
           }}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
         >
           <ThemedText style={{ color: "#f6efe7", fontWeight: "700" }}>
             {actionFeedback}
@@ -1161,7 +1208,12 @@ export default function PartyGuestViewScreen() {
           },
         ]}
       >
-        <Pressable onPress={confirmLeaveParty} style={styles.footerSecondaryButton}>
+        <Pressable
+          onPress={confirmLeaveParty}
+          style={styles.footerSecondaryButton}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+        >
           <ThemedText style={styles.secondaryButtonText}>Back</ThemedText>
         </Pressable>
 

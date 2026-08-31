@@ -10,13 +10,14 @@ import type { Party } from "@/src/lib/partyTypes";
 import { isSupabaseConfigured } from "@/src/lib/supabase";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PickActionScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [party, setParty] = useState<Party | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isConfirmedHost, setIsConfirmedHost] = useState(false);
   const [sendingReminder, setSendingReminder] = useState(false);
   const [duplicatingParty, setDuplicatingParty] = useState(false);
@@ -27,11 +28,13 @@ export default function PickActionScreen() {
 
   useEffect(() => {
     let isMounted = true;
+    setLoading(true);
 
     async function loadParty() {
       if (!id) {
         setParty(null);
         setIsConfirmedHost(false);
+        setLoading(false);
         return;
       }
 
@@ -49,6 +52,8 @@ export default function PickActionScreen() {
         if (!isMounted) return;
         setParty(null);
         setIsConfirmedHost(false);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
 
@@ -181,6 +186,18 @@ export default function PickActionScreen() {
     );
   }
 
+  if (loading) {
+    return (
+      <ThemedView
+        style={[styles.screen, styles.loading]}
+        accessibilityRole="progressbar"
+        accessibilityLabel="Loading party actions"
+      >
+        <ActivityIndicator />
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.screen}>
       <ScrollView
@@ -212,6 +229,9 @@ export default function PickActionScreen() {
               router.push("/share");
             }}
             style={styles.primaryCard}
+            accessibilityRole="button"
+            accessibilityLabel="Join party"
+            accessibilityHint="Opens the party page to RSVP and claim items"
           >
             <ThemedText style={styles.primaryLabel}>OPEN</ThemedText>
             <ThemedText type="subtitle" style={styles.primaryTitle}>Join Party</ThemedText>
@@ -231,6 +251,8 @@ export default function PickActionScreen() {
               router.push("/share");
             }}
             style={styles.secondaryCard}
+            accessibilityRole="button"
+            accessibilityLabel="Share party"
           >
             <ThemedText style={styles.secondaryLabel}>SEND</ThemedText>
             <ThemedText type="subtitle" style={styles.secondaryTitle}>
@@ -247,6 +269,8 @@ export default function PickActionScreen() {
                   router.push(`/create-party?id=${id}`);
                 }}
                 style={styles.secondaryCard}
+                accessibilityRole="button"
+                accessibilityLabel="Edit party"
               >
                 <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
                 <ThemedText type="subtitle" style={styles.secondaryTitle}>
@@ -259,6 +283,9 @@ export default function PickActionScreen() {
                 onPress={handleSendReminder}
                 disabled={sendingReminder}
                 style={[styles.secondaryCard, sendingReminder ? styles.cardDisabled : null]}
+                accessibilityRole="button"
+                accessibilityLabel="Send party reminder"
+                accessibilityState={{ disabled: sendingReminder, busy: sendingReminder }}
               >
                 <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
                 <ThemedText type="subtitle" style={styles.secondaryTitle}>
@@ -271,6 +298,9 @@ export default function PickActionScreen() {
                 onPress={handleDuplicateParty}
                 disabled={duplicatingParty}
                 style={[styles.secondaryCard, duplicatingParty ? styles.cardDisabled : null]}
+                accessibilityRole="button"
+                accessibilityLabel="Duplicate party"
+                accessibilityState={{ disabled: duplicatingParty, busy: duplicatingParty }}
               >
                 <ThemedText style={styles.secondaryLabel}>HOST</ThemedText>
                 <ThemedText type="subtitle" style={styles.secondaryTitle}>
@@ -283,6 +313,9 @@ export default function PickActionScreen() {
                 onPress={confirmDeleteParty}
                 disabled={deletingParty}
                 style={[styles.dangerCard, deletingParty ? styles.cardDisabled : null]}
+                accessibilityRole="button"
+                accessibilityLabel="Delete party"
+                accessibilityState={{ disabled: deletingParty, busy: deletingParty }}
               >
                 <ThemedText style={styles.dangerLabel}>HOST</ThemedText>
                 <ThemedText type="subtitle" style={styles.dangerTitle}>
@@ -302,6 +335,10 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: "#08111f",
+  },
+  loading: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   scroll: {
     flex: 1,
