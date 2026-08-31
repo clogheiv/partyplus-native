@@ -1035,6 +1035,19 @@
         return JSON.parse(json);
       }
 
+      function appendInviteDetail(container, label, value) {
+        if (!value) return;
+
+        const row = document.createElement("p");
+        if (label) {
+          const heading = document.createElement("b");
+          heading.textContent = `${label}: `;
+          row.appendChild(heading);
+        }
+        row.appendChild(document.createTextNode(String(value)));
+        container.appendChild(row);
+      }
+
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       const route = pathParts[0] || "";
       const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
@@ -1060,15 +1073,14 @@
             const party = decodeInviteData(d);
             subtitle.textContent = party.t || "You're invited!";
 
-            const rows = [];
-            if (party.dt) rows.push(`<p><b>When:</b> ${party.dt}</p>`);
-            if (party.l) rows.push(`<p><b>Where:</b> ${party.l}</p>`);
-            if (party.a) rows.push(`<p>${party.a}</p>`);
-
-            details.innerHTML = rows.join("");
+            details.replaceChildren();
+            appendInviteDetail(details, "When", party.dt);
+            appendInviteDetail(details, "Where", party.l);
+            appendInviteDetail(details, "", party.a);
           } catch (e) {
             subtitle.textContent = "This invite looks corrupted.";
-            details.innerHTML = "<p>Please ask the host to resend it.</p>";
+            details.replaceChildren();
+            appendInviteDetail(details, "", "Please ask the host to resend it.");
           }
         } else {
           subtitle.textContent = "You're invited!";

@@ -153,6 +153,18 @@ Baseline checks:
 - **Estimated effort:** Medium for patch alignment; large for SDK major upgrade.
 - **External changes:** Requires store-build regression testing and release approval; no database change.
 
+### H9 — Expo web static export crashes during Supabase initialization
+
+- **Status:** Confirmed by `npx expo export --platform all`.
+- **Exact file/component:** `src/lib/supabase.ts` / module-level Supabase client auth storage configuration.
+- **What is wrong:** React Native AsyncStorage is supplied during server-side static rendering. Supabase auth immediately reads it, but AsyncStorage's web implementation expects `window`, which is unavailable in the Node renderer.
+- **How to reproduce:** Run `npx expo export --platform web` with Supabase environment variables configured.
+- **User impact:** Web builds fail and cannot be deployed from the Expo app. Android and iOS bundle generation is unaffected.
+- **Recommended fix:** Disable persistent auth storage/refresh only during server rendering, while retaining AsyncStorage on native and in the browser.
+- **Risk of changing it:** Low; PartyPlus does not currently use signed-in Supabase sessions, and native configuration remains unchanged.
+- **Estimated effort:** Small.
+- **External changes:** None; verify a generated web export before deployment.
+
 ## Medium
 
 ### M1 — RSVP and claim realtime errors are swallowed
@@ -377,7 +389,7 @@ Baseline checks:
 
 ## Recommended sequencing
 
-1. **Immediate safe client batch:** H1, client defense for H2, H3 feedback, H4, H5 core semantics, H7, M6, and M8.
+1. **Immediate safe client batch:** H1, client defense for H2, H3 feedback, H4, H5 core semantics, H7, H9, M6, and M8.
 2. **Backend integrity/security batch (approval required):** verify C2 in production; design C1/C3 row-level transactional APIs and policies; add multi-client tests.
 3. **Reliability/accessibility device batch:** H6, M1, M4, M5, full VoiceOver/TalkBack and large-text matrix.
 4. **Maintenance release batch:** SDK 54 patch alignment, advisory reevaluation, manifest cleanup, dead-code removal, and centralized tokens.
