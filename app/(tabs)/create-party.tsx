@@ -24,9 +24,20 @@ import {
 
 
 import React, { useEffect, useRef, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { createRemoteParty } from "../../src/data/parties";
+import {
+  buildEditedPartyItems,
+  prependManualPartyItem,
+} from "../../src/lib/editPartyItems";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
+import {
+  focusInputIfNeeded,
+  getFocusedInputScrollOffset,
+} from "../../src/lib/inputFocus";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { PARTY_TEMPLATES, mergeTemplateItems } from "../../src/lib/partyTemplates";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -80,28 +91,6 @@ const isEditing = !!partyId;
   const [pickerMode, setPickerMode] = useState<"date" | "time">("date");
   const [iosPickerVisible, setIosPickerVisible] = useState(false);
   const [iosPickerDraft, setIosPickerDraft] = useState(new Date());
-  useEffect(() => {
-  if (!isEditing) return;
-
-  (async () => {
-    const p = await getPartyById(partyId);
-    if (!p) return;
-
-    // Core fields
-    setTitle(p.title ?? "");
-    setLocation(p.location ?? "");
-    setNotes(p.notes ?? "");
-
-    // Date (stored as string | null)
-    if (p.date) {
-      const d = new Date(p.date);
-      if (!isNaN(d.getTime())) setPartyDate(d);
-    } else {
-      setPartyDate(null);
-    }
-  })();
-}, [isEditing, partyId]);
-
   const mergeDatePart = (baseDate: Date | null, nextDate: Date) => {
   const base = baseDate ?? new Date();
   const next = new Date(base);
@@ -194,6 +183,7 @@ const confirmIosPicker = () => {
 
   const [itemText, setItemText] = useState("");
   const [items, setItems] = useState<string[]>([]);
+  const [manualItemPrefixLength, setManualItemPrefixLength] = useState(0);
   const [templateChooserVisible, setTemplateChooserVisible] = useState(false);
  
 
@@ -201,6 +191,7 @@ const confirmIosPicker = () => {
   const [lastRemoved, setLastRemoved] = useState<{
   item: string;
   index: number;
+  wasManual: boolean;
   } | null>(null);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -288,7 +279,7 @@ useEffect(() => {
   };
 }, [actionFeedback]);
 
-  const resetCreateForm = async () => {
+  const resetCreateForm = React.useCallback(async () => {
   await AsyncStorage.removeItem("currentPartyId");
   setTitle("");
   setLocation("");
@@ -296,6 +287,7 @@ useEffect(() => {
   setPartyDate(null);
   setWebDateText("");
   setItems([]);
+  setManualItemPrefixLength(0);
   setItemText("");
   setShowPicker(false);
   setPickerMode("date");
@@ -306,7 +298,7 @@ useEffect(() => {
   requestAnimationFrame(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   });
-};
+  }, []);
 
 const handleStartNewParty = async () => {
   if (!isDirty) {
@@ -363,7 +355,6 @@ const onCancelEdit = async () => {
   );
 };
 
-  const editingId = params?.id;
 useEffect(() => {
   let isMounted = true;
   // If we are NOT editing a party, always start with a clean slate
@@ -374,11 +365,20 @@ if (!isEditing) {
 }
 
   async function loadForEdit() {
-    if (!editingId) return;
+    if (!partyId) return;
 
-    const existing = await getPartyById(partyId ?? "");
+    const [existing, storedUserId] = await Promise.all([
+      getPartyById(partyId),
+      ensureUserId(),
+    ]);
 
     if (!existing || !isMounted) return;
+
+    if (existing.hostId && existing.hostId !== storedUserId) {
+      Alert.alert("Host only", "Only the party host can edit this party.");
+      router.replace(`/party/${partyId}`);
+      return;
+    }
 
     setTitle(existing.title ?? "");
     setLocation(existing.location ?? "");
@@ -394,6 +394,7 @@ if (!isEditing) {
     }
 
     setItems((existing.items ?? []).map((it: any) => it.name ?? String(it)));
+    setManualItemPrefixLength(0);
   }
 
   loadForEdit();
@@ -401,14 +402,14 @@ if (!isEditing) {
   return () => {
     isMounted = false;
   };
-  }, [editingId]);
+  }, [isEditing, partyId, resetCreateForm, router]);
 
 useFocusEffect(
   React.useCallback(() => {
     if (!isEditing) {
       void resetCreateForm();
     }
-  }, [isEditing])
+  }, [isEditing, resetCreateForm])
 );
 
 const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
@@ -423,7 +424,10 @@ const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
       scrollNode,
       () => {}, // onFail
       (_x, y) => {
-        scrollRef.current?.scrollTo({ y: Math.max(y - 20, 0), animated: true });
+        scrollRef.current?.scrollTo({
+          y: getFocusedInputScrollOffset(y),
+          animated: true,
+        });
       }
     );
   }, 80);
@@ -434,21 +438,24 @@ function addItem() {
   const clean = itemText.trim();
   if (!clean) return;
 
-  setItems((prev) => [...prev, clean]);
+  setItems((prev) => prependManualPartyItem(prev, clean));
+  setManualItemPrefixLength((prev) => prev + 1);
   setIsDirty(true);
   setItemText("");
-  itemInputRef.current?.focus();
+  focusInputIfNeeded(itemInputRef.current);
 }
 function removeItem(indexToRemove: number) {
   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
-  setItems((prev) => {
-    const removed = prev[indexToRemove];
-    if (removed !== undefined) {
-      setLastRemoved({ item: removed, index: indexToRemove });
-    }
-    return prev.filter((_, i) => i !== indexToRemove);
-  });
+  const removed = items[indexToRemove];
+  if (removed === undefined) return;
+
+  const wasManual = indexToRemove < manualItemPrefixLength;
+  setLastRemoved({ item: removed, index: indexToRemove, wasManual });
+  setItems((prev) => prev.filter((_, i) => i !== indexToRemove));
+  if (wasManual) {
+    setManualItemPrefixLength((prev) => Math.max(prev - 1, 0));
+  }
 
   setIsDirty(true);
 }
@@ -468,6 +475,10 @@ function undoRemove() {
     next.splice(idx, 0, lastRemoved.item);
     return next;
   });
+
+  if (lastRemoved.wasManual) {
+    setManualItemPrefixLength((prev) => prev + 1);
+  }
 
   setLastRemoved(null);
   setIsDirty(true);
@@ -528,58 +539,54 @@ function applyTemplate(template: (typeof PARTY_TEMPLATES)[number]) {
     const id = isEditing ? ensureUuid(partyId) : createUuid();
 
     const now = new Date().toISOString();
-    const existing = editingId ? await getPartyById(String(editingId)) : null;
+    const existing = isEditing ? await getPartyById(partyId) : null;
 
-    const party: Party = {
-      id,
-      title: cleanTitle,
-      date: partyDate
-  ? partyDate.toISOString()
-  : Platform.OS === "web"
-    ? (() => {
-        const raw = webDateText.trim();
-        if (!raw) return undefined;
-        const d = new Date(raw);
-        if (Number.isNaN(d.getTime())) {
+    if (isEditing && !existing) {
+      Alert.alert("Party not found", "This party could not be loaded for editing.");
+      return;
+    }
+
+    if (existing?.hostId && existing.hostId !== ownerId) {
+      Alert.alert("Host only", "Only the party host can save changes to this party.");
+      router.replace(`/party/${partyId}`);
+      return;
+    }
+
+    let partyDateIso = partyDate?.toISOString();
+    if (!partyDateIso && Platform.OS === "web") {
+      const raw = webDateText.trim();
+      if (raw) {
+        const parsedDate = new Date(raw);
+        if (Number.isNaN(parsedDate.getTime())) {
           Alert.alert(
             "Invalid date",
             'Use format like: "2026-01-25T16:00" or "1/25/2026 4:00 PM"'
           );
-          return undefined;
+          return;
         }
-        return d.toISOString();
-      })()
-    : undefined,
+        partyDateIso = parsedDate.toISOString();
+      }
+    }
+
+    const party: Party = {
+      id,
+      title: cleanTitle,
+      date: partyDateIso,
 
       location: location.trim(),
       notes: notes.trim(),
       theme: "",
       hostId: ownerId,
       rsvps: existing?.rsvps ?? [],
-      items: items.map((name, index) => {
-  const prev = existing?.items?.[index];
+      items: buildEditedPartyItems(
+        existing?.items ?? [],
+        items,
+        createUuid,
+        (existingId) => (isUuid(existingId) ? existingId : createUuid()),
+        manualItemPrefixLength
+      ),
 
-  // If this item already existed, keep ALL its old fields (including claimedBy)
-  if (prev) {
-    return {
-      ...prev,
-      id: isUuid(prev.id) ? prev.id : createUuid(),
-      name,
-    };
-  }
-
-  // If it's a brand-new item, create it clean
-  return {
-    id: createUuid(),
-    name,
-    qty: "",
-    claimedBy: undefined,
-    claimedByUserId: undefined,
-    createdBy: undefined,
-  };
-}),
-
-      createdAt: editingId && existing ? existing.createdAt : now,
+      createdAt: isEditing && existing ? existing.createdAt : now,
       updatedAt: now,
     };
 
@@ -642,7 +649,12 @@ return (
   <Stack.Screen
   options={{
    headerLeft: () => (
-  <Pressable onPress={onCancelEdit} style={{ paddingHorizontal: 12 }}>
+  <Pressable
+    onPress={onCancelEdit}
+    style={{ paddingHorizontal: 12, paddingVertical: 10 }}
+    accessibilityRole="button"
+    accessibilityLabel="Cancel editing"
+  >
     <ThemedText style={styles.headerActionText}>Cancel</ThemedText>
   </Pressable>
 ),
@@ -659,15 +671,19 @@ return (
   }}
 />
 
-  <KeyboardAvoidingView
-  style={{ flex: 1, backgroundColor: "#08111f" }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={headerHeight}
->
+  <SafeAreaView
+    edges={["top"]}
+    style={{ flex: 1, backgroundColor: "#08111f" }}
+  >
+    <KeyboardAvoidingView
+    style={{ flex: 1, backgroundColor: "#08111f" }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={headerHeight}
+  >
   <ThemedView style={{ flex: 1, backgroundColor: "#08111f" }}>
     {lastRemoved && (
-  <ThemedView
-    style={{
+    <ThemedView
+      style={{
       position: "absolute",
       left: 16,
       right: 16,
@@ -682,8 +698,10 @@ return (
       alignItems: "center",
       justifyContent: "space-between",
       zIndex: 999,
-    }}
-  >
+      }}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+    >
     <ThemedText style={{ color: "#fff", flex: 1 }}>
       {lastRemoved?.item ? `"${lastRemoved.item}" removed` : "Item removed"}
     </ThemedText>
@@ -714,6 +732,8 @@ return (
           backgroundColor: "#101a2b",
           zIndex: 998,
         }}
+        accessibilityRole="alert"
+        accessibilityLiveRegion="polite"
       >
         <ThemedText style={{ color: "#f6efe7", fontWeight: "700" }}>
           {actionFeedback}
@@ -747,6 +767,7 @@ return (
         placeholderTextColor={inputPlaceholderColor}
         autoCapitalize="words"
         style={inputStyle}
+        accessibilityLabel="Party title"
       />
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>Location</ThemedText>
@@ -759,12 +780,14 @@ return (
         placeholder="123 River Rd / Our house / The camp"
         placeholderTextColor={inputPlaceholderColor}
         style={inputStyle}
+        accessibilityLabel="Party location"
       />
 <ThemedText type="subtitle" style={styles.sectionLabel}>Date & Time</ThemedText>
 
 <Pressable
 onPress={openDateTimePicker}
- 
+  accessibilityRole="button"
+  accessibilityLabel="Set party date and time"
   style={styles.inputButton}
 
 >
@@ -782,6 +805,7 @@ onPress={openDateTimePicker}
     placeholderTextColor={inputPlaceholderColor}
     style={inputStyle}
     inputMode="numeric"
+    accessibilityLabel="Party date and time"
   />
 )}
 
@@ -802,8 +826,12 @@ onPress={openDateTimePicker}
     transparent
     onRequestClose={closeIosPicker}
   >
-    <View style={styles.iosPickerOverlay}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={closeIosPicker} />
+    <View style={[styles.iosPickerOverlay, { paddingTop: insets.top }]}>
+      <Pressable
+        style={StyleSheet.absoluteFill}
+        onPress={closeIosPicker}
+        accessible={false}
+      />
       <View
         style={[
           styles.iosPickerSheetWrap,
@@ -812,11 +840,21 @@ onPress={openDateTimePicker}
       >
         <View style={styles.iosPickerSheet}>
           <View style={styles.iosPickerHeader}>
-            <Pressable onPress={closeIosPicker} style={styles.iosPickerAction}>
+            <Pressable
+              onPress={closeIosPicker}
+              style={styles.iosPickerAction}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel date and time"
+            >
               <ThemedText style={styles.iosPickerActionText}>Cancel</ThemedText>
             </Pressable>
             <ThemedText style={styles.iosPickerTitle}>Set Date & Time</ThemedText>
-            <Pressable onPress={confirmIosPicker} style={styles.iosPickerAction}>
+            <Pressable
+              onPress={confirmIosPicker}
+              style={styles.iosPickerAction}
+              accessibilityRole="button"
+              accessibilityLabel="Confirm date and time"
+            >
               <ThemedText style={styles.iosPickerDoneText}>Done</ThemedText>
             </Pressable>
           </View>
@@ -828,6 +866,9 @@ onPress={openDateTimePicker}
           <View style={styles.iosPickerModeRow}>
             <Pressable
               onPress={() => setPickerMode("date")}
+              accessibilityRole="radio"
+              accessibilityLabel="Date"
+              accessibilityState={{ selected: pickerMode === "date" }}
               style={[
                 styles.iosPickerModeButton,
                 pickerMode === "date" && styles.iosPickerModeButtonActive,
@@ -844,6 +885,9 @@ onPress={openDateTimePicker}
             </Pressable>
             <Pressable
               onPress={() => setPickerMode("time")}
+              accessibilityRole="radio"
+              accessibilityLabel="Time"
+              accessibilityState={{ selected: pickerMode === "time" }}
               style={[
                 styles.iosPickerModeButton,
                 pickerMode === "time" && styles.iosPickerModeButtonActive,
@@ -890,6 +934,7 @@ onPress={openDateTimePicker}
         placeholderTextColor={inputPlaceholderColor}
         multiline
         style={inputStyleMultiline}
+        accessibilityLabel="Party notes"
       />
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>Party templates</ThemedText>
@@ -900,6 +945,8 @@ onPress={openDateTimePicker}
         <Pressable
           onPress={() => setTemplateChooserVisible(true)}
           style={styles.templateApplyButton}
+          accessibilityRole="button"
+          accessibilityLabel="Choose a party template"
         >
           <ThemedText style={styles.secondaryButtonText}>Choose a Template</ThemedText>
         </Pressable>
@@ -911,8 +958,14 @@ onPress={openDateTimePicker}
         transparent
         onRequestClose={() => setTemplateChooserVisible(false)}
       >
-        <View style={styles.templateModalOverlay}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setTemplateChooserVisible(false)} />
+        <View
+          style={[styles.templateModalOverlay, { paddingTop: insets.top }]}
+        >
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setTemplateChooserVisible(false)}
+            accessible={false}
+          />
           <View
             style={[
               styles.templateModalWrap,
@@ -932,6 +985,8 @@ onPress={openDateTimePicker}
                 <Pressable
                   onPress={() => setTemplateChooserVisible(false)}
                   style={styles.templateModalClose}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel template selection"
                 >
                   <ThemedText style={styles.iosPickerActionText}>Cancel</ThemedText>
                 </Pressable>
@@ -946,6 +1001,9 @@ onPress={openDateTimePicker}
                       key={template.id}
                       onPress={() => applyTemplate(template)}
                       style={styles.templateCard}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Use ${template.name} template`}
+                      accessibilityHint="Adds missing items to the bring list"
                     >
                       <View style={styles.templateCardTextWrap}>
                         <ThemedText style={styles.templateCardTitle}>
@@ -962,6 +1020,8 @@ onPress={openDateTimePicker}
               <Pressable
                 onPress={() => setTemplateChooserVisible(false)}
                 style={styles.templateModalCancelButton}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel template selection"
               >
                 <ThemedText style={styles.secondaryButtonText}>Cancel</ThemedText>
               </Pressable>
@@ -982,9 +1042,15 @@ onPress={openDateTimePicker}
         placeholderTextColor={inputPlaceholderColor}
         blurOnSubmit={false}
         style={inputStyle}
+        accessibilityLabel="Bring list item"
       />
 
-      <Pressable onPress={addItem} style={styles.addItemButton}>
+      <Pressable
+        onPress={addItem}
+        style={styles.addItemButton}
+        accessibilityRole="button"
+        accessibilityLabel="Add bring list item"
+      >
         <ThemedText style={styles.secondaryButtonText}>Add Item</ThemedText>
       </Pressable>
 
@@ -997,7 +1063,12 @@ onPress={openDateTimePicker}
       • {item}
     </ThemedText>
 
-    <Pressable onPress={() => confirmRemoveItem(index)}>
+    <Pressable
+      onPress={() => confirmRemoveItem(index)}
+      accessibilityRole="button"
+      accessibilityLabel={`Remove ${item}`}
+      hitSlop={8}
+    >
       <ThemedText
         style={{
           color: "#ff3b30",
@@ -1015,6 +1086,8 @@ onPress={openDateTimePicker}
 <Pressable
   onPress={handleStartNewParty}
   style={styles.secondaryButton}
+  accessibilityRole="button"
+  accessibilityLabel="Start new party"
 >
   <ThemedText style={styles.secondaryButtonText}>Start New Party</ThemedText>
 </Pressable>
@@ -1022,6 +1095,9 @@ onPress={openDateTimePicker}
   onPress={canSave ? handleSave : undefined}
   disabled={!canSave}
   style={[styles.primaryButton, { opacity: canSave ? 1 : 0.35 }]}
+  accessibilityRole="button"
+  accessibilityLabel="Save party"
+  accessibilityState={{ disabled: !canSave, busy: isSaving }}
 >
   <ThemedText style={styles.primaryButtonText}>
     {isSaving ? "Saving..." : "Save Party"}
@@ -1032,7 +1108,8 @@ onPress={openDateTimePicker}
     
            </ScrollView>
       </ThemedView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   </>
 );
 }

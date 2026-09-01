@@ -19,15 +19,19 @@ function formatWhen(iso?: string) {
 export default function LoadPartiesScreen() {
   const [loading, setLoading] = useState(true);
   const [parties, setParties] = useState<Party[]>([]);
+  const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const localParties = await getParties();
       const sorted = [...localParties].sort((a, b) =>
         (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
       );
       setParties(sorted);
+    } catch {
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -59,8 +63,31 @@ export default function LoadPartiesScreen() {
       </View>
 
       {loading ? (
-        <ThemedView style={styles.loadingWrap}>
+        <ThemedView
+          style={styles.loadingWrap}
+          accessibilityRole="progressbar"
+          accessibilityLabel="Loading saved parties"
+        >
           <ActivityIndicator />
+        </ThemedView>
+      ) : loadError ? (
+        <ThemedView style={styles.emptyCard} accessibilityRole="alert">
+          <ThemedText type="subtitle" style={styles.emptyTitle}>
+            Could not load your parties.
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Your saved parties are still on this device. Try loading them again.
+          </ThemedText>
+          <Pressable
+            onPress={load}
+            style={styles.primaryButton}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading saved parties"
+          >
+            <ThemedText type="subtitle" style={styles.primaryButtonText}>
+              Try Again
+            </ThemedText>
+          </Pressable>
         </ThemedView>
       ) : parties.length === 0 ? (
         <ThemedView style={styles.emptyCard}>
@@ -74,6 +101,8 @@ export default function LoadPartiesScreen() {
           <Pressable
             onPress={() => router.push("/create-party")}
             style={styles.primaryButton}
+            accessibilityRole="button"
+            accessibilityLabel="Create a party"
           >
             <ThemedText type="subtitle" style={styles.primaryButtonText}>
               Create Party
@@ -87,6 +116,9 @@ export default function LoadPartiesScreen() {
               key={p.id}
               onPress={() => openParty(p)}
               style={styles.partyCard}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${p.title}`}
+              accessibilityHint="Shows actions for this saved party"
             >
               <View style={styles.partyCardHeader}>
                 <ThemedText style={styles.partyCardEyebrow}>
