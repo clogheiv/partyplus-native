@@ -1,17 +1,47 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildEditedPartyItems } from "../src/lib/editPartyItems.ts";
+import {
+  buildEditedPartyItems,
+  prependManualPartyItem,
+} from "../src/lib/editPartyItems.ts";
 
-function build(existingItems, editedNames) {
+function build(existingItems, editedNames, newManualItemPrefixLength = 0) {
   let nextId = 0;
   return buildEditedPartyItems(
     existingItems,
     editedNames,
     () => `new-${++nextId}`,
-    (id) => id
+    (id) => id,
+    newManualItemPrefixLength
   );
 }
+
+test("places each new manual item first without reversing prior items", () => {
+  let items = [];
+  items = prependManualPartyItem(items, "Beer");
+  items = prependManualPartyItem(items, "Drinks");
+  items = prependManualPartyItem(items, "Ice");
+
+  assert.deepEqual(items, ["Ice", "Drinks", "Beer"]);
+});
+
+test("keeps an existing duplicate item claim behind a new manual item", () => {
+  const result = build(
+    [{ id: "existing", name: "Drinks", claimedBy: "Sam", claimedByUserId: "sam-id" }],
+    ["Drinks", "Drinks"],
+    1
+  );
+
+  assert.equal(result[0].id, "new-1");
+  assert.equal(result[0].claimedBy, undefined);
+  assert.deepEqual(result[1], {
+    id: "existing",
+    name: "Drinks",
+    claimedBy: "Sam",
+    claimedByUserId: "sam-id",
+  });
+});
 
 test("keeps a claim with its item after an earlier item is removed", () => {
   const result = build(

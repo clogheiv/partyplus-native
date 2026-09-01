@@ -289,13 +289,13 @@ Baseline checks:
 
 ### M11 — Repeated bring-list additions make the create screen jump with the keyboard open
 
-- **Status:** Confirmed on physical Android and iPhone; fixed in this branch, with cross-platform visual retesting required.
+- **Status:** Confirmed on physical Android and iPhone; fixed in this branch with Michael's newest-item-first behavior, with cross-platform visual retesting required.
 - **Exact file/component:** `app/(tabs)/create-party.tsx` / `KeyboardAvoidingView`, `ScrollView`, `scrollToInput`, and `addItem`.
-- **What is wrong:** `blurOnSubmit={false}` and `keyboardShouldPersistTaps="handled"` already keep the bring-list input focused, but every successful addition unconditionally sends another native `focus()` command. While `KeyboardAvoidingView` is maintaining the keyboard-reduced viewport and the appended row is changing ScrollView content size, that redundant focus request asks the native input/scroll responder to reveal the field again. If a focus transition occurs, the delayed absolute `scrollToInput` animation also participates. The competing viewport adjustments produce a move toward the expanding list or Save button followed by a snap back toward the input.
+- **What is wrong:** `blurOnSubmit={false}` and `keyboardShouldPersistTaps="handled"` already keep the bring-list input focused, but every successful addition unconditionally sent another native `focus()` command while the list expanded below the entry controls. While `KeyboardAvoidingView` maintained the keyboard-reduced viewport, the redundant focus request, ScrollView content growth, and possible delayed `scrollToInput` animation competed over position. The result was a move toward the expanding list or Save button followed by a snap back toward the input.
 - **How to reproduce:** On either platform, focus the bring-list input and add several items without dismissing the keyboard. Later additions make the viewport visibly move down and then back even though every item is appended correctly.
 - **User impact:** Rapid item entry feels unstable and can temporarily move the input, Add Item button, or newest row away from the user's expected position.
-- **Recommended fix:** Preserve the existing focus/keyboard settings and initial focus scrolling, but only issue `focus()` when the input is actually unfocused. Do not add content-size auto-scrolling or repeated timers; allow one viewport owner after each append.
-- **Risk of changing it:** Low; item state, ordering, IDs, templates, save behavior, and synchronization are unchanged.
+- **Recommended fix:** Preserve the existing focus/keyboard settings and initial focus scrolling, but only issue `focus()` when the input is actually unfocused. Insert each new manual item directly below Add Item so earlier items move down without any forced post-add scrolling. Preserve stored order on edit load, keep template merging unchanged, and mark the new manual prefix during save reconciliation so duplicate names cannot steal existing IDs or claims.
+- **Risk of changing it:** Low; only manual-entry display order changes. Stored item order, templates, existing IDs/claims, save behavior, and synchronization remain unchanged.
 - **Estimated effort:** Small.
 - **External changes:** None; repeat the multi-item test on physical Android and iPhone, including maximum text size.
 
@@ -420,11 +420,11 @@ Completed on `audit/modernization-2026-08-31`:
 - Improved RSVP/suggestion placeholder contrast.
 - Replaced decoded invite-payload `innerHTML` rendering with text-only DOM construction.
 - Made Supabase auth storage safe during Expo web static rendering without changing native session persistence.
-- Prevented redundant native focus commands during repeated bring-list additions so the keyboard, focused input, and ScrollView no longer compete after each appended row.
+- Prevented redundant native focus commands during repeated bring-list additions and placed each new manual item first beneath Add Item, avoiding forced post-add scrolling while preserving stored edit order and existing IDs/claims.
 
 Verification after changes:
 
-- `npm test`: 6/6 regression tests passed, including focused-input behavior.
+- `npm test`: 8/8 regression tests passed, including focused-input, newest-item-first ordering, and duplicate-name claim preservation.
 - `npm run lint`: passed with zero warnings/errors.
 - `npx tsc --noEmit`: passed.
 - `git diff --check`: passed for audit changes; remaining working-tree changes predate the audit.

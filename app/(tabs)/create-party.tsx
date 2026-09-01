@@ -26,7 +26,10 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createRemoteParty } from "../../src/data/parties";
-import { buildEditedPartyItems } from "../../src/lib/editPartyItems";
+import {
+  buildEditedPartyItems,
+  prependManualPartyItem,
+} from "../../src/lib/editPartyItems";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
 import { focusInputIfNeeded } from "../../src/lib/inputFocus";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
@@ -174,6 +177,7 @@ const confirmIosPicker = () => {
 
   const [itemText, setItemText] = useState("");
   const [items, setItems] = useState<string[]>([]);
+  const [manualItemPrefixLength, setManualItemPrefixLength] = useState(0);
   const [templateChooserVisible, setTemplateChooserVisible] = useState(false);
  
 
@@ -181,6 +185,7 @@ const confirmIosPicker = () => {
   const [lastRemoved, setLastRemoved] = useState<{
   item: string;
   index: number;
+  wasManual: boolean;
   } | null>(null);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -276,6 +281,7 @@ useEffect(() => {
   setPartyDate(null);
   setWebDateText("");
   setItems([]);
+  setManualItemPrefixLength(0);
   setItemText("");
   setShowPicker(false);
   setPickerMode("date");
@@ -382,6 +388,7 @@ if (!isEditing) {
     }
 
     setItems((existing.items ?? []).map((it: any) => it.name ?? String(it)));
+    setManualItemPrefixLength(0);
   }
 
   loadForEdit();
@@ -422,7 +429,8 @@ function addItem() {
   const clean = itemText.trim();
   if (!clean) return;
 
-  setItems((prev) => [...prev, clean]);
+  setItems((prev) => prependManualPartyItem(prev, clean));
+  setManualItemPrefixLength((prev) => prev + 1);
   setIsDirty(true);
   setItemText("");
   focusInputIfNeeded(itemInputRef.current);
@@ -430,13 +438,15 @@ function addItem() {
 function removeItem(indexToRemove: number) {
   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
-  setItems((prev) => {
-    const removed = prev[indexToRemove];
-    if (removed !== undefined) {
-      setLastRemoved({ item: removed, index: indexToRemove });
-    }
-    return prev.filter((_, i) => i !== indexToRemove);
-  });
+  const removed = items[indexToRemove];
+  if (removed === undefined) return;
+
+  const wasManual = indexToRemove < manualItemPrefixLength;
+  setLastRemoved({ item: removed, index: indexToRemove, wasManual });
+  setItems((prev) => prev.filter((_, i) => i !== indexToRemove));
+  if (wasManual) {
+    setManualItemPrefixLength((prev) => Math.max(prev - 1, 0));
+  }
 
   setIsDirty(true);
 }
@@ -456,6 +466,10 @@ function undoRemove() {
     next.splice(idx, 0, lastRemoved.item);
     return next;
   });
+
+  if (lastRemoved.wasManual) {
+    setManualItemPrefixLength((prev) => prev + 1);
+  }
 
   setLastRemoved(null);
   setIsDirty(true);
@@ -559,7 +573,8 @@ function applyTemplate(template: (typeof PARTY_TEMPLATES)[number]) {
         existing?.items ?? [],
         items,
         createUuid,
-        (existingId) => (isUuid(existingId) ? existingId : createUuid())
+        (existingId) => (isUuid(existingId) ? existingId : createUuid()),
+        manualItemPrefixLength
       ),
 
       createdAt: isEditing && existing ? existing.createdAt : now,
