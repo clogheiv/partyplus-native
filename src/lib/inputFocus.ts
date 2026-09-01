@@ -3,14 +3,10 @@ export type FocusableInput = {
   isFocused: () => boolean;
 };
 
-const focusedInputSafeAreaMargin = 12;
+const focusedInputTopMargin = 12;
 
-export function getSafeFocusedInputScrollOffset(
-  inputY: number,
-  topSafeAreaInset: number
-): number {
-  const topClearance = Math.max(topSafeAreaInset, 0) + focusedInputSafeAreaMargin;
-  return Math.max(inputY - topClearance, 0);
+export function getFocusedInputScrollOffset(inputY: number): number {
+  return Math.max(inputY - focusedInputTopMargin, 0);
 }
 
 export function focusInputIfNeeded(

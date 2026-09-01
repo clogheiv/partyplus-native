@@ -24,7 +24,10 @@ import {
 
 
 import React, { useEffect, useRef, useState } from "react";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { createRemoteParty } from "../../src/data/parties";
 import {
   buildEditedPartyItems,
@@ -33,7 +36,7 @@ import {
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
 import {
   focusInputIfNeeded,
-  getSafeFocusedInputScrollOffset,
+  getFocusedInputScrollOffset,
 } from "../../src/lib/inputFocus";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { PARTY_TEMPLATES, mergeTemplateItems } from "../../src/lib/partyTemplates";
@@ -422,7 +425,7 @@ const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
       () => {}, // onFail
       (_x, y) => {
         scrollRef.current?.scrollTo({
-          y: getSafeFocusedInputScrollOffset(y, insets.top),
+          y: getFocusedInputScrollOffset(y),
           animated: true,
         });
       }
@@ -668,11 +671,15 @@ return (
   }}
 />
 
-  <KeyboardAvoidingView
-  style={{ flex: 1, backgroundColor: "#08111f" }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={headerHeight}
->
+  <SafeAreaView
+    edges={["top"]}
+    style={{ flex: 1, backgroundColor: "#08111f" }}
+  >
+    <KeyboardAvoidingView
+    style={{ flex: 1, backgroundColor: "#08111f" }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    keyboardVerticalOffset={headerHeight}
+  >
   <ThemedView style={{ flex: 1, backgroundColor: "#08111f" }}>
     {lastRemoved && (
     <ThemedView
@@ -819,7 +826,7 @@ onPress={openDateTimePicker}
     transparent
     onRequestClose={closeIosPicker}
   >
-    <View style={styles.iosPickerOverlay}>
+    <View style={[styles.iosPickerOverlay, { paddingTop: insets.top }]}>
       <Pressable
         style={StyleSheet.absoluteFill}
         onPress={closeIosPicker}
@@ -951,7 +958,9 @@ onPress={openDateTimePicker}
         transparent
         onRequestClose={() => setTemplateChooserVisible(false)}
       >
-        <View style={styles.templateModalOverlay}>
+        <View
+          style={[styles.templateModalOverlay, { paddingTop: insets.top }]}
+        >
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={() => setTemplateChooserVisible(false)}
@@ -1099,7 +1108,8 @@ onPress={openDateTimePicker}
     
            </ScrollView>
       </ThemedView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   </>
 );
 }

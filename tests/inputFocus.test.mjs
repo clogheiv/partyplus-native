@@ -3,16 +3,15 @@ import test from "node:test";
 
 import {
   focusInputIfNeeded,
-  getSafeFocusedInputScrollOffset,
+  getFocusedInputScrollOffset,
 } from "../src/lib/inputFocus.ts";
 
-test("positions focused inputs below the measured safe area and margin", () => {
-  assert.equal(getSafeFocusedInputScrollOffset(320, 59), 249);
-  assert.equal(getSafeFocusedInputScrollOffset(320, 24), 284);
+test("leaves a consistent margin inside the safe scroll viewport", () => {
+  assert.equal(getFocusedInputScrollOffset(320), 308);
 });
 
-test("does not scroll past the beginning when safe-area clearance is larger", () => {
-  assert.equal(getSafeFocusedInputScrollOffset(50, 47), 0);
+test("does not scroll past the beginning of the safe viewport", () => {
+  assert.equal(getFocusedInputScrollOffset(8), 0);
 });
 
 test("does not send another focus command to an already-focused input", () => {

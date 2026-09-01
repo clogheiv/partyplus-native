@@ -299,15 +299,15 @@ Baseline checks:
 - **Estimated effort:** Small.
 - **External changes:** None; repeat the multi-item test on physical Android and iPhone, including maximum text size.
 
-### M12 — Focus scrolling can place create-party inputs under the top system area
+### M12 — The create/edit viewport extends under the top system area
 
-- **Status:** Confirmed on physical iPhone and observed near the top edge on Android; fixed in this branch, with final device retesting required.
-- **Exact file/component:** `app/(tabs)/create-party.tsx` / shared `scrollToInput` used by Notes and What to bring; `src/lib/inputFocus.ts` / safe focus offset calculation.
-- **What is wrong:** The tab navigator has no visible header and the prior focus target always placed an input 20 points below the ScrollView viewport top. That target ignored the device's actual top safe-area inset, so an iPhone with a Dynamic Island/notch could scroll the focused field beneath status/camera content; Android fields could also settle too close to the status area.
-- **How to reproduce:** On a notched/Dynamic Island iPhone, focus the bring-list input with the keyboard open after scrolling the create screen. The automatic focus scroll positions the input under the top system area. Repeat with Notes, which uses the same helper.
+- **Status:** Confirmed on physical iPhone and Android; structurally fixed in this branch. Michael can retest Android now; Ashley's iPhone verification remains pending.
+- **Exact file/component:** `app/(tabs)/create-party.tsx` / screen root, ScrollView viewport, both custom modal overlays, and shared `scrollToInput`; `src/lib/inputFocus.ts` / focus-margin calculation.
+- **What is wrong:** The tab navigator has no visible header, so the create/edit viewport itself extended under the top system area. Adjusting an individual focus target by the measured inset did not establish a hard clipping/layout boundary: automatic/native focus scrolling could still place content under Android or iPhone status/camera UI.
+- **How to reproduce:** On Android or a notched/Dynamic Island iPhone, focus the bring-list input with the keyboard open after scrolling the create screen. The automatic focus scroll can position the input in the top system area. Notes uses the same custom focus path; title, location, and web date fields share the same unsafe viewport.
 - **User impact:** Text and the active field can be obscured while typing, especially at large text sizes.
-- **Recommended fix:** Calculate the focus scroll offset from `useSafeAreaInsets().top` plus a small 12-point visual margin, clamped at the beginning of the ScrollView. Apply it through the existing shared focus path only; do not add post-add scrolling.
-- **Risk of changing it:** Low; the measured inset adapts by device, so Android receives only its own smaller top clearance and no platform-specific notch constant.
+- **Recommended fix:** Put the full create/edit keyboard/scroll viewport inside a top-edge `SafeAreaView` so every field, control, card, toast, and automatically scrolled element is structurally below the measured inset. Since React Native modals render outside that tree, apply the same measured top inset once to each custom modal overlay. Within the already-safe viewport, keep only the 12-point focus margin so the inset is not doubled; do not add post-add scrolling.
+- **Risk of changing it:** Low; `SafeAreaView` applies each device's measured top inset once, while focus scrolling adds only the existing small visual margin and Android receives no iPhone-specific blank space.
 - **Estimated effort:** Small.
 - **External changes:** None; final physical Android/iPhone and maximum-text retesting required.
 
@@ -433,7 +433,7 @@ Completed on `audit/modernization-2026-08-31`:
 - Replaced decoded invite-payload `innerHTML` rendering with text-only DOM construction.
 - Made Supabase auth storage safe during Expo web static rendering without changing native session persistence.
 - Prevented redundant native focus commands during repeated bring-list additions and placed each new manual item first beneath Add Item, avoiding forced post-add scrolling while preserving stored edit order and existing IDs/claims.
-- Made the shared Notes/bring-list focus target reserve the measured top safe-area inset plus a small margin, preventing focused fields from settling under iPhone or Android system UI.
+- Moved the entire create/edit keyboard/scroll viewport below the measured top safe area, protected both custom modal overlays, and retained only a small in-viewport focus margin so the inset is never double-applied.
 
 Verification after changes:
 
@@ -446,7 +446,7 @@ Verification after changes:
 
 Not locally verified:
 
-- Physical Android/iPhone testing confirmed the repeated bring-list viewport jump and then the top safe-area overlap after newest-item-first behavior. The measured safe-area focus correction still requires same-device retesting. The remaining create, save, edit, load, duplicate, share-sheet, invite-open, RSVP, claim, and unclaim matrix is not complete.
+- Physical Android/iPhone testing confirmed the repeated bring-list viewport jump and then the top safe-area overlap after newest-item-first behavior. The structural safe-area correction is ready for Michael's Android retest; Ashley's iPhone safe-area verification remains pending. The remaining create, save, edit, load, duplicate, share-sheet, invite-open, RSVP, claim, and unclaim matrix is not complete.
 - VoiceOver/TalkBack focus order, maximum system text, keyboard overlap, notch/safe-area behavior, tablet sizes, or orientation changes.
 - Multi-device realtime races, offline recovery, production RLS/policies, and production invite-site deployment.
 
