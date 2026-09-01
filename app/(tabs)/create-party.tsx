@@ -28,6 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createRemoteParty } from "../../src/data/parties";
 import { buildEditedPartyItems } from "../../src/lib/editPartyItems";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
+import { focusInputIfNeeded } from "../../src/lib/inputFocus";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { PARTY_TEMPLATES, mergeTemplateItems } from "../../src/lib/partyTemplates";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -424,7 +425,7 @@ function addItem() {
   setItems((prev) => [...prev, clean]);
   setIsDirty(true);
   setItemText("");
-  itemInputRef.current?.focus();
+  focusInputIfNeeded(itemInputRef.current);
 }
 function removeItem(indexToRemove: number) {
   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
