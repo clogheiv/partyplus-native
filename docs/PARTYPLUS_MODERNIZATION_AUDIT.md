@@ -299,6 +299,18 @@ Baseline checks:
 - **Estimated effort:** Small.
 - **External changes:** None; repeat the multi-item test on physical Android and iPhone, including maximum text size.
 
+### M12 — Focus scrolling can place create-party inputs under the top system area
+
+- **Status:** Confirmed on physical iPhone and observed near the top edge on Android; fixed in this branch, with final device retesting required.
+- **Exact file/component:** `app/(tabs)/create-party.tsx` / shared `scrollToInput` used by Notes and What to bring; `src/lib/inputFocus.ts` / safe focus offset calculation.
+- **What is wrong:** The tab navigator has no visible header and the prior focus target always placed an input 20 points below the ScrollView viewport top. That target ignored the device's actual top safe-area inset, so an iPhone with a Dynamic Island/notch could scroll the focused field beneath status/camera content; Android fields could also settle too close to the status area.
+- **How to reproduce:** On a notched/Dynamic Island iPhone, focus the bring-list input with the keyboard open after scrolling the create screen. The automatic focus scroll positions the input under the top system area. Repeat with Notes, which uses the same helper.
+- **User impact:** Text and the active field can be obscured while typing, especially at large text sizes.
+- **Recommended fix:** Calculate the focus scroll offset from `useSafeAreaInsets().top` plus a small 12-point visual margin, clamped at the beginning of the ScrollView. Apply it through the existing shared focus path only; do not add post-add scrolling.
+- **Risk of changing it:** Low; the measured inset adapts by device, so Android receives only its own smaller top clearance and no platform-specific notch constant.
+- **Estimated effort:** Small.
+- **External changes:** None; final physical Android/iPhone and maximum-text retesting required.
+
 ## Low
 
 ### L1 — Obsolete starter routes and components remain checked in
@@ -421,10 +433,11 @@ Completed on `audit/modernization-2026-08-31`:
 - Replaced decoded invite-payload `innerHTML` rendering with text-only DOM construction.
 - Made Supabase auth storage safe during Expo web static rendering without changing native session persistence.
 - Prevented redundant native focus commands during repeated bring-list additions and placed each new manual item first beneath Add Item, avoiding forced post-add scrolling while preserving stored edit order and existing IDs/claims.
+- Made the shared Notes/bring-list focus target reserve the measured top safe-area inset plus a small margin, preventing focused fields from settling under iPhone or Android system UI.
 
 Verification after changes:
 
-- `npm test`: 8/8 regression tests passed, including focused-input, newest-item-first ordering, and duplicate-name claim preservation.
+- `npm test`: 10/10 regression tests passed, including focused-input safe-area geometry, newest-item-first ordering, and duplicate-name claim preservation.
 - `npm run lint`: passed with zero warnings/errors.
 - `npx tsc --noEmit`: passed.
 - `git diff --check`: passed for audit changes; remaining working-tree changes predate the audit.
@@ -433,7 +446,7 @@ Verification after changes:
 
 Not locally verified:
 
-- Physical Android/iPhone testing confirmed the repeated bring-list viewport jump; the narrow focus fix still requires same-device retesting. The remaining create, save, edit, load, duplicate, share-sheet, invite-open, RSVP, claim, and unclaim matrix is not complete.
+- Physical Android/iPhone testing confirmed the repeated bring-list viewport jump and then the top safe-area overlap after newest-item-first behavior. The measured safe-area focus correction still requires same-device retesting. The remaining create, save, edit, load, duplicate, share-sheet, invite-open, RSVP, claim, and unclaim matrix is not complete.
 - VoiceOver/TalkBack focus order, maximum system text, keyboard overlap, notch/safe-area behavior, tablet sizes, or orientation changes.
 - Multi-device realtime races, offline recovery, production RLS/policies, and production invite-site deployment.
 

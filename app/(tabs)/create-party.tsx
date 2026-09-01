@@ -31,7 +31,10 @@ import {
   prependManualPartyItem,
 } from "../../src/lib/editPartyItems";
 import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
-import { focusInputIfNeeded } from "../../src/lib/inputFocus";
+import {
+  focusInputIfNeeded,
+  getSafeFocusedInputScrollOffset,
+} from "../../src/lib/inputFocus";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { PARTY_TEMPLATES, mergeTemplateItems } from "../../src/lib/partyTemplates";
 import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
@@ -418,7 +421,10 @@ const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
       scrollNode,
       () => {}, // onFail
       (_x, y) => {
-        scrollRef.current?.scrollTo({ y: Math.max(y - 20, 0), animated: true });
+        scrollRef.current?.scrollTo({
+          y: getSafeFocusedInputScrollOffset(y, insets.top),
+          animated: true,
+        });
       }
     );
   }, 80);
