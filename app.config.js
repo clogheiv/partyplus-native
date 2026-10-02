@@ -1,5 +1,6 @@
 module.exports = ({ config }) => {
-  const isDevelopmentBuild = process.env.PARTYPLUS_APP_VARIANT === "development";
+  const variant = process.env.PARTYPLUS_APP_VARIANT;
+  const isDevelopmentBuild = variant === "development" || variant === "preview";
 
   if (!isDevelopmentBuild) {
     return config;
@@ -7,10 +8,12 @@ module.exports = ({ config }) => {
 
   return {
     ...config,
-    name: "PartyPlus Dev",
+    name: variant === "preview" ? "PartyPlus Preview" : "PartyPlus Dev",
+    scheme: variant === "preview" ? "partyplusnative-preview" : "partyplusnative-dev",
+    ios: { ...config.ios, bundleIdentifier: "com.partyplus.app." + (variant === "preview" ? "preview" : "dev") },
     android: {
       ...config.android,
-      package: "com.partyplus.app.dev",
+      package: "com.partyplus.app." + (variant === "preview" ? "preview" : "dev"),
     },
   };
 };

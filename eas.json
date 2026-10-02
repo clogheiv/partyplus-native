@@ -8,10 +8,10 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "PARTYPLUS_APP_VARIANT": "development",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://typbofemqhjoiwbkdvuc.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_fcp3dr_YVw6NnXZvXO7Anw_80MAdpSe"
-      }
+        "EXPO_PUBLIC_BACKEND_ENV": "staging",
+        "PARTYPLUS_APP_VARIANT": "development"
+      },
+      "environment": "development"
     },
     "preview": {
       "distribution": "internal",
@@ -19,15 +19,17 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://typbofemqhjoiwbkdvuc.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_fcp3dr_YVw6NnXZvXO7Anw_80MAdpSe"
-      }
+        "EXPO_PUBLIC_BACKEND_ENV": "staging",
+        "PARTYPLUS_APP_VARIANT": "preview"
+      },
+      "environment": "preview"
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_SUPABASE_URL": "https://typbofemqhjoiwbkdvuc.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_fcp3dr_YVw6NnXZvXO7Anw_80MAdpSe"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_fcp3dr_YVw6NnXZvXO7Anw_80MAdpSe",
+        "EXPO_PUBLIC_BACKEND_ENV": "production"
       }
     }
   },
