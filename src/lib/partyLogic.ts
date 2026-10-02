@@ -98,7 +98,8 @@ export function reconcilePartyState(party: Party): Party {
     if (claimedByUserId) {
       const claimantRsvp = yesRsvpById.get(claimedByUserId);
       if (!claimantRsvp) {
-        return clearItemClaim(item);
+        // A partial/older RSVP snapshot is not proof that a guest withdrew.
+        return item;
       }
 
       const nextName = normalizeName(claimantRsvp.name);
@@ -119,7 +120,7 @@ export function reconcilePartyState(party: Party): Party {
 
     const matchingRsvps = yesRsvpsByName.get(claimedBy) ?? [];
     if (matchingRsvps.length === 0) {
-      return clearItemClaim(item);
+      return item;
     }
 
     if (matchingRsvps.length === 1) {

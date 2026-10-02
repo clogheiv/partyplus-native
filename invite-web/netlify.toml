@@ -1,5 +1,6 @@
 [build]
   base = "invite-web"
-  publish = "."
+  command = "npm --prefix .. run build:invite"
+  publish = "../.test-cache/invite-site"
   functions = "netlify/functions"
 

@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { decode as b64decode } from "base-64";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { useLocalSearchParams, useRootNavigationState, useRouter } from "expo-router";
@@ -16,9 +15,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../components/themed-text";
 import { ThemedView } from "../components/themed-view";
-import { ensureUserId } from "../src/lib/ids";
-import { buildShareMessage, sharePartyInvite } from "../src/lib/inviteShare";
-import { getCurrentPartyId, getPartyById, setCurrentPartyId, upsertParty } from "../src/lib/partyStore";
+import { offerHostTools } from "../src/lib/hostAccess";
+import { classifyPartyError } from "../src/lib/partyErrors";
+import { buildShareMessage, sharePartyInvite, confirmPartyForSharing } from "../src/lib/inviteShare";
+import { getCurrentPartyId, getPartyById } from "../src/lib/partyStore";
 import type { Party as PartyType } from "../src/lib/partyTypes";
 
 export default function ShareScreen() {
@@ -35,6 +35,7 @@ export default function ShareScreen() {
   const [party, setParty] = useState<PartyType | null>(null);
   const [isHost, setIsHost] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("[share] params", { inviteId, hasPayload: Boolean(dParam), payloadLength: dParam.length });
@@ -50,76 +51,23 @@ export default function ShareScreen() {
   }, [dParam, inviteId, rootNavState?.key, router]);
 
   useEffect(() => {
+    let active = true;
     async function loadCurrentParty() {
       setLoading(true);
       try {
-        let next: PartyType | null = null;
-
-        if (dParam) {
-          try {
-            const raw = decodeURIComponent(dParam);
-            let b64 = raw.replace(/-/g, "+").replace(/_/g, "/");
-            while (b64.length % 4) b64 += "=";
-            const json = decodeURIComponent(b64decode(b64));
-            const decoded = JSON.parse(json);
-            console.log("[share] decodedPayload", {
-              inviteId,
-              keys: Object.keys(decoded ?? {}),
-              hasItems: Array.isArray(decoded?.items),
-            });
-            next = {
-              ...decoded,
-              id: decoded?.id ?? decoded?.i ?? inviteId,
-              items: Array.isArray(decoded?.items)
-                ? decoded.items.map((it: any) => ({
-                    ...it,
-                    claimedBy: it?.claimedBy ?? undefined,
-                    claimedByUserId: it?.claimedByUserId ?? undefined,
-                  }))
-                : decoded?.items ?? [],
-            };
-            if (next?.id) {
-              await upsertParty(next as PartyType);
-              await setCurrentPartyId(next.id);
-            }
-          } catch (error) {
-            console.log("[share] decodePayloadFailed", error);
-          }
-        }
-
-        if (!next && inviteId) {
-          const stored = await getPartyById(inviteId);
-          console.log("[share] localLookupByInviteId", { inviteId, found: Boolean(stored) });
-          next = (stored as PartyType) ?? null;
-          if (next?.id) await setCurrentPartyId(next.id);
-        }
-
-        if (!next) {
-          const currentPartyId = await getCurrentPartyId();
-          console.log("[share] currentPartyIdFallback", currentPartyId);
-          if (!currentPartyId) {
-            setParty(null);
-            return;
-          }
-          const stored = await getPartyById(currentPartyId);
-          console.log("[share] localLookupByCurrentPartyId", {
-            currentPartyId,
-            found: Boolean(stored),
-          });
-          next = (stored as PartyType) ?? null;
-        }
-
+        if (inviteId) return; // Canonical invite route handles payloads read-only.
+        const currentId = await getCurrentPartyId();
+        const next = currentId ? await getPartyById(currentId) : null;
+        const hostTools = await offerHostTools(next);
+        if (!active) return;
         setParty(next);
-
-        const storedUserId = await ensureUserId();
-        setIsHost(Boolean(storedUserId && next?.hostId && next.hostId === storedUserId));
-      } finally {
-        setLoading(false);
-      }
+        setIsHost(hostTools);
+      } catch (failure) { if (active) setError(classifyPartyError(failure).message); }
+      finally { if (active) setLoading(false); }
     }
-
     void loadCurrentParty();
-  }, [dParam, inviteId]);
+    return () => { active = false; };
+  }, [inviteId]);
 
   async function openInMaps(address: string) {
     const q = encodeURIComponent(address.trim());
@@ -140,10 +88,11 @@ export default function ShareScreen() {
     if (!party) return;
 
     try {
-      await Clipboard.setStringAsync(buildShareMessage(party));
+      const confirmed = await confirmPartyForSharing(party);
+      await Clipboard.setStringAsync(buildShareMessage(confirmed));
       Alert.alert("Copied!", "Invite link copied to clipboard.");
-    } catch {
-      Alert.alert("Copy failed", "Could not copy the invite link.");
+    } catch (failure) {
+      Alert.alert("Copy unavailable", classifyPartyError(failure).message);
     }
   }
 
@@ -153,8 +102,8 @@ export default function ShareScreen() {
     setSharing(true);
     try {
       await sharePartyInvite(party);
-    } catch {
-      Alert.alert("Share failed", "Could not open the share sheet.");
+    } catch (failure) {
+      Alert.alert("Share unavailable", classifyPartyError(failure).message);
     } finally {
       setSharing(false);
     }
@@ -179,7 +128,7 @@ export default function ShareScreen() {
         }}
       >
         <ThemedText type="title" style={styles.heroTitle}>Share Invite</ThemedText>
-        <ThemedText style={styles.footerCopy}>No party selected yet.</ThemedText>
+        <ThemedText style={styles.footerCopy}>{error ?? "No party selected yet."}</ThemedText>
         <ThemedText style={styles.footerCopy}>Open Parties, choose one, then share its invite.</ThemedText>
 
         <Pressable

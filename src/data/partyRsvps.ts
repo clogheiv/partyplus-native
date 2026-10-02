@@ -1,119 +1,16 @@
 import type { PartyRsvp } from "../lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
-import { logSupabaseError } from "../lib/supabaseErrorLogging";
-
-const PARTY_RSVPS_TABLE = "party_rsvps";
-const PARTY_RSVP_COLUMNS = "*";
-
-type PartyRsvpRow = {
-  id: string;
-  party_id: string;
-  name?: string | null;
-  attendee_name?: string | null;
-  guest_name?: string | null;
-  status?: string | null;
-  rsvp_status?: string | null;
-  response?: string | null;
-  attendee_count?: number | null;
-  count?: number | null;
-  party_size?: number | null;
-  updated_at?: string | null;
-  created_at?: string | null;
-};
-
-type PartyRsvpInsertRow = {
-  id: string;
-  party_id: string;
-  name: string;
-  status: PartyRsvp["status"];
-  attendee_count: number;
-  updated_at: string;
-};
-
-function nowISO() {
-  return new Date().toISOString();
-}
-
-function toSafeAttendeeCount(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
-  return Math.max(1, Math.floor(value));
-}
-
-function toSafeStatus(value?: string | null): PartyRsvp["status"] {
-  return value === 'yes' || value === 'no' || value === 'maybe' ? value : 'maybe';
-}
-
-function toRemotePartyRsvp(row: PartyRsvpRow): PartyRsvp {
-  return {
-    id: row.id,
-    name: row.name ?? row.attendee_name ?? row.guest_name ?? "Guest",
-    status: toSafeStatus(row.status ?? row.rsvp_status ?? row.response),
-    attendeeCount: toSafeAttendeeCount(row.attendee_count ?? row.count ?? row.party_size),
-    updatedAt: row.updated_at ?? row.created_at ?? nowISO(),
-  };
-}
-
-function toPartyRsvpInsertRows(partyId: string, rsvps: PartyRsvp[]): PartyRsvpInsertRow[] {
-  return (rsvps ?? []).map((rsvp) => ({
-    id: rsvp.id,
-    party_id: partyId,
-    name: rsvp.name.trim(),
-    status: rsvp.status,
-    attendee_count: toSafeAttendeeCount(rsvp.attendeeCount),
-    updated_at: rsvp.updatedAt ?? nowISO(),
-  }));
-}
+import { classifyPartyError, PartyOperationError } from "../lib/partyErrors";
 
 export async function getRemotePartyRsvps(partyId: string): Promise<PartyRsvp[]> {
-  if (!isSupabaseConfigured) return [];
-
-  const { data, error } = await supabase
-    .from(PARTY_RSVPS_TABLE)
-    .select(PARTY_RSVP_COLUMNS)
-    .eq("party_id", partyId)
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    logSupabaseError("party_rsvps.select", error, { partyId });
-    throw error;
-  }
-
-  return (data ?? []).map((row) => toRemotePartyRsvp(row as PartyRsvpRow));
-}
-
-export async function replaceRemotePartyRsvps(
-  partyId: string,
-  rsvps: PartyRsvp[]
-): Promise<PartyRsvp[]> {
-  if (!isSupabaseConfigured) return [];
-
-  const { error: deleteError } = await supabase
-    .from(PARTY_RSVPS_TABLE)
-    .delete()
-    .eq("party_id", partyId);
-  if (deleteError) {
-    logSupabaseError("party_rsvps.delete", deleteError, {
-      partyId,
-      rsvpCount: rsvps.length,
-      redactValues: rsvps.map((rsvp) => rsvp.name),
-    });
-    throw deleteError;
-  }
-
-  const nextRsvps = toPartyRsvpInsertRows(partyId, rsvps ?? []);
-  if (!nextRsvps.length) return [];
-
-  const { error: insertError } = await supabase
-    .from(PARTY_RSVPS_TABLE)
-    .insert(nextRsvps);
-  if (insertError) {
-    logSupabaseError("party_rsvps.insert", insertError, {
-      partyId,
-      rsvpCount: nextRsvps.length,
-      redactValues: rsvps.map((rsvp) => rsvp.name),
-    });
-    throw insertError;
-  }
-
-  return getRemotePartyRsvps(partyId);
+  if (!isSupabaseConfigured) throw new PartyOperationError("configuration", "Backend is not configured.");
+  const { data, error } = await supabase.from("party_rsvps").select("*").eq("party_id", partyId).order("updated_at", { ascending: false });
+  if (error) throw classifyPartyError(error);
+  return (data ?? []).map((row) => ({
+    id: row.id, name: row.name ?? row.attendee_name ?? row.guest_name ?? "Guest",
+    status: ["yes", "no", "maybe"].includes(row.status ?? row.rsvp_status ?? row.response) ? row.status ?? row.rsvp_status ?? row.response : "maybe",
+    attendeeCount: Number.isFinite(Number(row.attendee_count ?? row.count ?? row.party_size ?? 1))
+      ? Math.max(1, Math.floor(Number(row.attendee_count ?? row.count ?? row.party_size ?? 1))) : 1,
+    updatedAt: row.updated_at ?? row.created_at ?? "",
+  }));
 }

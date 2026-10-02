@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const USER_ID_KEY = "userId";
+import { createDeviceIdentity } from "./identity";
 
 export function isUuid(value?: string | null): value is string {
   if (!value) return false;
@@ -24,11 +23,4 @@ export function ensureUuid(value?: string | null) {
   return isUuid(value) ? value : createUuid();
 }
 
-export async function ensureUserId() {
-  const storedUserId = await AsyncStorage.getItem(USER_ID_KEY);
-  if (isUuid(storedUserId)) return storedUserId;
-
-  const nextUserId = createUuid();
-  await AsyncStorage.setItem(USER_ID_KEY, nextUserId);
-  return nextUserId;
-}
+export const ensureUserId = createDeviceIdentity(AsyncStorage, createUuid);

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter, useRootNavigationState } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 export default function ShareDeepLinkHandler() {
   const router = useRouter();
@@ -34,7 +34,8 @@ export default function ShareDeepLinkHandler() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-      <Text style={{ fontSize: 16, color: '#666' }}>Opening invite…</Text>
+      <Text style={{ fontSize: 16, color: '#666' }}>{targetRoute ? "Opening invite…" : "This invitation is missing its party ID. Reopen the original link."}</Text>
+      {!targetRoute ? <Pressable onPress={() => router.replace("/")} accessibilityRole="button"><Text>Go Home</Text></Pressable> : null}
     </View>
   );
 }

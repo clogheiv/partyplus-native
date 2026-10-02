@@ -30,4 +30,9 @@ export type Party = {
   updatedAt: string;
   hostId?: string;
   t?: string;
+  revision?: number;
+  canEdit?: boolean; // Server-supplied capability; UI hint only. RPCs enforce authorization.
+  cloudStatus?: "local-only" | "pending" | "failed" | "committed" | "conflict";
+  cloudOperationId?: string;
+  removedItemIds?: string[];
 };

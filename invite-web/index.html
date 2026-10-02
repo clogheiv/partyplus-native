@@ -980,12 +980,32 @@
         <h1>PartyPlus Invite</h1>
         <p id="subtitle" class="section-copy"></p>
         <div id="details"></div>
+        <section id="guestControls" hidden aria-label="Respond to the invitation">
+          <p id="liveStatus" role="status" aria-live="polite">Loading live party…</p>
+          <button class="btn btn-secondary" id="refreshParty" type="button">Refresh invitation</button>
+          <form id="rsvpForm" style="display:grid;gap:12px;margin:20px 0">
+            <label>Your name <input id="guestName" name="name" required maxlength="100" autocomplete="name" /></label>
+            <label>Guests <input id="guestCount" name="count" type="number" min="1" max="100" value="1" required /></label>
+            <label>Your response <select id="guestResponse" name="response"><option value="yes">Yes</option><option value="maybe">Maybe</option><option value="no">No</option></select></label>
+            <button class="btn btn-primary" type="submit" disabled>Save RSVP</button>
+          </form>
+          <p id="changeStatus" role="status" aria-live="polite"></p>
+          <button class="btn btn-secondary" id="retryChange" type="button">Retry pending change</button>
+          <h2>What to bring</h2>
+          <p>RSVP Yes before claiming an item.</p>
+          <ul id="liveItems"></ul>
+          <form id="suggestForm" style="display:grid;gap:12px;margin:20px 0">
+            <label>Suggest an item <input id="guestSuggestion" name="suggestion" maxlength="200" /></label>
+            <button class="btn btn-secondary" type="submit">Suggest item</button>
+          </form>
+          <h2>Responses</h2><p id="liveRsvps"></p>
+        </section>
         <div class="invite-id" id="inviteId">-</div>
         <div class="btn-row">
           <a class="btn btn-primary" id="openApp" href="#">Open in PartyPlus</a>
           <a class="btn btn-secondary" id="getApp" href="https://apps.apple.com/us/app/partyplus-866ec3/id6762475398">Get the app</a>
         </div>
-        <p class="tiny">If PartyPlus is not installed yet, this page will still load.</p>
+        <p class="tiny">The app is optional. Keep this invitation link to return later.</p>
       </section>
     </main>
 
@@ -1050,7 +1070,8 @@
 
       const pathParts = window.location.pathname.split("/").filter(Boolean);
       const route = pathParts[0] || "";
-      const inviteId = pathParts[0] === "i" ? pathParts[1] : null;
+      const inviteId = ["i", "party"].includes(pathParts[0]) ? decodeURIComponent(pathParts[1] || "")
+        : ["share", "_share", "__share"].includes(pathParts[0]) ? new URL(location.href).searchParams.get("id") : null;
 
       if (inviteId) {
         const landing = document.getElementById("landing");
@@ -1165,5 +1186,6 @@
         legalContent.innerHTML = pages[route];
       }
     </script>
+    <script src="/invite.js" defer></script>
   </body>
 </html>

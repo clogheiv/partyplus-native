@@ -1,5 +1,8 @@
 import { InteractionManager, Keyboard, Platform, Share } from "react-native";
 import type { Party } from "./partyTypes";
+import { getRemotePartyById } from "../data/parties";
+import { requireShareableParty } from "./loadParty";
+import { PartyOperationError } from "./partyErrors";
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -12,7 +15,18 @@ function waitForInteractions() {
 }
 
 export function buildInviteLink(party: Party) {
-  return `https://partyplus-invite.netlify.app/i/${party.id}`;
+  const production = process.env.EXPO_PUBLIC_BACKEND_ENV === "production";
+  const base = process.env.EXPO_PUBLIC_INVITE_BASE_URL ?? (production ? "https://partyplus-invite.netlify.app" : "");
+  if (!base) throw new PartyOperationError("configuration", "Configure the nonproduction invitation site before sharing.");
+  const url = new URL(base);
+  if (!production && url.hostname === "partyplus-invite.netlify.app") {
+    throw new PartyOperationError("configuration", "Nonproduction parties require a separate invitation site.");
+  }
+  return `${base.replace(/\/$/, "")}/i/${encodeURIComponent(party.id)}`;
+}
+
+export async function confirmPartyForSharing(party: Party) {
+  return requireShareableParty(await getRemotePartyById(party.id), party.id);
 }
 
 function formatPartyWhen(iso: string) {
@@ -140,6 +154,7 @@ export function buildReminderPayload(party: Party) {
 }
 
 export async function sharePartyInvite(party: Party) {
+  party = await confirmPartyForSharing(party);
   const { message, url } = buildSharePayload(party);
   console.log("[invite] sharePayload", {
     partyId: party.id,
@@ -168,6 +183,7 @@ export async function sharePartyInvite(party: Party) {
 }
 
 export async function sharePartyReminder(party: Party) {
+  party = await confirmPartyForSharing(party);
   const { message, url } = buildReminderPayload(party);
   console.log("[invite] reminderSharePayload", {
     partyId: party.id,

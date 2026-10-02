@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -28,20 +27,23 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-import { createRemoteParty } from "../../src/data/parties";
+import { getRemotePartyById } from "../../src/data/parties";
+import { commitRemoteParty } from "../../src/data/partyContract";
 import {
   buildEditedPartyItems,
   prependManualPartyItem,
 } from "../../src/lib/editPartyItems";
-import { createUuid, ensureUserId, ensureUuid, isUuid } from "../../src/lib/ids";
+import { createUuid, ensureUserId } from "../../src/lib/ids";
 import {
   focusInputIfNeeded,
   getFocusedInputScrollOffset,
 } from "../../src/lib/inputFocus";
 import { sharePartyInvite } from "../../src/lib/inviteShare";
 import { PARTY_TEMPLATES, mergeTemplateItems } from "../../src/lib/partyTemplates";
-import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
+import { getPartyById, setCurrentPartyId, upsertParty, localRepository } from "../../src/lib/partyStore";
 import type { Party } from "../../src/lib/partyTypes";
+import { commitDraft, createDraft, emptyDraftFields, updateDraftFields, isPartyDraft, type PartyDraft } from "../../src/lib/partyDraft";
+import { PartyOperationError, classifyPartyError } from "../../src/lib/partyErrors";
 
 if (Platform.OS === "android") {
   UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -196,6 +198,13 @@ const confirmIosPicker = () => {
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const draftRef = useRef<PartyDraft | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftStatus, setDraftStatus] = useState<PartyDraft["status"]>("local-only");
+  const [draftError, setDraftError] = useState<string | null>(null);
+  const [draftRetry, setDraftRetry] = useState(0);
+  const draftLoadRequest = useRef("");
+  const draftKey = isEditing ? `edit:${partyId}` : "new-party";
 
 // 🔹 STEP 2 — Toast animation + timer refs
 const toastAnim = useRef(new Animated.Value(0)).current;
@@ -280,7 +289,15 @@ useEffect(() => {
 }, [actionFeedback]);
 
   const resetCreateForm = React.useCallback(async () => {
-  await AsyncStorage.removeItem("currentPartyId");
+  if (isSaving) return;
+  try {
+  if (draftRef.current) await localRepository.setDraft("recovery-draft:" + draftRef.current.id + ":" + Date.now(), draftRef.current);
+  const nextDraft = createDraft("new-party", createUuid());
+  await localRepository.setDraft(nextDraft.key, nextDraft);
+  draftRef.current = nextDraft;
+  setDraftStatus("local-only");
+  setDraftError(null);
+  if (isEditing) { setDraftReady(false); router.replace("/(tabs)/create-party"); }
   setTitle("");
   setLocation("");
   setNotes("");
@@ -298,7 +315,8 @@ useEffect(() => {
   requestAnimationFrame(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   });
-  }, []);
+  } catch (error) { setDraftError(classifyPartyError(error).message); }
+  }, [isEditing, isSaving, router]);
 
 const handleStartNewParty = async () => {
   if (!isDirty) {
@@ -324,93 +342,114 @@ const handleStartNewParty = async () => {
 
 
 const onCancelEdit = async () => {
+  if (isSaving) return;
   if (!isDirty) {
+    try {
     if (partyId) {
-      await AsyncStorage.setItem("currentPartyId", partyId);
+      await setCurrentPartyId(partyId);
       router.replace(`/party/${partyId}`);
       return;
     }
     router.replace("/");
+    } catch (error) { setDraftError(classifyPartyError(error).message); }
     return;
   }
 
   Alert.alert(
     "Discard changes?",
-    "You have unsaved changes. If you discard, they will be lost.",
+    "Your changes will leave this form. A recovery copy will remain on this device, including any unconfirmed save.",
     [
       { text: "Keep Editing", style: "cancel" },
       {
         text: "Discard",
         style: "destructive",
         onPress: async () => {
+          try {
+          await localRepository.archiveDraft(draftKey, "recovery-draft:" + (draftRef.current?.id ?? partyId) + ":" + Date.now());
+          setDraftReady(false);
           if (partyId) {
-            await AsyncStorage.setItem("currentPartyId", partyId);
+            await setCurrentPartyId(partyId);
             router.replace(`/party/${partyId}`);
             return;
           }
           router.replace("/");
+          } catch (error) { setDraftError(classifyPartyError(error).message); }
         },
       },
     ]
   );
 };
 
-useEffect(() => {
-  let isMounted = true;
-  // If we are NOT editing a party, always start with a clean slate
-if (!isEditing) {
-  void resetCreateForm();
-  isMounted = false;
-  return;
-}
-
-  async function loadForEdit() {
-    if (!partyId) return;
-
-    const [existing, storedUserId] = await Promise.all([
-      getPartyById(partyId),
-      ensureUserId(),
-    ]);
-
-    if (!existing || !isMounted) return;
-
-    if (existing.hostId && existing.hostId !== storedUserId) {
-      Alert.alert("Host only", "Only the party host can edit this party.");
-      router.replace(`/party/${partyId}`);
-      return;
-    }
-
-    setTitle(existing.title ?? "");
-    setLocation(existing.location ?? "");
-    setNotes(existing.notes ?? "");
-
-    if (existing.date) {
-      const d = new Date(existing.date);
-      if (!Number.isNaN(d.getTime())) setPartyDate(d);
-    }
-
-    if (Platform.OS === "web" && existing.date) {
-      setWebDateText(existing.date);
-    }
-
-    setItems((existing.items ?? []).map((it: any) => it.name ?? String(it)));
-    setManualItemPrefixLength(0);
-  }
-
-  loadForEdit();
-
-  return () => {
-    isMounted = false;
-  };
-  }, [isEditing, partyId, resetCreateForm, router]);
-
 useFocusEffect(
   React.useCallback(() => {
-    if (!isEditing) {
-      void resetCreateForm();
+    let active = true;
+    const request = draftKey + ":" + draftRetry;
+    draftLoadRequest.current = request;
+    const isCurrent = () => active && draftLoadRequest.current === request;
+    setDraftReady(false);
+    draftRef.current = null;
+    async function loadDraft() {
+      const [existing, ownerId, saved] = await Promise.all([
+        isEditing ? getRemotePartyById(partyId).then(async remote => {
+          if (remote) await upsertParty(remote);
+          if (remote) return remote;
+          const cached = await getPartyById(partyId);
+          return cached?.cloudStatus === "local-only" && !cached.revision ? cached : null;
+        }).catch(() => getPartyById(partyId)) : Promise.resolve(null),
+        ensureUserId(),
+        localRepository.getDraft<PartyDraft>(draftKey),
+      ]);
+      if (!isCurrent()) return;
+      if (isEditing && (!existing || (!existing.canEdit && (!existing.hostId || existing.hostId !== ownerId)))) {
+        Alert.alert("Verified host access required", "This party is preserved. Open it to check access or arrange assisted recovery.");
+        router.replace("/party/" + partyId);
+        return;
+      }
+      if (saved && !isPartyDraft(saved, draftKey)) {
+        throw new PartyOperationError("local_corrupt", "Draft needs recovery; its original data is preserved.");
+      }
+      const fields = existing ? {
+        title: existing.title, location: existing.location ?? "", notes: existing.notes ?? "",
+        date: existing.date ?? "", items: existing.items.map(item => item.name),
+        pendingItem: "", manualItemPrefixLength: 0,
+      } : emptyDraftFields();
+      const draft = saved && (isEditing || saved.status !== "committed")
+        ? saved : createDraft(draftKey, isEditing ? partyId : createUuid(), fields);
+      if (!draft.baseParty && existing) draft.baseParty = existing;
+      await localRepository.setDraft(draftKey, draft);
+      if (!isCurrent()) return;
+      draftRef.current = draft;
+      setTitle(draft.fields.title);
+      setLocation(draft.fields.location);
+      setNotes(draft.fields.notes);
+      const date = new Date(draft.fields.date);
+      setPartyDate(Number.isNaN(date.getTime()) ? null : date);
+      setWebDateText(draft.fields.date);
+      setItems(draft.fields.items);
+      setItemText(draft.fields.pendingItem);
+      setManualItemPrefixLength(draft.fields.manualItemPrefixLength);
+      setDraftStatus(draft.status);
+      setDraftError(draft.error ?? null);
+      setIsDirty(draft.status !== "committed" && Boolean(draft.fields.title || draft.fields.items.length || draft.fields.pendingItem));
+      setDraftReady(true);
     }
-  }, [isEditing, resetCreateForm])
+    void loadDraft().catch(error => {
+      if (isCurrent()) setDraftError(classifyPartyError(error).message);
+    });
+    return () => { active = false; };
+  }, [draftKey, isEditing, partyId, router, draftRetry])
 );
+
+useEffect(() => {
+  if (!draftReady || savingRef.current || !draftRef.current) return;
+  const next = updateDraftFields(draftRef.current, {
+    title, location, notes, date: Platform.OS === "web" ? webDateText : partyDate?.toISOString() ?? "",
+    items, pendingItem: itemText, manualItemPrefixLength,
+  });
+  draftRef.current = next;
+  setDraftStatus(next.status);
+  void localRepository.setDraft(draftKey, next).catch(error => setDraftError(classifyPartyError(error).message));
+}, [draftReady, draftKey, title, location, notes, webDateText, partyDate, items, itemText, manualItemPrefixLength, isSaving]);
 
 const scrollToInput = (inputRef: React.RefObject<TextInput | null>) => {
   const inputNode = inputRef.current ? findNodeHandle(inputRef.current) : null;
@@ -523,126 +562,83 @@ function applyTemplate(template: (typeof PARTY_TEMPLATES)[number]) {
     }
   }
 
+  async function rebaseDraft() {
+    if (!draftRef.current || isSaving) return;
+    try {
+      const current = await getRemotePartyById(draftRef.current.id);
+      if (!current) throw new PartyOperationError("missing", "This party no longer exists. Your draft is preserved.");
+      await upsertParty(current);
+      const draft = { ...draftRef.current, status: "local-only" as const, operationId: undefined,
+        preparedParty: undefined, fingerprint: undefined, error: undefined, confirmedParty: current };
+      await localRepository.setDraft(draftKey, draft);
+      draftRef.current = draft;
+      setDraftStatus("local-only"); setDraftError("Server version refreshed. Review your draft and save again.");
+    } catch (error) { setDraftError(classifyPartyError(error).message); }
+  }
+
   async function handleSave() {
-    if (savingRef.current) return;
+    if (savingRef.current || !draftReady || !draftRef.current) return;
     savingRef.current = true;
     setIsSaving(true);
-
+    setDraftError(null);
     try {
-    const cleanTitle = title.trim();
-    if (!cleanTitle) {
-      Alert.alert("Missing title", "Give your party a name first.");
-      return;
-    }
-
-    const ownerId = await ensureUserId();
-    const id = isEditing ? ensureUuid(partyId) : createUuid();
-
-    const now = new Date().toISOString();
-    const existing = isEditing ? await getPartyById(partyId) : null;
-
-    if (isEditing && !existing) {
-      Alert.alert("Party not found", "This party could not be loaded for editing.");
-      return;
-    }
-
-    if (existing?.hostId && existing.hostId !== ownerId) {
-      Alert.alert("Host only", "Only the party host can save changes to this party.");
-      router.replace(`/party/${partyId}`);
-      return;
-    }
-
-    let partyDateIso = partyDate?.toISOString();
-    if (!partyDateIso && Platform.OS === "web") {
-      const raw = webDateText.trim();
-      if (raw) {
-        const parsedDate = new Date(raw);
-        if (Number.isNaN(parsedDate.getTime())) {
-          Alert.alert(
-            "Invalid date",
-            'Use format like: "2026-01-25T16:00" or "1/25/2026 4:00 PM"'
-          );
-          return;
-        }
-        partyDateIso = parsedDate.toISOString();
+      if (!title.trim()) return;
+      const ownerId = await ensureUserId();
+      const existing = (isEditing ? await getPartyById(partyId) : null) ?? draftRef.current.confirmedParty ?? null;
+      if (isEditing && (!existing || (!existing.canEdit && (!existing.hostId || existing.hostId !== ownerId)))) {
+        throw new PartyOperationError("authorization", "Verified host access is required.");
       }
-    }
-
-    const party: Party = {
-      id,
-      title: cleanTitle,
-      date: partyDateIso,
-
-      location: location.trim(),
-      notes: notes.trim(),
-      theme: "",
-      hostId: ownerId,
-      rsvps: existing?.rsvps ?? [],
-      items: buildEditedPartyItems(
-        existing?.items ?? [],
-        items,
-        createUuid,
-        (existingId) => (isUuid(existingId) ? existingId : createUuid()),
-        manualItemPrefixLength
-      ),
-
-      createdAt: isEditing && existing ? existing.createdAt : now,
-      updatedAt: now,
-    };
-
-    await upsertParty(party);
-
-    try {
-      await createRemoteParty(party);
-    } catch (error) {
-      console.log("[create-party] remoteSaveFailed", {
-        partyId: party.id,
-        itemCount: party.items.length,
-        error,
+      const rawDate = Platform.OS === "web" ? webDateText.trim() : partyDate?.toISOString() ?? "";
+      const date = rawDate ? new Date(rawDate) : null;
+      if (date && Number.isNaN(date.getTime())) {
+        Alert.alert("Invalid date", "Enter a valid party date and time before saving.");
+        return;
+      }
+      const draft = updateDraftFields(draftRef.current, {
+        title, location, notes, date: rawDate, items, pendingItem: itemText, manualItemPrefixLength,
       });
-      Alert.alert(
-        "Cloud sync failed",
-        "This party was saved on this device, but items did not sync to Supabase. Please try saving again before sharing."
-      );
-      return;
-    }
-
-    await setCurrentPartyId(id);
-   // Mark this party as "host-owned" on this device
-const raw = await AsyncStorage.getItem("hostPartyIds");
-const hostIds: string[] = raw ? JSON.parse(raw) : [];
-if (!hostIds.includes(party.id)) {
-  hostIds.push(party.id);
-  await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
-}
-
-    setActionFeedback("Party saved 🎉");
-
-    Alert.alert(
-      "Party saved 🎉",
-      "Would you like to share it now?",
-      [
-        {
-          text: "Maybe later",
-          onPress: () => {
-            router.replace(`/party/${id}`);
-          },
-        },
-        {
-          text: "Share now",
-          onPress: () => {
-            void handleShareSavedParty(party, id);
-          },
-        },
-      ],
-      { cancelable: false }
-    );
+      const result = await commitDraft(draft, () => {
+        const names = itemText.trim() ? [itemText.trim(), ...items] : items;
+        const base = draft.baseParty ?? existing;
+        const nextItems = buildEditedPartyItems(base?.items ?? [], names, createUuid,
+          id => id, manualItemPrefixLength + (itemText.trim() ? 1 : 0));
+        return {
+          ...existing, id: draft.id, title: title.trim(), location: location.trim(), notes: notes.trim(),
+          date: date?.toISOString(), hostId: existing?.hostId ?? ownerId,
+          items: nextItems, rsvps: existing?.rsvps ?? [],
+          createdAt: existing?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString(),
+          revision: existing?.revision ?? 0,
+          removedItemIds: (base?.items ?? []).filter(item => !nextItems.some(next => next.id === item.id)).map(item => item.id),
+        };
+      }, createUuid, async next => {
+        await localRepository.setDraft(draftKey, next);
+        draftRef.current = next;
+        setDraftStatus(next.status);
+      }, commitRemoteParty);
+      if (result.confirmedParty) await upsertParty(result.confirmedParty);
+      if (result.status !== "committed" || !result.preparedParty) {
+        setDraftError(result.error ?? "Save is not confirmed. Your draft is preserved.");
+        return;
+      }
+      const savedParty = result.preparedParty;
+      await upsertParty(savedParty);
+      await setCurrentPartyId(savedParty.id);
+      setIsDirty(false);
+      Alert.alert("Party saved 🎉", "Your invite is ready to share.", [
+        { text: "Maybe later", onPress: () => router.replace("/party/" + savedParty.id) },
+        { text: "Share now", onPress: () => { void handleShareSavedParty(savedParty, savedParty.id); } },
+      ], { cancelable: false });
+    } catch (error) {
+      const committed = draftRef.current?.status === "committed";
+      setDraftError(committed
+        ? "Saved online, but this device could not finish caching it. Retry to recover the same save."
+        : classifyPartyError(error).message);
     } finally {
       savingRef.current = false;
       setIsSaving(false);
     }
   }
-  const canSave = title.trim().length > 0 && !isSaving;
+  const canSave = title.trim().length > 0 && !isSaving && draftReady;
 
 return (
   <>
@@ -757,6 +753,7 @@ return (
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>Party title</ThemedText>
       <TextInput
+  editable={draftReady && !isSaving}
         value={title}
         onChangeText={(t) => {
   setTitle(t);
@@ -772,6 +769,7 @@ return (
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>Location</ThemedText>
       <TextInput
+  editable={draftReady && !isSaving}
         value={location}
         onChangeText={(t) => {
   setLocation(t);
@@ -799,6 +797,7 @@ onPress={openDateTimePicker}
 </Pressable>
 {Platform.OS === "web" && (
   <TextInput
+  editable={draftReady && !isSaving}
     value={webDateText}
     onChangeText={setWebDateText}
     placeholder="YYYY-MM-DDTHH:MM (or use picker if supported)"
@@ -923,6 +922,7 @@ onPress={openDateTimePicker}
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>Notes</ThemedText>
       <TextInput
+  editable={draftReady && !isSaving}
         ref={notesInputRef}
         onFocus={() => scrollToInput(notesInputRef)}
         value={notes}
@@ -1032,6 +1032,7 @@ onPress={openDateTimePicker}
 
       <ThemedText type="subtitle" style={styles.sectionLabel}>What to bring</ThemedText>
       <TextInput
+  editable={draftReady && !isSaving}
       ref={itemInputRef}
         returnKeyType="done"
         onFocus={() => scrollToInput(itemInputRef)}
@@ -1091,6 +1092,13 @@ onPress={openDateTimePicker}
 >
   <ThemedText style={styles.secondaryButtonText}>Start New Party</ThemedText>
 </Pressable>
+<Pressable onPress={() => router.push("/account")} accessibilityRole="button" style={styles.secondaryButton}><ThemedText style={styles.secondaryButtonText}>Host account</ThemedText></Pressable>
+<ThemedText accessibilityLiveRegion="polite" style={{ color: "#afbdd5" }}>
+  {!draftReady ? "Loading draft…" : draftStatus === "committed" ? "Saved online" : draftStatus === "pending" ? "Save pending — retry keeps the same party" : draftStatus === "failed" ? "Save not confirmed — draft preserved" : draftStatus === "conflict" ? "Party changed — reload before saving" : "Local draft"}
+</ThemedText>
+{draftError ? <ThemedText accessibilityRole="alert" style={{ color: "#ff9f87" }}>{draftError}</ThemedText> : null}
+{!draftReady ? <Pressable onPress={() => setDraftRetry(value => value + 1)} accessibilityRole="button"><ThemedText>Retry loading draft</ThemedText></Pressable> : null}
+{draftStatus === "conflict" ? <Pressable onPress={() => { void rebaseDraft(); }} accessibilityRole="button"><ThemedText>Refresh server version and keep draft</ThemedText></Pressable> : null}
 <Pressable
   onPress={canSave ? handleSave : undefined}
   disabled={!canSave}

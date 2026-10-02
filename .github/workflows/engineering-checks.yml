@@ -1,0 +1,48 @@
+name: Engineering checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  client-and-synthetic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npx expo export --platform all --output-dir .test-cache/export
+        env:
+          EXPO_NO_DOTENV: '1'
+          CI: '1'
+      - run: npm run build:invite
+        env:
+          PARTYPLUS_BACKEND_ENV: local
+          PARTYPLUS_SUPABASE_URL: http://127.0.0.1:54321
+          PARTYPLUS_SUPABASE_PUBLISHABLE_KEY: synthetic-placeholder
+  concurrent-postgresql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: partyplus_synthetic
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit
+      - run: node --test tests/backend.test.mjs
+        env:
+          PARTYPLUS_TEST_DATABASE_URL: postgres://postgres:synthetic-ci-only@127.0.0.1:5432/partyplus_synthetic

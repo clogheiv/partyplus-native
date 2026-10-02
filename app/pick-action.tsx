@@ -1,13 +1,14 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createRemoteParty, deleteRemoteParty } from "@/src/data/parties";
+import { guestOperations } from "@/src/data/guestOperations";
+import { createDraft } from "@/src/lib/partyDraft";
+import { classifyPartyError } from "@/src/lib/partyErrors";
 import { buildDuplicateParty } from "@/src/lib/duplicateParty";
+import { offerHostTools } from "../src/lib/hostAccess";
 import { ensureUserId } from "@/src/lib/ids";
 import { sharePartyReminder } from "@/src/lib/inviteShare";
-import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty } from "@/src/lib/partyStore";
+import { deletePartyById, getPartyById, setCurrentPartyId, upsertParty, localRepository } from "@/src/lib/partyStore";
 import type { Party } from "@/src/lib/partyTypes";
-import { isSupabaseConfigured } from "@/src/lib/supabase";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -39,15 +40,13 @@ export default function PickActionScreen() {
       }
 
       try {
-        const [storedParty, storedUserId] = await Promise.all([
-          getPartyById(id),
-          ensureUserId(),
-        ]);
+        const storedParty = await getPartyById(id);
+        const hostTools = await offerHostTools(storedParty);
 
         if (!isMounted) return;
 
         setParty(storedParty);
-        setIsConfirmedHost(Boolean(storedUserId && storedParty?.hostId === storedUserId));
+        setIsConfirmedHost(hostTools);
       } catch {
         if (!isMounted) return;
         setParty(null);
@@ -63,16 +62,6 @@ export default function PickActionScreen() {
       isMounted = false;
     };
   }, [id]);
-
-  async function addHostPartyId(partyId: string) {
-    const raw = await AsyncStorage.getItem("hostPartyIds");
-    const parsedHostIds = raw ? JSON.parse(raw) : [];
-    const hostIds: string[] = Array.isArray(parsedHostIds) ? parsedHostIds : [];
-    if (!hostIds.includes(partyId)) {
-      hostIds.push(partyId);
-      await AsyncStorage.setItem("hostPartyIds", JSON.stringify(hostIds));
-    }
-  }
 
   async function handleSendReminder() {
     if (!party || sendingReminderRef.current) return;
@@ -102,28 +91,18 @@ export default function PickActionScreen() {
     setDuplicatingParty(true);
     try {
       const ownerId = await ensureUserId();
-      const duplicate = buildDuplicateParty(party, ownerId);
+      const key = "duplicate:" + party.id;
+      const duplicate = await localRepository.getDraft<Party>(key) ?? buildDuplicateParty(party, ownerId);
+      if (!duplicate.id || !Array.isArray(duplicate.items)) throw Error("Duplicate draft needs recovery.");
+      await localRepository.setDraft(key, duplicate);
 
-      await upsertParty(duplicate);
-
-      try {
-        await createRemoteParty(duplicate);
-      } catch (error) {
-        console.log("[pick-action] duplicateRemoteSaveFailed", {
-          sourcePartyId: party.id,
-          duplicatePartyId: duplicate.id,
-          itemCount: duplicate.items.length,
-          error,
-        });
-        Alert.alert(
-          "Duplicate saved on this device",
-          "The copied party was created locally, but could not sync yet."
-        );
-        return;
-      }
-
+      await upsertParty({ ...duplicate, cloudStatus: "local-only", revision: 0 });
+      await localRepository.setDraft("edit:" + duplicate.id, createDraft("edit:" + duplicate.id, duplicate.id, {
+        title: duplicate.title, date: duplicate.date ?? "", location: duplicate.location ?? "", notes: duplicate.notes ?? "",
+        items: duplicate.items.map(item => item.name), pendingItem: "", manualItemPrefixLength: 0,
+      }));
       await setCurrentPartyId(duplicate.id);
-      await addHostPartyId(duplicate.id);
+      await localRepository.removeDraft(key);
 
       router.push(`/(tabs)/create-party?id=${duplicate.id}`);
     } catch (error) {
@@ -147,23 +126,15 @@ export default function PickActionScreen() {
 
     setDeletingParty(true);
     try {
-      if (isSupabaseConfigured) {
-        await deleteRemoteParty(id);
-      }
-
+      const draft = await localRepository.getDraft<{ operationId?: string }>("edit:" + id);
+      if (party?.cloudStatus === "local-only" && !party.revision && !draft?.operationId) {
+        await localRepository.removeDraft("edit:" + id);
+      } else await guestOperations.run(id, { kind: "delete" });
       await deletePartyById(id);
 
-      const raw = await AsyncStorage.getItem("hostPartyIds");
-      const parsedHostIds = raw ? JSON.parse(raw) : [];
-      const hostIds: string[] = Array.isArray(parsedHostIds) ? parsedHostIds : [];
-      const nextHostIds = hostIds.filter((entry) => entry !== id);
-      if (nextHostIds.length !== hostIds.length) {
-        await AsyncStorage.setItem("hostPartyIds", JSON.stringify(nextHostIds));
-      }
-
       router.replace("/");
-    } catch {
-      Alert.alert("Delete failed", "Could not delete this party.");
+    } catch (error) {
+      Alert.alert("Delete not confirmed", classifyPartyError(error).message);
     } finally {
       setDeletingParty(false);
     }

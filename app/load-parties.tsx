@@ -1,11 +1,13 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 
-import { ensureUserId } from "../src/lib/ids";
+import { refreshHostParties } from "../src/data/hostRecovery";
+import { offerHostTools } from "../src/lib/hostAccess";
+import { classifyPartyError } from "../src/lib/partyErrors";
 import { getParties, setCurrentPartyId } from "../src/lib/partyStore";
 import type { Party } from "../src/lib/partyTypes";
 
@@ -19,35 +21,45 @@ function formatWhen(iso?: string) {
 export default function LoadPartiesScreen() {
   const [loading, setLoading] = useState(true);
   const [parties, setParties] = useState<Party[]>([]);
-  const [loadError, setLoadError] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshWarning, setRefreshWarning] = useState<string | null>(null);
+  const generation = useRef(0);
 
   const load = useCallback(async () => {
+    const request = ++generation.current;
     setLoading(true);
-    setLoadError(false);
+    setLoadError(null);
+    setRefreshWarning(null);
     try {
+      try { await refreshHostParties(); }
+      catch (error) {
+        if (request === generation.current) setRefreshWarning("Showing saved parties. Account refresh failed: " + classifyPartyError(error).message);
+      }
       const localParties = await getParties();
       const sorted = [...localParties].sort((a, b) =>
         (b.updatedAt ?? "").localeCompare(a.updatedAt ?? "")
       );
-      setParties(sorted);
-    } catch {
-      setLoadError(true);
+      if (request === generation.current) setParties(sorted);
+    } catch (error) {
+      if (request === generation.current) setLoadError(classifyPartyError(error).message);
     } finally {
-      setLoading(false);
+      if (request === generation.current) setLoading(false);
     }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      void load();
+      return () => { generation.current++; };
     }, [load])
   );
 
   async function openParty(p: Party) {
+    try {
     await setCurrentPartyId(p.id);
-    const storedUserId = await ensureUserId();
-    const isHost = !!storedUserId && p.hostId === storedUserId;
+    const isHost = await offerHostTools(p);
     router.push(`/pick-action?id=${p.id}&isHost=${isHost ? "true" : "false"}`);
+    } catch (error) { Alert.alert("Could not open party", classifyPartyError(error).message); }
   }
 
   return (
@@ -62,6 +74,13 @@ export default function LoadPartiesScreen() {
         </ThemedText>
       </View>
 
+      <Pressable onPress={() => router.push("/account")} accessibilityRole="button"><ThemedText>Host account and recovery</ThemedText></Pressable>
+      {!!refreshWarning && !loading && (
+        <View accessibilityRole="alert">
+          <ThemedText style={styles.subtitle}>{refreshWarning}</ThemedText>
+          <Pressable onPress={load} accessibilityRole="button"><ThemedText>Retry account refresh</ThemedText></Pressable>
+        </View>
+      )}
       {loading ? (
         <ThemedView
           style={styles.loadingWrap}
@@ -76,7 +95,7 @@ export default function LoadPartiesScreen() {
             Could not load your parties.
           </ThemedText>
           <ThemedText style={styles.subtitle}>
-            Your saved parties are still on this device. Try loading them again.
+            {loadError}
           </ThemedText>
           <Pressable
             onPress={load}

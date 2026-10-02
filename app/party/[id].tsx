@@ -4,6 +4,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  AppState,
   Alert,
   Keyboard,
   KeyboardAvoidingView,
@@ -20,15 +21,15 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../../components/themed-text";
 import { ThemedView } from "../../components/themed-view";
-import {
-  getRemotePartyById,
-  getRemotePartyItems,
-  replaceRemotePartyItems,
-} from "../../src/data/parties";
-import { getRemotePartyRsvps, replaceRemotePartyRsvps } from "../../src/data/partyRsvps";
-import { createUuid, ensureUserId } from "../../src/lib/ids";
-import { applyRsvpForUser, itemClaimMatchesUser, reconcilePartyState, toggleItemClaimForUser } from "../../src/lib/partyLogic";
-import { getPartyById, setCurrentPartyId, upsertParty } from "../../src/lib/partyStore";
+import { getRemotePartyById } from "../../src/data/parties";
+import { createUuid } from "../../src/lib/ids";
+import { itemClaimMatchesUser, reconcilePartyState } from "../../src/lib/partyLogic";
+import { guestOperations } from "../../src/data/guestOperations";
+import { guestIdentityForView } from "../../src/lib/verifiedIdentity";
+import { newerParty } from "../../src/lib/partyValidation";
+import { createLatestPartyLoader } from "../../src/lib/loadParty";
+import { classifyPartyError } from "../../src/lib/partyErrors";
+import { getPartyById, setCurrentPartyId, upsertParty, localRepository } from "../../src/lib/partyStore";
 import type { Party, PartyRsvpStatus } from "../../src/lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../../src/lib/supabase";
 
@@ -102,27 +103,6 @@ function inviteItemsToPartyItems(items: any): Party["items"] {
     : [];
 }
 
-function timestampValue(value?: string) {
-  const timestamp = Date.parse(value ?? "");
-  return Number.isFinite(timestamp) ? timestamp : 0;
-}
-
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function applyLoadedParty(
-  nextParty: Party,
-  setParty: (party: Party) => void
-) {
-  await setCurrentPartyId(nextParty.id);
-  setParty(nextParty);
-
-  const storedUserId = await ensureUserId();
-
-  return storedUserId;
-}
-
 export default function PartyGuestViewScreen() {
   const navigation = useNavigation();
   const router = useRouter();
@@ -134,7 +114,14 @@ export default function PartyGuestViewScreen() {
   const params = useLocalSearchParams<{ id?: string; d?: string }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const d = Array.isArray(params.d) ? params.d[0] : params.d;
-  const didCanonicalizeRef = useRef(false);
+  const loader = useRef(createLatestPartyLoader()).current;
+  const [refresh, setRefresh] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [changeError, setChangeError] = useState<string | null>(null);
+  const [changeRejected, setChangeRejected] = useState(false);
+  const changeBusy = useRef(false);
+  const routeId = useRef(id);
+  routeId.current = id;
 
   const [loading, setLoading] = useState(true);
   const [party, setParty] = useState<Party | null>(null);
@@ -152,192 +139,43 @@ export default function PartyGuestViewScreen() {
     (party?.title ?? (party as any)?.t ?? "").toString().trim() || "Party";
 
   useEffect(() => {
-    const minInviteLoadingMs = id ? 2400 : 0;
-    const remoteRetryDelayMs = 900;
-    console.log("[party] routeParams", {
-      id,
-      hasPayload: Boolean(d),
-      payloadLength: d?.length ?? 0,
-    });
-
-    async function loadRemotePartyWithRetry(partyId: string) {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        try {
-          console.log("[party] remoteFetchAttempt", { partyId, attempt });
-          const remoteParty = await getRemotePartyById(partyId);
-          if (remoteParty) {
-            const remoteItems = await getRemotePartyItems(partyId);
-            console.log("[party] remoteFetchSuccess", {
-              partyId,
-              title: remoteParty.title,
-              items: remoteItems.length,
-              rsvps: remoteParty.rsvps?.length ?? 0,
-            });
-            return normalizePartyForView({
-              ...remoteParty,
-              items: remoteItems,
-            });
-          }
-          console.log("[party] remoteFetchEmpty", { partyId, attempt });
-        } catch (error) {
-          console.log("[party] remoteFetchFailed", { partyId, attempt, error });
-        }
-
-        if (attempt === 0) {
-          await wait(remoteRetryDelayMs);
-        }
-      }
-
-      return null;
-    }
-
-    const run = async () => {
-      const startedAt = Date.now();
-
-      try {
-        if (!id) {
-          setParty(null);
-          return;
-        }
-
-        const found = await getPartyById(String(id));
-        console.log("[party] localLookupById", {
-          id: String(id),
-          found: Boolean(found),
-          hasPayload: Boolean(d),
-        });
-
-        const invite = decodeInvitePayload(d);
-        console.log("[party] invitePayloadDecoded", {
-          id: String(id),
-          decoded: Boolean(invite),
-          keys: invite ? Object.keys(invite) : [],
-        });
-
-        const normalizedRemote = await loadRemotePartyWithRetry(String(id));
-        if (normalizedRemote) {
-          const localFallbackItems = Array.isArray(found?.items) ? found.items : [];
-          const inviteFallbackItems = inviteItemsToPartyItems(invite?.items);
-          const shouldRepairFromLocal =
-            !normalizedRemote.items.length &&
-            localFallbackItems.length > 0 &&
-            timestampValue(found?.updatedAt) >= timestampValue(normalizedRemote.updatedAt);
-          const shouldRepairFromInvite =
-            !normalizedRemote.items.length &&
-            !shouldRepairFromLocal &&
-            inviteFallbackItems.length > 0;
-
-          let hydratedRemote = normalizedRemote;
-
-          if (shouldRepairFromLocal || shouldRepairFromInvite) {
-            const fallbackItems = shouldRepairFromLocal ? localFallbackItems : inviteFallbackItems;
-            console.log("[party] repairingMissingRemoteItems", {
-              id: String(id),
-              source: shouldRepairFromLocal ? "local" : "invite",
-              itemCount: fallbackItems.length,
-            });
-
-            hydratedRemote = normalizePartyForView({
-              ...normalizedRemote,
-              items: fallbackItems,
-            });
-
-            if (isSupabaseConfigured) {
-              try {
-                const repairedItems = await replaceRemotePartyItems(
-                  hydratedRemote.id,
-                  hydratedRemote.items ?? []
-                );
-                hydratedRemote = normalizePartyForView({
-                  ...hydratedRemote,
-                  items: repairedItems,
-                });
-              } catch (error) {
-                console.log("[party] remoteItemRepairFailed", {
-                  id: String(id),
-                  error,
-                });
-              }
-            }
-          }
-
-          await upsertParty(hydratedRemote as any);
-          const storedUserId = await applyLoadedParty(
-            hydratedRemote,
-            setParty
-          );
-          setCurrentUserId(storedUserId);
-          if (!didCanonicalizeRef.current && typeof d === "string" && d.length > 0) {
-            didCanonicalizeRef.current = true;
-            router.replace(`/party/${String(id)}`);
-          }
-          return;
-        }
-
-        if (found && !d) {
-          const normalized = normalizePartyForView(found);
-          const storedUserId = await applyLoadedParty(
-            normalized,
-            setParty
-          );
-          setCurrentUserId(storedUserId);
-
-          if (!(storedUserId && normalized.hostId === storedUserId)) {
-            // If you have any local edit state, force it off here:
-            // setIsEditing(false);
-            // setEditMode(false);
-
-            // If you use navigation params to enable edit, strip them:
-            // navigation.setParams({ edit: undefined, mode: undefined });
-
-            // If you navigate to a separate edit screen, kick them back:
-            // navigation.navigate("party", { id: String(id) });
-          }
-          return;
-        }
-        if (invite) {
-          const hydrated = normalizePartyForView({
-            id: String(id),
-            title: invite.title ?? invite.name ?? invite.t ?? "Party",
-            date: invite.date ?? invite.when ?? invite.dt ?? undefined,
-            location:
-              invite.location ??
-              invite.where ??
-              invite.l ??
-              invite.location_name ??
-              undefined,
-            notes: invite.notes ?? undefined,
-            hostId: invite.hostId ?? invite.host?.id ?? undefined,
-            items: inviteItemsToPartyItems(invite.items),
-          });
-
-          await upsertParty(hydrated as any);
-          const storedUserId = await applyLoadedParty(
-            hydrated,
-            setParty
-          );
-          setCurrentUserId(storedUserId);
-          if (!didCanonicalizeRef.current && typeof d === "string" && d.length > 0) {
-            didCanonicalizeRef.current = true;
-            router.replace(`/party/${String(id)}`);
-          }
-          return;
-        }
-
-        const elapsedMs = Date.now() - startedAt;
-        if (elapsedMs < minInviteLoadingMs) {
-          await wait(minInviteLoadingMs - elapsedMs);
-        }
-
-        setParty(null);
-        console.log("[party] loadFailed", { id: String(id), hasPayload: Boolean(d) });
-      } finally {
-        setLoading(false);
-      }
+    let active = true;
+    setLoading(true);
+    setParty(null);
+    setLoadError(null);
+    setChangeError(null);
+    setChangeRejected(false);
+    setRsvpName("");
+    setRsvpStatus(null);
+    setSuggestionText("");
+    if (!id) { setLoading(false); setLoadError("This invite has no party ID."); return; }
+    const publish = (next: Party | null, error: string | null) => {
+      if (!active) return;
+      setParty(current => newerParty(current, next ? normalizePartyForView(next) : null));
+      setLoadError(error);
+      setLoading(false);
+      if (next?.cloudStatus === "committed") void upsertParty(next).catch(error => { if (active) setLoadError(classifyPartyError(error).message); });
     };
-
-    run();
-  }, [d, id, router]);
+    void loader.load(String(id), getRemotePartyById, async partyId => {
+      const cached = await getPartyById(partyId);
+      if (cached) return cached;
+      const invite = decodeInvitePayload(d);
+      if (!invite) return null;
+      // Payload ownership and claims are never treated as authoritative access.
+      return normalizePartyForView({
+        id: partyId, title: invite.title ?? invite.name ?? invite.t ?? "Party",
+        date: invite.date ?? invite.when ?? invite.dt,
+        location: invite.location ?? invite.where ?? invite.l ?? invite.location_name,
+        notes: invite.notes, items: inviteItemsToPartyItems(invite.items),
+      });
+    }, publish);
+    void guestIdentityForView().then(identity => { if (active) setCurrentUserId(identity); })
+      .catch(error => { if (active) setLoadError(classifyPartyError(error).message); });
+    void localRepository.getDraft("outbox:" + id).then(pending => {
+      if (active && pending) setChangeError("A previous change is pending. Retry it to recover the result before sending another change.");
+    }).catch(error => { if (active) setChangeError(classifyPartyError(error).message); });
+    return () => { active = false; loader.cancel(); clearClaimPromptTimer(); };
+  }, [d, id, refresh, loader]);
 
   useEffect(() => {
     navigation.setOptions({ title: partyName });
@@ -345,79 +183,31 @@ export default function PartyGuestViewScreen() {
 
   useEffect(() => {
     if (!id || !isSupabaseConfigured) return;
-
-    let isMounted = true;
-    const partyId = String(id);
-    const channel = supabase
-      .channel(`party_items:${partyId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "party_items",
-          filter: `party_id=eq.${partyId}`,
-        },
-        async () => {
-          try {
-            const remoteItems = await getRemotePartyItems(partyId);
-            if (!isMounted) return;
-
-            setParty((currentParty) => {
-              if (!currentParty || currentParty.id !== partyId) return currentParty;
-              return normalizePartyForView({
-                ...currentParty,
-                items: remoteItems,
-              });
-            });
-          } catch {}
-        }
-      )
-      .subscribe();
-
-    return () => {
-      isMounted = false;
-      void supabase.removeChannel(channel);
+    let active = true;
+    const refreshSnapshot = async () => {
+      await loader.load(String(id), getRemotePartyById, getPartyById, (next, error) => {
+        if (!active) return;
+        setParty(current => newerParty(current, next ? normalizePartyForView(next) : null));
+        setLoadError(error);
+        setLoading(false);
+      });
     };
-  }, [id]);
-
-  useEffect(() => {
-    if (!id || !isSupabaseConfigured) return;
-
-    let isMounted = true;
-    const partyId = String(id);
-    const channel = supabase
-      .channel(`party_rsvps:${partyId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "party_rsvps",
-          filter: `party_id=eq.${partyId}`,
-        },
-        async () => {
-          try {
-            const remoteRsvps = await getRemotePartyRsvps(partyId);
-            if (!isMounted) return;
-
-            setParty((currentParty) => {
-              if (!currentParty || currentParty.id !== partyId) return currentParty;
-              return normalizePartyForView({
-                ...currentParty,
-                rsvps: remoteRsvps.length ? remoteRsvps : undefined,
-              });
-            });
-          } catch {}
-        }
-      )
-      .subscribe();
-
-    return () => {
-      isMounted = false;
-      void supabase.removeChannel(channel);
-    };
-  }, [id]);
+    const channel = supabase.channel("party:" + id);
+    for (const table of ["parties", "party_items", "party_rsvps"]) {
+      channel.on("postgres_changes", {
+        event: "*", schema: "public", table,
+        filter: (table === "parties" ? "id" : "party_id") + "=eq." + id,
+      }, () => { void refreshSnapshot(); });
+    }
+    channel.subscribe(status => {
+      if (!active) return;
+      if (status === "SUBSCRIBED") void refreshSnapshot();
+      else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") setLoadError("Live updates disconnected. Retry to refresh this party.");
+    });
+    const poll = setInterval(() => { if (AppState.currentState === "active" && !changeBusy.current) void refreshSnapshot(); }, 20000);
+    const foreground = AppState.addEventListener("change", state => { if (state === "active") void refreshSnapshot(); });
+    return () => { active = false; loader.cancel(); clearInterval(poll); foreground.remove(); void supabase.removeChannel(channel); };
+  }, [id, loader]);
 
   const whenText = useMemo(() => {
     if (!party?.date) return "";
@@ -593,190 +383,69 @@ export default function PartyGuestViewScreen() {
     setAttendeeCountText(String(Math.max(1, getAttendeeCountValue() + delta)));
   }
 
+  async function applyGuestChange(intent?: Parameters<typeof guestOperations.run>[1]) {
+    if (!party || changeBusy.current) return null;
+    const partyId = party.id;
+    changeBusy.current = true;
+    setChangeError(null);
+    setChangeRejected(false);
+    try {
+      const next = await guestOperations.run(partyId, intent);
+      if (!next) return null;
+      // Cache only acknowledged server state. A cache failure does not reverse a commit.
+      await upsertParty({ ...next, cloudStatus: "committed" });
+      await setCurrentPartyId(next.id).catch(() => {
+        if (routeId.current === partyId) setChangeError("Saved online, but this device could not update its selected party. Refresh the invitation to check it.");
+      });
+      const identity = await guestIdentityForView();
+      if (routeId.current !== partyId) return null;
+      setCurrentUserId(identity);
+      setParty(current => newerParty(current, normalizePartyForView(next)));
+      return next;
+    } catch (error) {
+      if (routeId.current === partyId) {
+        const failure = classifyPartyError(error);
+        setChangeError(failure.message);
+        setChangeRejected(failure.serverRejected);
+      }
+      return null;
+    } finally { changeBusy.current = false; }
+  }
+
   async function saveRsvp() {
-    if (!party) return;
-
+    if (!party || savingRsvp) return;
     const name = rsvpName.trim();
-    if (!name) {
-      Alert.alert("Missing name", "Enter your name for the RSVP.");
-      return;
+    if (!name || !rsvpStatus) { Alert.alert("RSVP needed", "Enter your name and choose a response."); return; }
+    const attendeeCount = Number(attendeeCountText);
+    if (!Number.isInteger(attendeeCount) || attendeeCount < 1 || attendeeCount > 100) {
+      Alert.alert("Invalid count", "Choose between 1 and 100 guests."); return;
     }
-    if (!rsvpStatus) {
-      Alert.alert("Pick a response", "Choose Yes, No, or Maybe.");
-      return;
-    }
-
-    const attendeeCount = Number.parseInt(attendeeCountText, 10);
-    if (!Number.isFinite(attendeeCount) || attendeeCount < 1) {
-      Alert.alert("Invalid count", "Attendee count must be 1 or more.");
-      return;
-    }
-
     setSavingRsvp(true);
     try {
-      let saveSucceeded = true;
-      const userId = currentUserId || (await ensureUserId());
-      if (!currentUserId) {
-        setCurrentUserId(userId);
-      }
-
-      const nextRsvp = {
-        id: userId,
-        name,
-        status: rsvpStatus,
-        attendeeCount,
-        updatedAt: new Date().toISOString(),
-      };
-
-      const nextParty = applyRsvpForUser(party, userId, nextRsvp);
-
-      setParty(nextParty);
-      await upsertParty(nextParty);
-
-      if (isSupabaseConfigured) {
-        try {
-          const remoteRsvps = await replaceRemotePartyRsvps(
-            nextParty.id,
-            nextParty.rsvps ?? []
-          );
-          const normalizedRemote = normalizePartyForView({
-            ...nextParty,
-            rsvps: remoteRsvps.length ? remoteRsvps : undefined,
-          });
-          setParty(normalizedRemote);
-          await upsertParty(normalizedRemote);
-        } catch (error) {
-          console.log("[party] saveRsvpRemoteFailed", { id: nextParty.id, error });
-          saveSucceeded = false;
-          Alert.alert(
-            "RSVP not synced",
-            "Your RSVP was saved on this device, but other guests may not see it yet. Check your connection and try saving again."
-          );
-        }
-      }
-
-      if (saveSucceeded) {
-        Keyboard.dismiss();
-        showActionFeedback(
-          rsvpStatus === "yes"
-            ? "✓ You're going"
-            : rsvpStatus === "no"
-              ? "✓ You're not going"
-              : "✓ Maybe noted"
-        );
-        showRsvpConfirmation(rsvpStatus);
-      }
-    } finally {
-      setSavingRsvp(false);
-    }
+      const next = await applyGuestChange({ kind: "rsvp", response: { name, status: rsvpStatus, attendeeCount } });
+      if (next) { Keyboard.dismiss(); showActionFeedback("RSVP saved online"); showRsvpConfirmation(rsvpStatus); }
+    } finally { setSavingRsvp(false); }
   }
 
   async function toggleItemClaim(itemId: string) {
     if (!party || !currentUserRsvp || !canClaimItems) return;
-
     clearClaimPromptTimer();
-    const me = currentUserRsvp.name.trim();
-    const nextParty = toggleItemClaimForUser(party, itemId, currentUserRsvp.id, me);
-    const updatedItem = nextParty.items.find((item) => item.id === itemId);
-
-    setParty(nextParty);
-    await upsertParty(nextParty);
-
-    let claimSaved = true;
-    if (isSupabaseConfigured) {
-      try {
-        const remoteItems = await replaceRemotePartyItems(
-          nextParty.id,
-          nextParty.items ?? []
-        );
-        const normalizedRemote = normalizePartyForView({
-          ...nextParty,
-          items: remoteItems,
-        });
-        setParty(normalizedRemote);
-        await upsertParty(normalizedRemote);
-      } catch (error) {
-        console.log("[party] toggleItemClaimRemoteFailed", { id: nextParty.id, error });
-        claimSaved = false;
-        Alert.alert(
-          "Claim not synced",
-          "This change was saved on this device, but other guests may not see it yet. Check your connection and try again."
-        );
-      }
-    }
-
-    if (claimSaved) {
-      if (updatedItem) {
-        showActionFeedback(
-          updatedItem.claimedBy === me
-            ? `✓ You're bringing ${updatedItem.name}`
-            : `✓ Removed ${updatedItem.name}`
-        );
-      }
-      scheduleClaimCompletionPrompt();
-    }
+    const item = party.items.find(value => value.id === itemId);
+    if (!item) return;
+    const claim = !itemClaimMatchesUser(item, currentUserRsvp.id, currentUserRsvp.name);
+    const next = await applyGuestChange({ kind: "claim", itemId, claim });
+    if (next) { showActionFeedback(claim ? "Item claimed online" : "Claim removed online"); scheduleClaimCompletionPrompt(); }
   }
 
   async function addItemSuggestion() {
     if (!party || addingSuggestion) return;
-
     const name = suggestionText.trim();
-    if (!name) {
-      Alert.alert("Add a suggestion", "Enter something to bring.");
-      return;
-    }
-
+    if (!name) { Alert.alert("Add a suggestion", "Enter something to bring."); return; }
     setAddingSuggestion(true);
     try {
-      const nextParty = normalizePartyForView({
-        ...party,
-        items: [
-          ...(party.items ?? []),
-          {
-            id: createUuid(),
-            name,
-            qty: undefined,
-            claimedBy: undefined,
-            claimedByUserId: undefined,
-            createdBy: currentUserId || undefined,
-          },
-        ],
-      });
-
-      setParty(nextParty);
-      await upsertParty(nextParty);
-
-      let suggestionSaved = true;
-      if (isSupabaseConfigured) {
-        try {
-          const remoteItems = await replaceRemotePartyItems(
-            nextParty.id,
-            nextParty.items ?? []
-          );
-          const normalizedRemote = normalizePartyForView({
-            ...nextParty,
-            items: remoteItems,
-          });
-          setParty(normalizedRemote);
-          await upsertParty(normalizedRemote);
-        } catch (error) {
-          console.log("[party] addItemSuggestionRemoteFailed", { id: nextParty.id, error });
-          suggestionSaved = false;
-          Alert.alert(
-            "Suggestion not synced",
-            "Your suggestion was saved on this device, but other guests may not see it yet. Check your connection and try again."
-          );
-        }
-      }
-
-      if (suggestionSaved) {
-        setSuggestionText("");
-        Keyboard.dismiss();
-        showActionFeedback(`Added ${name}`);
-      }
-    } finally {
-      setAddingSuggestion(false);
-    }
+      const next = await applyGuestChange({ kind: "suggest", name });
+      if (next) { setSuggestionText(""); Keyboard.dismiss(); showActionFeedback("Suggestion saved online"); }
+    } finally { setAddingSuggestion(false); }
   }
 
   if (loading) {
@@ -800,8 +469,9 @@ export default function PartyGuestViewScreen() {
         style={{ flex: 1, backgroundColor: "#08111f" }}
         contentContainerStyle={{ padding: 20, gap: 12, paddingBottom: 80 }}
       >
-        <ThemedText type="title" style={styles.heroTitle}>Party not found</ThemedText>
-        <ThemedText style={styles.sectionBody}>This party could not be loaded.</ThemedText>
+        <ThemedText type="title" style={styles.heroTitle}>Invitation unavailable</ThemedText>
+        <ThemedText style={styles.sectionBody}>{loadError ?? "This party could not be loaded."}</ThemedText>
+        <Pressable onPress={() => setRefresh(value => value + 1)} accessibilityRole="button" style={styles.secondaryButton}><ThemedText style={styles.secondaryButtonText}>Retry</ThemedText></Pressable>
 
         <Pressable
           onPress={() => router.replace("/")}
@@ -863,6 +533,14 @@ export default function PartyGuestViewScreen() {
         contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: footerHeight + footerInset + 32 }}
         keyboardShouldPersistTaps="handled"
       >
+      {loadError ? <View style={styles.sectionCard}>
+        <ThemedText accessibilityRole="alert" style={styles.sectionBody}>{loadError}</ThemedText>
+        <Pressable onPress={() => setRefresh(value => value + 1)} accessibilityRole="button"><ThemedText style={styles.secondaryButtonText}>Refresh invitation</ThemedText></Pressable>
+      </View> : null}
+      {changeError ? <View style={styles.sectionCard}>
+        <ThemedText accessibilityRole="alert" style={styles.sectionBody}>{changeError}</ThemedText>
+        <Pressable onPress={() => { if (changeRejected) setRefresh(value => value + 1); else void applyGuestChange(); }} accessibilityRole="button"><ThemedText style={styles.secondaryButtonText}>{changeRejected ? "Refresh invitation" : "Retry pending change"}</ThemedText></Pressable>
+      </View> : null}
       <View style={styles.heroCard}>
         <ThemedText style={styles.eyebrow}>
           PARTY
