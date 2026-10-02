@@ -1,0 +1,52 @@
+React Compiler enabled
+Starting Metro Bundler
+| (node:61868) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:68624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+| (node:80080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+| (Use `node --trace-warnings ...` to show where the warning was created)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.2% (1138/1233)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 90.3% (1239/1304)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1468/1468)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1470/1470)
+Android Bundled 7015ms node_modules\expo-router\entry.js (1470 modules)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1468/1468)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1470/1470)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1468/1468)
+iOS Bundled 11111ms node_modules\expo-router\entry.js (1468 modules)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1468/1468)
+Static rendering is enabled. Learn more: https://docs.expo.dev/router/reference/static-rendering/
+λ Bundled 1797ms node_modules\expo-router\node\render.js (1200 modules)
+Web Bundled 2277ms node_modules\expo-router\entry.js (1210 modules)
+
+› android bundles (1):
+_expo/static/js/android/entry-fe6fa096f4e741ee36e14fb979be64b7.hbc (4.61 MB)
+
+› ios bundles (1):
+_expo/static/js/ios/entry-fdba377d791da47a4859c06e07893694.hbc (4.61 MB)
+
+› web bundles (1):
+_expo/static/js/web/entry-933fba9b7be83af7bb6eafc01909eb50.js (2.65 MB)
+
+› Static routes (18):
+/modal (20.3 kB)
+/share (20.3 kB)
+/ (index) (20.3 kB)
+/i/[id] (20.3 kB)
+/__share (20.3 kB)
+/account (20.3 kB)
+/explore (20.3 kB)
+/_sitemap (19.5 kB)
+/app (20.3 kB)
+/+not-found (20.3 kB)
+/party/[id] (20.3 kB)
+/pick-action (20.3 kB)
+/load-parties (20.3 kB)
+/create-party (20.3 kB)
+/(tabs) (20.3 kB)
+/(tabs)/share (20.3 kB)
+/(tabs)/explore (20.3 kB)
+/(tabs)/create-party (20.3 kB)
+
+Exported: .test-cache/export-final

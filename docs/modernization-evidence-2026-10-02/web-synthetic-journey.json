@@ -1,0 +1,351 @@
+{
+  "requests": [
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "guest-session"
+    },
+    {
+      "kind": "mutation",
+      "fn": "partyplus_v2_rsvp",
+      "operationId": "44dd7743-0c78-426c-a8fc-3b0a2e27ee1b"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "mutation",
+      "fn": "partyplus_v2_rsvp",
+      "operationId": "44dd7743-0c78-426c-a8fc-3b0a2e27ee1b"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "mutation",
+      "fn": "partyplus_v2_claim_item",
+      "operationId": "518eb7f4-71ed-450e-aacd-5e3781559f1e"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "mutation",
+      "fn": "partyplus_v2_suggest_item",
+      "operationId": "9a938b32-db86-41c4-94dc-bc94598fff0f"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    },
+    {
+      "kind": "read",
+      "fn": "partyplus_v2_read_party"
+    }
+  ],
+  "party": {
+    "id": "legacy-demo-party",
+    "date": null,
+    "items": [
+      {
+        "id": "legacy-ice",
+        "qty": null,
+        "name": "Ice",
+        "claimedBy": "Synthetic Guest",
+        "createdBy": "10000000-0000-4000-8000-000000000001",
+        "claimedByUserId": "bf747338-97d2-4e98-915e-b2975fd183b0"
+      },
+      {
+        "id": "legacy-cups",
+        "qty": null,
+        "name": "Cups",
+        "claimedBy": null,
+        "createdBy": "10000000-0000-4000-8000-000000000001",
+        "claimedByUserId": null
+      },
+      {
+        "id": "632b3439-9ea9-450e-84de-a906ebab87f6",
+        "qty": null,
+        "name": "Synthetic Pizza",
+        "claimedBy": null,
+        "createdBy": "bf747338-97d2-4e98-915e-b2975fd183b0",
+        "claimedByUserId": null
+      }
+    ],
+    "notes": "Synthetic data only. No installation needed.",
+    "rsvps": [
+      {
+        "id": "bf747338-97d2-4e98-915e-b2975fd183b0",
+        "name": "Synthetic Guest",
+        "status": "yes",
+        "updatedAt": "2026-10-02T18:12:10.126-05:00",
+        "attendeeCount": 2
+      }
+    ],
+    "theme": null,
+    "title": "Synthetic Birthday <script>never executes</script>",
+    "hostId": "10000000-0000-4000-8000-000000000001",
+    "canEdit": false,
+    "location": "123 Test Street",
+    "revision": 4,
+    "createdAt": "2026-10-02T18:10:15.259-05:00",
+    "updatedAt": "2026-10-02T18:26:33.781-05:00"
+  }
+}

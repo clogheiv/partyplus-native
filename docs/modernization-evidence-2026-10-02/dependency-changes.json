@@ -1,0 +1,55 @@
+{
+  "changedExistingPackages": [
+    {
+      "path": "node_modules/@react-native/dev-middleware/node_modules/ws",
+      "before": "6.2.3",
+      "after": "6.2.6"
+    },
+    {
+      "path": "node_modules/@supabase/realtime-js/node_modules/ws",
+      "before": "8.20.0",
+      "after": "8.22.0"
+    },
+    {
+      "path": "node_modules/@xmldom/xmldom",
+      "before": "0.8.11",
+      "after": "0.8.15"
+    },
+    {
+      "path": "node_modules/expo/node_modules/ws",
+      "before": "8.19.0",
+      "after": "8.22.0"
+    },
+    {
+      "path": "node_modules/react-native/node_modules/ws",
+      "before": "6.2.3",
+      "after": "6.2.6"
+    },
+    {
+      "path": "node_modules/shell-quote",
+      "before": "1.8.3",
+      "after": "1.12.0"
+    },
+    {
+      "path": "node_modules/tar",
+      "before": "7.5.7",
+      "after": "7.5.22"
+    },
+    {
+      "path": "node_modules/undici",
+      "before": "6.23.0",
+      "after": "6.29.0"
+    },
+    {
+      "path": "node_modules/ws",
+      "before": "7.5.10",
+      "after": "7.5.13"
+    }
+  ],
+  "changedDirectRuntimeSpecifications": [],
+  "addedDevDependencies": [
+    "@electric-sql/pglite",
+    "pg",
+    "esbuild"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "sourceCommit": "2acfc8bdc82e6f9b548f2474c565fe04a17017b4",
+  "branch": "codex/modernization-phase-1",
+  "recordedAt": "2026-10-02T18:37:28.2629834-05:00",
+  "lint": "passed",
+  "typecheck": "passed",
+  "regression": {
+    "parallelSessionsProven": false,
+    "backend": "PGlite",
+    "failed": 0,
+    "passed": 65,
+    "skipped": 0
+  },
+  "exports": [
+    "ios",
+    "android",
+    "web"
+  ],
+  "invitationBuild": "passed-loopback",
+  "browser": {
+    "claimCount": 1,
+    "realSupabaseAuthProven": false,
+    "rsvpCount": 1,
+    "suggestionCount": 1,
+    "sameOperationRsvpReplay": true,
+    "syntheticOnly": true
+  },
+  "audit": {
+    "low": 1,
+    "high": 12,
+    "critical": 0,
+    "moderate": 23
+  },
+  "productionDeployed": false,
+  "productionSchemaVerified": false,
+  "hostedCiRun": false,
+  "temporaryServerStopped": true
+}
