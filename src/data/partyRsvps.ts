@@ -1,5 +1,6 @@
 import type { PartyRsvp } from "../lib/partyTypes";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import { logSupabaseError } from "../lib/supabaseErrorLogging";
 
 const PARTY_RSVPS_TABLE = "party_rsvps";
 const PARTY_RSVP_COLUMNS = "*";
@@ -72,7 +73,10 @@ export async function getRemotePartyRsvps(partyId: string): Promise<PartyRsvp[]>
     .eq("party_id", partyId)
     .order("updated_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    logSupabaseError("party_rsvps.select", error, { partyId });
+    throw error;
+  }
 
   return (data ?? []).map((row) => toRemotePartyRsvp(row as PartyRsvpRow));
 }
@@ -87,7 +91,14 @@ export async function replaceRemotePartyRsvps(
     .from(PARTY_RSVPS_TABLE)
     .delete()
     .eq("party_id", partyId);
-  if (deleteError) throw deleteError;
+  if (deleteError) {
+    logSupabaseError("party_rsvps.delete", deleteError, {
+      partyId,
+      rsvpCount: rsvps.length,
+      redactValues: rsvps.map((rsvp) => rsvp.name),
+    });
+    throw deleteError;
+  }
 
   const nextRsvps = toPartyRsvpInsertRows(partyId, rsvps ?? []);
   if (!nextRsvps.length) return [];
@@ -95,7 +106,14 @@ export async function replaceRemotePartyRsvps(
   const { error: insertError } = await supabase
     .from(PARTY_RSVPS_TABLE)
     .insert(nextRsvps);
-  if (insertError) throw insertError;
+  if (insertError) {
+    logSupabaseError("party_rsvps.insert", insertError, {
+      partyId,
+      rsvpCount: nextRsvps.length,
+      redactValues: rsvps.map((rsvp) => rsvp.name),
+    });
+    throw insertError;
+  }
 
   return getRemotePartyRsvps(partyId);
 }

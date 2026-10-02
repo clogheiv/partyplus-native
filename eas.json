@@ -8,6 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
+        "PARTYPLUS_APP_VARIANT": "development",
         "EXPO_PUBLIC_SUPABASE_URL": "https://typbofemqhjoiwbkdvuc.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_fcp3dr_YVw6NnXZvXO7Anw_80MAdpSe"
       }
