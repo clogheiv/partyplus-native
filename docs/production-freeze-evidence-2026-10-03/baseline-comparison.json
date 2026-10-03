@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-10-03T01:54:46.529967+00:00",
+  "projectRef": "typbofemqhjoiwbkdvuc",
+  "operator": "postgres",
+  "readOnly": "on",
+  "freezePreflightPassed": true,
+  "freezeSha256": "b87fef62a48798d71d633a7e0d4074e29abeb884507d51ba9511d22d1796959b",
+  "comparisons": {
+    "grants": true,
+    "tables": true,
+    "columns": true,
+    "indexes": true,
+    "schemas": true,
+    "version": true,
+    "database": true,
+    "policies": true,
+    "triggers": true,
+    "functions": true,
+    "read_only": true,
+    "constraints": true,
+    "publications": true,
+    "default_grants": true,
+    "migration_ledger": true,
+    "publication_tables": true
+  },
+  "differences": [],
+  "publicationChanges": null,
+  "productionFreezeExecuted": false,
+  "exportMethod": "Dashboard Copy as JSON, preserving exact whitespace"
+}
