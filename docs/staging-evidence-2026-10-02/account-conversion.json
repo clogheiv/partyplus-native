@@ -1,0 +1,13 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "scope": "Real Auth administrative synthetic conversion and generated OTP recovery; no delivered email; not updateUser/email_change end-to-end proof",
+  "checks": [
+    "Anonymous principal UUID preserved after synthetic admin email confirmation",
+    "Original guest RSVP and claim ownership survive refreshed session and generated OTP on new client",
+    "Becoming verified does not grant host ownership of the attended party",
+    "Returning principal can release its own claim and create/recover its own host party"
+  ],
+  "startedAt": "2026-10-03T01:06:51.827Z",
+  "status": "passed",
+  "finishedAt": "2026-10-03T01:06:54.076Z"
+}

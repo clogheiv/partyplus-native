@@ -1,8 +1,8 @@
 {
   "projectRef": "qmbwrbxbbshbavfhkujx",
-  "run": "d7c3ee27-3a00-4ea5-8f32-bd340d04e3aa",
-  "partyId": "synthetic-d7c3ee27-3a00-4ea5-8f32-bd340d04e3aa",
-  "startedAt": "2026-10-03T00:34:35.925Z",
+  "run": "58113889-faef-46b8-bd8f-1bf2c0766ce8",
+  "partyId": "synthetic-58113889-faef-46b8-bd8f-1bf2c0766ce8",
+  "startedAt": "2026-10-03T01:28:03.540Z",
   "checks": [
     "Real verified host and distinct anonymous guest JWT sessions",
     "Stable create receipt, uncertain-outcome replay and changed-payload rejection",
@@ -14,5 +14,5 @@
     "Global sign-out revokes independent client refresh; short-lived existing JWT validity is not claimed revoked"
   ],
   "status": "passed",
-  "finishedAt": "2026-10-03T00:34:39.793Z"
+  "finishedAt": "2026-10-03T01:28:08.172Z"
 }

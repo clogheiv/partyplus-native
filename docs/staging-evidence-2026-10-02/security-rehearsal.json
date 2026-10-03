@@ -1,0 +1,41 @@
+{
+  "scope": "Exact proposal statements on transient metadata-matched public clone; entire transaction rolled back",
+  "checks": [
+    "Legacy reads retained; unsigned and signed raw insert/update/delete/truncate denied",
+    "No partial child deletion",
+    "Verified contract initially paused and raw reads denied",
+    "Independent-evidence host bridge; guest host-delete denied; legacy claim preserved",
+    "Same-name real Auth principals retain distinct RSVPs; host edit preserves guests",
+    "Null revision rejected",
+    "Safe rollback pauses new writes; exact old receipts replay; host listing works"
+  ],
+  "status": "passed",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "capturedAt": "2026-10-03T01:01:45.938Z",
+  "finalManifest": {
+    "status": "review-only-not-production-authorized",
+    "hashEncoding": "UTF-8 with CRLF normalized to LF",
+    "baselineMetadataSha256": "9830e20e7708dcf596d6c4a2f435ae31da2ae42c64f1fe7fa5854d5fc2639d88",
+    "files": {
+      "01-freeze-legacy-writes.sql": "b87fef62a48798d71d633a7e0d4074e29abeb884507d51ba9511d22d1796959b",
+      "02-install-verified-contract.sql": "43d36d9a8c4524c15c7258836eeb62777fc2f420e97455e71e1d78d1d46476bb",
+      "03-enable-verified-writes.sql": "2dcba559932970b7fb6184165267d41864fdce1a07ad06ea0dba342b60dd4049",
+      "04-safe-rollback-pause.sql": "37710454fe6132587c1a8a4244a7a3e04a52417e57f5381285f596e2bbec66ad"
+    }
+  },
+  "finalRerunCapturedAt": "2026-10-03T01:25:14.462Z",
+  "finalGateVerification": {
+    "gateRls": true,
+    "projectRef": "qmbwrbxbbshbavfhkujx",
+    "writesEnabled": true,
+    "anonGateSelect": false,
+    "drainsInFlight": true,
+    "gatedMutations": 5,
+    "legacyPolicies": 0,
+    "rehearsalSchemasAbsent": true,
+    "authenticatedGateUpdate": false,
+    "retainedSyntheticParties": 8,
+    "retainedSyntheticReceipts": 50,
+    "capturedAt": "2026-10-03T01:25:14.462Z"
+  }
+}

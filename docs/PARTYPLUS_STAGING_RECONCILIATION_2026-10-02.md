@@ -2,6 +2,8 @@
 
 Engineering date: October 2, 2026, America/Chicago. Some evidence timestamps are October 3 UTC.
 
+Follow-on batch: the [exact production security proposal](PARTYPLUS_PRODUCTION_SECURITY_ROLLOUT_2026-10-02.md) and [device/email/recovery qualification plan](PARTYPLUS_DEVICE_EMAIL_RECOVERY_QUALIFICATION.md) now supersede the transition outline below. Final release-gate staging checks and exact rollback rehearsal passed; a local Android staging APK is built. Physical device, delivered OTP linking and cross-project hosted restore remain open. Production is unchanged.
+
 ## Result and boundaries
 
 The final candidate contract runs against the observed production table shapes in a completely separate **Free** Supabase project. Real Supabase Auth/JWT, multiple HTTP clients, independent PostgreSQL sessions and a real `pg_dump`/`pg_restore` passed, including the final null-revision correction. Production was inspected only through a metadata query inside `BEGIN TRANSACTION READ ONLY`; no customer rows were selected, exported, copied or changed.

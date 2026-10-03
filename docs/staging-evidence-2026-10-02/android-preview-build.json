@@ -1,0 +1,22 @@
+{
+  "status": "built-not-device-qualified",
+  "package": "com.partyplus.app.preview",
+  "scheme": "partyplusnative-preview",
+  "backendRef": "qmbwrbxbbshbavfhkujx",
+  "sourceCommit": "981506b6dee2a7f43c17ec2fd4902feb27e196b9",
+  "sourceMayIncludeUncommittedBatch": true,
+  "apkSha256": "032538db4185cf5874fe85f132bbda42b86b53a3bdba1086450163258c7e5d9d",
+  "apkPath": "C:\\Users\\clogh\\partyplus-native\\.worktrees\\modernization-phase-1\\.test-cache\\android-preview\\partyplus-staging.apk",
+  "signing": "Local generated debug signing, internal staging only; unsuitable for production/store upgrade",
+  "physicalDeviceTested": false,
+  "capturedAt": "2026-10-03T01:19:38.363Z",
+  "bundleChecks": {
+    "secretPrefixMarkerIsBoundaryValidationCode": true,
+    "actualStagingSecretAbsent": true,
+    "stagingRefPresent": true,
+    "stagingPublishablePresent": true
+  },
+  "clientSourceFilesSha256": "c3dbc1773e0e09be0413bbdfcbb24b609bb53658c9953ad9241efff4070583da",
+  "sourceFileManifest": "android-preview-source-files.json",
+  "sourceProvenanceNote": "Source HEAD predates this uncommitted batch. Exact current client file-byte hashes recorded after build; these client sources were not edited while compilation ran. Signing is staging debug only."
+}
