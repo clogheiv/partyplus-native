@@ -1,5 +1,5 @@
 {
-  "status": "smtp-and-code-templates-persisted-delivery-pending",
+  "status": "native-email-request-accepted-human-code-verification-pending",
   "userAuthorized": "Existing Clogher Labs Resend Free account for PartyPlus staging; one human step at a time",
   "account": "clogherlabs",
   "observedPlan": "Transactional Free",
@@ -46,5 +46,8 @@
   "manualLinkingApproval": "Michael approved staging account linking at action time; only qmbwrbxbbshbavfhkujx",
   "manualLinkingPersistedAfterReload": true,
   "emailConfirmationEnabled": true,
-  "manualLinkingEnabledAt": "2026-10-03T05:33:39.0493186Z"
+  "manualLinkingEnabledAt": "2026-10-03T05:33:39.0493186Z",
+  "nativeSendAccepted": true,
+  "nativeSendEvidence": "Redacted staging preview screen says Check your email for the verification code; code field present; no input values captured",
+  "nextHumanAction": "Enter newest delivered code privately on phone and tap Verify code"
 }

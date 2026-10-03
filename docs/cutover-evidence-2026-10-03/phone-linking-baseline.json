@@ -1,0 +1,18 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "partyId": "synthetic-android-8e0acf50-d0b5-4ad2-9c10-5d14a5b577ad",
+  "mode": "baseline",
+  "guestPrincipal": "2e01b534-e9cc-465e-907e-1181da761e59",
+  "guestResponse": {
+    "id": "2e01b534-e9cc-465e-907e-1181da761e59",
+    "name": "Android Guest",
+    "status": "yes",
+    "updatedAt": "2026-10-03 04:17:36.473375+00",
+    "attendeeCount": 2
+  },
+  "claimItemId": "91bf18e0-c2bb-4b58-ab24-25952161c71e",
+  "claimPrincipal": "2e01b534-e9cc-465e-907e-1181da761e59",
+  "observedAt": "2026-10-03T05:41:56.808Z",
+  "scope": "Independent known-ID read of synthetic phone guest state; no email/code captured",
+  "status": "passed"
+}
