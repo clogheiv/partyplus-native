@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "scope": "Real staging browser guest, independent verified host SDK session",
+  "checks": [
+    "Host sees exactly one browser RSVP, guest claim and suggestion",
+    "Host title edit preserves exact guest state",
+    "Guest browser reload retains its own response and claim"
+  ],
+  "party": {
+    "id": "synthetic-browser-b6bd9f9b-2d54-44fa-b4f3-0766ca0526d7",
+    "date": "2027-01-01T18:00:00+00:00",
+    "items": [
+      {
+        "id": "a7f3950b-77ca-47a5-aa81-6be30239677b",
+        "qty": null,
+        "name": "Ice",
+        "claimedBy": "Synthetic Browser Guest",
+        "createdBy": "29c318fc-dd91-4190-8e5d-bb5dc3dee1fa",
+        "claimedByUserId": "cab9a066-b7d4-4027-8cb5-d3fa5da5214b"
+      },
+      {
+        "id": "6c70e409-b435-42b3-a0d7-96d4af5f9a67",
+        "qty": null,
+        "name": "Synthetic Browser Cups",
+        "claimedBy": null,
+        "createdBy": "cab9a066-b7d4-4027-8cb5-d3fa5da5214b",
+        "claimedByUserId": null
+      }
+    ],
+    "notes": null,
+    "rsvps": [
+      {
+        "id": "cab9a066-b7d4-4027-8cb5-d3fa5da5214b",
+        "name": "Synthetic Browser Guest",
+        "status": "yes",
+        "updatedAt": "2026-10-03 00:21:37.211492+00",
+        "attendeeCount": 2
+      }
+    ],
+    "theme": null,
+    "title": "PartyPlus Staging Browser Test — Host Reviewed",
+    "hostId": "29c318fc-dd91-4190-8e5d-bb5dc3dee1fa",
+    "canEdit": true,
+    "location": "Synthetic Hall",
+    "revision": 5,
+    "createdAt": "2026-10-03T00:20:05.591165+00:00",
+    "updatedAt": "2026-10-03T00:23:45.261373+00:00"
+  },
+  "capturedAt": "2026-10-03T00:21:11.374Z"
+}

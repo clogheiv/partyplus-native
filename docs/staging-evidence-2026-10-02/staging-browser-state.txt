@@ -1,0 +1,37 @@
+- main:
+  - heading "PartyPlus Invite" [level=1]
+  - paragraph: PartyPlus Staging Browser Test — Host Reviewed
+  - paragraph: "When: 2027-01-01T18:00:00+00:00"
+  - paragraph: "Where: Synthetic Hall"
+  - region "Respond to the invitation":
+    - status: Live party information. You can RSVP here without installing the app.
+    - button "Refresh invitation" [active]
+    - text: Your name
+    - textbox "Your name": Synthetic Browser Guest
+    - text: Guests
+    - spinbutton "Guests": "2"
+    - text: Your response
+    - combobox "Your response":
+      - option "Yes" [selected]
+      - option "Maybe"
+      - option "No"
+    - button "Save RSVP"
+    - status
+    - heading "What to bring" [level=2]
+    - paragraph: RSVP Yes before claiming an item.
+    - list:
+      - text: Ice — Synthetic Browser Guest
+      - button "Unclaim"
+      - text: Synthetic Browser Cups
+      - button "Claim"
+    - text: Suggest an item
+    - textbox "Suggest an item"
+    - button "Suggest item"
+    - heading "Responses" [level=2]
+    - paragraph: "Synthetic Browser Guest: yes (2)"
+  - generic: synthetic-browser-b6bd9f9b-2d54-44fa-b4f3-0766ca0526d7
+  - link "Open in PartyPlus":
+    - /url: partyplusnative-dev://party/synthetic-browser-b6bd9f9b-2d54-44fa-b4f3-0766ca0526d7
+  - link "Get the app":
+    - /url: /
+  - paragraph: The app is optional. Keep this invitation link to return later.

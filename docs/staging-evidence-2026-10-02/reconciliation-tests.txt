@@ -1,0 +1,87 @@
+
+> partyplusnative@1.0.3 test
+> node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.test.mjs
+
+▶ isolated PostgreSQL contract
+  ✔ signed guests and unconfirmed accounts cannot create hosts; anonymous roles cannot mutate (27.0772ms)
+  ✔ create/retry returns one explicit commit receipt with stable legacy IDs (22.0508ms)
+  ✔ RLS, direct grants and private helpers deny legacy destructive writes and enumeration (31.1385ms)
+  ✔ two independent guests retain their RSVPs and suggestions (20.5799ms)
+  ✔ host title edit cannot replace guest RSVP snapshots or new suggestions (6.6123ms)
+  ✔ competing clients leave exactly one claim winner (11.9204ms)
+  ✔ a stale host edit conflicts and never overwrites a guest claim (8.3054ms)
+  ✔ a null expected revision cannot bypass conflict protection or create a receipt (12.7051ms)
+  ✔ claim retry cannot toggle ownership, and another guest cannot unclaim it (17.7065ms)
+  ✔ transaction failure rolls back metadata, revision, items and operation receipt (9.1412ms)
+  ✔ knowing party ID or legacy host UUID never grants host access; explicit bridge fixture does (8.1089ms)
+  ✔ only an authorized verified host can tombstone; retry is idempotent and data remains recoverable (12.9823ms)
+  ✔ host recovery lists only verified account grants and excludes tombstones (9.0481ms)
+  ✔ synthetic backup restores schema, grants, legacy IDs, bridge and operation receipts (286.7676ms)
+✔ isolated PostgreSQL contract (2426.8869ms)
+ℹ PGlite serializes connections; competing operations exercised, parallel-session proof deferred to CI/PostgreSQL
+✔ places each new manual item first without reversing prior items (1.3166ms)
+✔ keeps an existing duplicate item claim behind a new manual item (0.4364ms)
+✔ keeps a claim with its item after an earlier item is removed (0.1834ms)
+✔ keeps existing item identity when a new item is inserted first (0.1604ms)
+✔ matches duplicate names to distinct existing items in order (0.2274ms)
+✔ treats a renamed item as new instead of transferring a claim (0.1596ms)
+✔ leaves a consistent margin inside the safe scroll viewport (0.9993ms)
+✔ does not scroll past the beginning of the safe viewport (0.1925ms)
+✔ does not send another focus command to an already-focused input (0.1989ms)
+✔ restores focus when the input is not focused (0.2052ms)
+✔ read-only invitation adapter refuses mutation verbs and unconfigured or production targets (1.6751ms)
+✔ client boundary rejects service-role and URL-embedded credentials (1.0048ms)
+✔ preserves legacy invite ID: https://partyplus-invite.netlify.app/i/old-id (1.0851ms)
+✔ preserves legacy invite ID: partyplusnative://party/old-id (0.2669ms)
+✔ preserves legacy invite ID: partyplusnative:///i/old-id (0.1321ms)
+✔ preserves legacy invite ID: partyplusnative://share?id=old-id (0.1093ms)
+✔ preserves legacy invite ID: partyplusnative://__share?id=old-id (0.1072ms)
+✔ preserves legacy invite ID: partyplusnative://_share?id=old-id (0.1068ms)
+✔ preserves legacy invite ID: intent://party/old-id#Intent;scheme=partyplusnative;end (0.1416ms)
+✔ preserves legacy invite ID: exp://192.168.1.2:8081/--/party/old-id (0.1077ms)
+✔ preserves legacy invite ID: partyplusnative-dev://party/old-id (0.1043ms)
+✔ preserves legacy invite ID: partyplusnative-preview://i/old-id (0.1455ms)
+✔ retains legacy payload aliases without granting ownership (0.1569ms)
+✔ decodes IDs once and rejects malformed or unrelated deep links (0.1971ms)
+▶ metadata-matched legacy schema transitions without rewriting identities or losing fields
+  ✔ observed permissive anonymous policies reproduce unauthorized editing on synthetic rows only (15.2409ms)
+  ✔ retirement denies direct writes, removes permissive policies and preserves legacy read payloads (15.8413ms)
+  ✔ UUID storage accepts individual operations; matching names do not merge guests (46.1796ms)
+  ✔ assisted host bridge preserves UUID items, responses and old reader date/location aliases (36.3855ms)
+✔ metadata-matched legacy schema transitions without rewriting identities or losing fields (2028.8197ms)
+ℹ PGlite: observed UUID schema exercised; independent-session proof requires PostgreSQL
+✔ simultaneous first-use identity calls allocate once, preserving legacy identity exactly (2.3281ms)
+✔ identity persistence failure permits retry rather than returning a nondurable identity (0.7338ms)
+✔ parallel cache and draft mutations preserve every unrelated record (3.7781ms)
+✔ corrupt cache is backed up byte-for-byte and never overwritten: {broken (35.9867ms)
+✔ corrupt cache is backed up byte-for-byte and never overwritten: {"wrong":"shape"} (0.3839ms)
+✔ corrupt cache is backed up byte-for-byte and never overwritten: [{"id":"legacy","title":"Party","items":[null]}] (0.4128ms)
+✔ corrupt drafts survive attempted autosave (0.3637ms)
+✔ discarding a pending draft archives its operation atomically and preserves it when storage fails (1.0569ms)
+✔ uncertain commit survives restart and replays identical party, item IDs, operation and receipt (1.795ms)
+✔ draft is durable before send, and a storage failure prevents the request (0.558ms)
+✔ incomplete acknowledgement cannot report committed: null (0.3564ms)
+✔ incomplete acknowledgement cannot report committed: {"committed":true,"operationId":"wrong","party":{"id":"legacy-party-7","title":"Synthetic party","items":[],"createdAt":"2020-01-01","updatedAt":"2020-01-01"}} (0.2229ms)
+✔ incomplete acknowledgement cannot report committed: {"committed":true,"operationId":"op","party":{"id":"legacy-party-7","title":"Synthetic party","items":[],"createdAt":"2020-01-01","updatedAt":"2020-01-01"}} (0.2702ms)
+✔ edits made after an uncertain save preserve both the old operation and newer draft (0.8353ms)
+✔ local failure after server acknowledgement retains durable operation for replay (0.9008ms)
+✔ guest outbox replays explicit claim direction and stable suggestion ID after restart (2.7615ms)
+✔ outbox rejects a different action or different signed account while an outcome is uncertain (0.9396ms)
+✔ late response from old route cannot replace current route or publish after cancellation (1.1729ms)
+✔ offline copy is labeled and missing authoritative party never revives a deleted cache (0.8354ms)
+✔ read normalization preserves claims when RSVP snapshot is absent or partial (0.3953ms)
+✔ sharing requires authoritative party identity, committed status and positive revision (0.2597ms)
+✔ nonproduction clients refuse production project regardless of environment label (0.3534ms)
+✔ guest intent is durable even when session creation fails before the first send (1.1278ms)
+✔ an old receipt or unverified payload cannot downgrade a newer cache snapshot (0.3904ms)
+✔ a definite backend rejection is archived and cannot block unrelated future guest actions (0.9616ms)
+✔ guest acknowledgement requires matching operation, party and a valid authoritative snapshot (9.7736ms)
+✔ a later authorization denial cannot discard an earlier uncertain suggestion (0.9938ms)
+ℹ tests 71
+ℹ suites 0
+ℹ pass 71
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2647.4836

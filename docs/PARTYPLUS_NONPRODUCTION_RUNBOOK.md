@@ -71,6 +71,8 @@ Output is `.test-cache/invite-site`, ignored by Git. The invitation builder reje
 
 ## Isolated Supabase staging gate
 
+The authorized staging project is now `qmbwrbxbbshbavfhkujx` in the **Free** PartyPlus Staging organization. Production is `typbofemqhjoiwbkdvuc`. See [the current reconciliation review](PARTYPLUS_STAGING_RECONCILIATION_2026-10-02.md) for authoritative metadata, completed tests and superseding transition/rollback limits.
+
 Obtain a separate, explicitly nonproduction project. First capture actual schema/Auth metadata and reconcile the candidate SQL. **Never apply `00-synthetic-baseline.sql` to Supabase**; it creates a stub Auth schema and refuses an existing one. The candidate contract is a one-time test installation, not an idempotent migration ledger or rollback script.
 
 Set client configuration using ignored environment files or the build environment:
@@ -107,3 +109,34 @@ Preserve existing party/item/RSVP IDs, host labels, invite aliases and valid nat
 An assisted bridge must validate evidence independently and record an auditable evidence reference before granting a verified principal access. The synthetic grant fixture demonstrates the storage/authorization mechanics only. Guest session recovery, ownership transfer, retention and account deletion need reviewed rules; do not reassign legacy claims from a label or device UUID.
 
 Before production approval, document backup/restore and a versioned read/write transition. Rolling clients back to old anonymous destructive writes is not a safe rollback. Candidate tombstones retain records; production purge and receipt-retention policies have not been authorized. The branch can be reviewed locally with `git diff 58ae63b..HEAD` once its implementation commits are made.
+
+## Reproducing the reconciled staging batch
+
+`node scripts/prepare-staging-contract.mjs` reads the recorded production **metadata only** and generates `observed-legacy-schema.sql` plus `.test-cache/staging-install.sql`. The combined script requires blank application tables and installs the clone, additive reconciliation and v2 contract in one transaction. The deployed staging project is already installed: **do not rerun the one-time installation there**. Never run `00-synthetic-auth.sql` or `00-synthetic-baseline.sql` against Supabase; those files are only for blank local test databases.
+
+The final null-revision fix is not yet deployed to staging because Edge extension control became unavailable. The generator also emits `.test-cache/staging-revision-patch.sql`, replacing only the commit function. Verify project reference `qmbwrbxbbshbavfhkujx` before applying that patch, recapture deployed metadata, then run the updated real integration script. Earlier eight-group staging evidence predates this fix.
+
+For Windows local PostgreSQL, extract the official PostgreSQL 17.11 vendor binary runtime under `.test-cache/postgresql-17.11-runtime/pgsql`. Then run:
+
+```powershell
+powershell -NoProfile -File scripts/run-postgresql-tests.ps1
+```
+
+The runner creates separate SCRAM-authenticated loopback clusters, runs both contract schemas, restores a custom-format archive into a separate blank database, verifies data/effective ACLs/RLS/receipts/host recovery, stops the servers and removes their password file. Ports 55432 and 55433 must be free. It leaves ignored synthetic archives/data for inspection. Cluster-global roles already exist in the restore cluster; this is not a hosted Auth/account restore.
+
+For real staging tests, acquire **only the staging project's existing** publishable and secret keys from its authenticated API Keys dashboard into ignored `.test-cache/staging-credentials.json`. Required JSON fields are `url`, `publishableKey` and `secretKey`; `url` must equal `https://qmbwrbxbbshbavfhkujx.supabase.co`. Keep the file private and never paste values into chat, source or command arguments. Scripts reject every other target. Anonymous sign-ins are enabled in staging, email confirmation stays enabled, and direct table access stays denied. This intentionally small synthetic workflow does not establish production abuse controls or mail deliverability.
+
+```powershell
+node scripts/test-staging.mjs
+node scripts/staging-invite-preview.mjs
+```
+
+The first command uses real Auth/JWT, confirmed fake hosts and anonymous guests; it records sanitized checks and retains synthetic data. Generated email OTP validation never delivers an email. The second creates a fresh browser fixture, builds the invitation with only the publishable key, starts loopback port 8090, and prints its URL. Enter `Synthetic Browser Guest`, two guests, Yes; save, claim Ice, suggest `Synthetic Browser Cups`, reload. In a second terminal run:
+
+```powershell
+node scripts/verify-staging-preview.mjs
+```
+
+That command signs in an independent verified host, verifies the browser RSVP/claim/suggestion, and edits the title without changing guest state. Refresh the browser and verify the host edit. Stop the preview with Ctrl+C. Remove local credential files after testing; subsequent runs can securely retrieve existing staging keys again. Do not publish the preview to the production invite hostname.
+
+Read compatibility is precise: v2 preserves known-ID invitations and legacy fields, but the candidate's revoked direct SELECT grants mean unchanged old native binaries require an upgrade. Any temporary unrestricted legacy read compatibility would re-enable enumeration and needs separate review.

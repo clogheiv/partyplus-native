@@ -1,0 +1,1118 @@
+{
+  "grants": [
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "parties",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "parties",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_items",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_items",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "party_rsvps",
+      "is_grantable": "YES",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "party_rsvps",
+      "is_grantable": "NO",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    }
+  ],
+  "tables": [
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "relkind": "r",
+      "relname": "parties",
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "relkind": "r",
+      "relname": "party_items",
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "relkind": "r",
+      "relname": "party_rsvps",
+      "relrowsecurity": true,
+      "relforcerowsecurity": false
+    }
+  ],
+  "columns": [
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "users",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "auth",
+      "column_default": null
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "users",
+      "column_name": "email_confirmed_at",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "auth",
+      "column_default": null
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "users",
+      "column_name": "phone_confirmed_at",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "auth",
+      "column_default": null
+    },
+    {
+      "udt_name": "bool",
+      "data_type": "boolean",
+      "table_name": "users",
+      "column_name": "is_anonymous",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "auth",
+      "column_default": "false"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "title",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "''::text"
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "parties",
+      "column_name": "datetime",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "location_name",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "address",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "float8",
+      "data_type": "double precision",
+      "table_name": "parties",
+      "column_name": "lat",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "float8",
+      "data_type": "double precision",
+      "table_name": "parties",
+      "column_name": "lng",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "notes",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "host_id",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "parties",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()"
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "parties",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()"
+    },
+    {
+      "udt_name": "int8",
+      "data_type": "bigint",
+      "table_name": "parties",
+      "column_name": "revision",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "1"
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "parties",
+      "column_name": "deleted_at",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "parties",
+      "column_name": "date",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "location",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "parties",
+      "column_name": "theme",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "party_items",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_items",
+      "column_name": "party_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_items",
+      "column_name": "name",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_items",
+      "column_name": "qty",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_items",
+      "column_name": "claimed_by",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "party_items",
+      "column_name": "sort_order",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "0"
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "party_items",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_items",
+      "column_name": "claimed_by_user_id",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_items",
+      "column_name": "created_by",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "uuid",
+      "data_type": "uuid",
+      "table_name": "party_rsvps",
+      "column_name": "id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "gen_random_uuid()"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_rsvps",
+      "column_name": "party_id",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_rsvps",
+      "column_name": "guest_name",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_rsvps",
+      "column_name": "status",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "party_rsvps",
+      "column_name": "created_at",
+      "is_identity": "NO",
+      "is_nullable": "NO",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": "now()"
+    },
+    {
+      "udt_name": "text",
+      "data_type": "text",
+      "table_name": "party_rsvps",
+      "column_name": "name",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "int4",
+      "data_type": "integer",
+      "table_name": "party_rsvps",
+      "column_name": "attendee_count",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    },
+    {
+      "udt_name": "timestamptz",
+      "data_type": "timestamp with time zone",
+      "table_name": "party_rsvps",
+      "column_name": "updated_at",
+      "is_identity": "NO",
+      "is_nullable": "YES",
+      "is_generated": "NEVER",
+      "table_schema": "public",
+      "column_default": null
+    }
+  ],
+  "indexes": [
+    {
+      "indexdef": "CREATE UNIQUE INDEX parties_pkey ON public.parties USING btree (id)",
+      "indexname": "parties_pkey",
+      "tablename": "parties",
+      "schemaname": "public"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX party_items_party_id_id_v2_idx ON public.party_items USING btree (party_id, id)",
+      "indexname": "party_items_party_id_id_v2_idx",
+      "tablename": "party_items",
+      "schemaname": "public"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX party_items_pkey ON public.party_items USING btree (id)",
+      "indexname": "party_items_pkey",
+      "tablename": "party_items",
+      "schemaname": "public"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX party_rsvps_party_id_guest_name_key ON public.party_rsvps USING btree (party_id, guest_name)",
+      "indexname": "party_rsvps_party_id_guest_name_key",
+      "tablename": "party_rsvps",
+      "schemaname": "public"
+    },
+    {
+      "indexdef": "CREATE INDEX party_rsvps_party_id_idx ON public.party_rsvps USING btree (party_id)",
+      "indexname": "party_rsvps_party_id_idx",
+      "tablename": "party_rsvps",
+      "schemaname": "public"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX party_rsvps_pkey ON public.party_rsvps USING btree (party_id, id)",
+      "indexname": "party_rsvps_pkey",
+      "tablename": "party_rsvps",
+      "schemaname": "public"
+    }
+  ],
+  "schemas": [
+    {
+      "acl": "{supabase_admin=UC/supabase_admin,postgres=U*/supabase_admin,anon=U/supabase_admin,service_role=U/supabase_admin,supabase_realtime_admin=UC/supabase_admin,authenticated=U/supabase_admin}",
+      "owner": "supabase_admin",
+      "nspname": "realtime"
+    },
+    {
+      "acl": "{pg_database_owner=UC/pg_database_owner,=U/pg_database_owner,postgres=U/pg_database_owner,anon=U/pg_database_owner,authenticated=U/pg_database_owner,service_role=U/pg_database_owner}",
+      "owner": "pg_database_owner",
+      "nspname": "public"
+    },
+    {
+      "acl": "{supabase_admin=UC/supabase_admin,anon=U/supabase_admin,authenticated=U/supabase_admin,service_role=U/supabase_admin,supabase_auth_admin=UC/supabase_admin,dashboard_user=UC/supabase_admin,postgres=U/supabase_admin}",
+      "owner": "supabase_admin",
+      "nspname": "auth"
+    }
+  ],
+  "version": "PostgreSQL 17.11 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "database": "postgres",
+  "policies": null,
+  "triggers": [
+    {
+      "tgname": "partyplus_v2_sync_legacy_aliases",
+      "relname": "parties",
+      "definition": "CREATE TRIGGER partyplus_v2_sync_legacy_aliases BEFORE INSERT OR UPDATE ON public.parties FOR EACH ROW EXECUTE FUNCTION partyplus_v2_sync_legacy_aliases()"
+    },
+    {
+      "tgname": "trg_parties_updated_at",
+      "relname": "parties",
+      "definition": "CREATE TRIGGER trg_parties_updated_at BEFORE UPDATE ON public.parties FOR EACH ROW EXECUTE FUNCTION set_updated_at()"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_claim_item",
+      "arguments": "p_party_id text, p_item_id text, p_claim boolean, p_operation_id uuid",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_claim_item(p_party_id text, p_item_id text, p_claim boolean, p_operation_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare v_uid uuid := partyplus_private.require_principal();\r\n  v_request jsonb := jsonb_build_object('kind','claim','party',p_party_id,'item',p_item_id,'claim',p_claim); v_receipt jsonb;\r\n  v_owner text; v_name text; v_label text;\r\nbegin\r\n  v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);\r\n  if v_receipt is not null then return v_receipt; end if;\r\n  if p_claim is null then raise exception 'invalid_claim'; end if;\r\n  perform partyplus_private.lock_party(p_party_id);\r\n  select claimed_by_user_id,claimed_by into v_owner,v_label from public.party_items where party_id=p_party_id and id::text=p_item_id for update;\r\n  if not found then raise exception 'item_missing'; end if;\r\n  if p_claim then\r\n    select name into v_name from public.party_rsvps where party_id=p_party_id and id::text=v_uid::text and status='yes';\r\n    if not found then raise exception 'yes_rsvp_required' using errcode='42501'; end if;\r\n    if (v_owner is not null and v_owner<>v_uid::text) or (v_owner is null and v_label is not null) then raise exception 'claim_conflict'; end if;\r\n    update public.party_items set claimed_by_user_id=v_uid::text,claimed_by=v_name where party_id=p_party_id and id::text=p_item_id;\r\n  else\r\n    if v_owner is distinct from v_uid::text then raise exception 'claim_owner_required' using errcode='42501'; end if;\r\n    update public.party_items set claimed_by_user_id=null,claimed_by=null where party_id=p_party_id and id::text=p_item_id;\r\n  end if;\r\n  update public.parties set revision=revision+1,updated_at=now() where id=p_party_id;\r\n  return partyplus_private.remember(v_uid,p_operation_id,v_request,jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(p_party_id)));\r\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_commit_party",
+      "arguments": "p_operation_id uuid, p_expected_revision bigint, p_party jsonb",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_commit_party(p_operation_id uuid, p_expected_revision bigint, p_party jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare v_uid uuid := partyplus_private.require_principal(true);\r\n  v_id text := p_party->>'id'; v_request jsonb := jsonb_build_object('kind','commit','revision',p_expected_revision,'party',p_party);\r\n  v_receipt jsonb; v_revision bigint; v_item jsonb; v_ordinal integer := 0; v_remove text;\r\n  v_typed_item public.party_items;\r\nbegin\r\n  v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);\r\n  if v_receipt is not null then return v_receipt; end if;\r\n  if v_id is null or length(v_id) not between 1 and 200 or length(trim(coalesce(p_party->>'title',''))) not between 1 and 200\r\n    or jsonb_typeof(p_party->'items') is distinct from 'array' or jsonb_array_length(p_party->'items') > 200 then\r\n    raise exception 'invalid_party';\r\n  end if;\r\n  perform pg_advisory_xact_lock(hashtextextended('party:' || v_id, 0));\r\n  select revision into v_revision from public.parties where id=v_id for update;\r\n  if found then\r\n    if not exists(select 1 from partyplus_private.host_access where party_id=v_id and principal_id=v_uid)\r\n      or exists(select 1 from public.parties where id=v_id and deleted_at is not null) then\r\n      raise exception 'host_access_required' using errcode='42501';\r\n    end if;\r\n    if v_revision <> p_expected_revision then raise exception 'revision_conflict'; end if;\r\n    update public.parties set title=trim(p_party->>'title'), date=nullif(p_party->>'date','')::timestamptz,\r\n      location=p_party->>'location',notes=p_party->>'notes',theme=p_party->>'theme',\r\n      revision=revision+1,updated_at=now() where id=v_id;\r\n  else\r\n    if p_expected_revision is distinct from 0 then raise exception 'revision_conflict'; end if;\r\n    insert into public.parties(id,title,date,location,notes,theme,host_id)\r\n      values(v_id,trim(p_party->>'title'),nullif(p_party->>'date','')::timestamptz,p_party->>'location',p_party->>'notes',p_party->>'theme',v_uid::text);\r\n    insert into partyplus_private.host_access values(v_id,v_uid,'verified-account-create',now());\r\n  end if;\r\n  for v_item in select value from jsonb_array_elements(p_party->'items') loop\r\n    if length(coalesce(v_item->>'id','')) not between 1 and 200 or length(trim(coalesce(v_item->>'name',''))) not between 1 and 200 then\r\n      raise exception 'invalid_item';\r\n    end if;\r\n    v_typed_item := jsonb_populate_record(null::public.party_items,v_item);\r\n    insert into public.party_items(party_id,id,name,qty,created_by,sort_order)\r\n      values(v_id,v_typed_item.id,trim(v_item->>'name'),v_item->>'qty',v_uid::text,v_ordinal)\r\n      on conflict(party_id,id) do update set name=excluded.name,qty=excluded.qty,sort_order=excluded.sort_order;\r\n    -- Never accept a claim owner or creator from the host's cached snapshot.\r\n    v_ordinal := v_ordinal+1;\r\n  end loop;\r\n  for v_remove in select jsonb_array_elements_text(coalesce(p_party->'removedItemIds','[]'::jsonb)) loop\r\n    if exists(select 1 from public.party_items where party_id=v_id and id::text=v_remove and\r\n      (claimed_by_user_id is not null or claimed_by is not null)) then raise exception 'claim_conflict'; end if;\r\n    delete from public.party_items where party_id=v_id and id::text=v_remove;\r\n  end loop;\r\n  -- RSVP rows are intentionally untouched by host edits.\r\n  v_receipt := jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(v_id));\r\n  return partyplus_private.remember(v_uid,p_operation_id,v_request,v_receipt);\r\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_delete_party",
+      "arguments": "p_party_id text, p_operation_id uuid",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_delete_party(p_party_id text, p_operation_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare v_uid uuid := partyplus_private.require_principal(true);\r\n  v_request jsonb := jsonb_build_object('kind','delete','party',p_party_id); v_receipt jsonb;\r\nbegin\r\n  v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);\r\n  if v_receipt is not null then return v_receipt; end if;\r\n  perform partyplus_private.lock_party(p_party_id);\r\n  if not exists(select 1 from partyplus_private.host_access where party_id=p_party_id and principal_id=v_uid) then\r\n    raise exception 'host_access_required' using errcode='42501'; end if;\r\n  -- Tombstone preserves IDs, guest data and recovery potential in this candidate contract.\r\n  update public.parties set deleted_at=now(),updated_at=now(),revision=revision+1 where id=p_party_id;\r\n  return partyplus_private.remember(v_uid,p_operation_id,v_request,jsonb_build_object('deleted',true,'operationId',p_operation_id));\r\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_list_host_parties",
+      "arguments": "",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_list_host_parties()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare v_uid uuid := partyplus_private.require_principal(true);\r\nbegin\r\n  return coalesce((select jsonb_agg(public.partyplus_v2_read_party(p.id) order by p.updated_at desc)\r\n    from public.parties p join partyplus_private.host_access h on h.party_id=p.id\r\n    where h.principal_id=v_uid and p.deleted_at is null),'[]'::jsonb);\r\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_read_party",
+      "arguments": "p_party_id text",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_read_party(p_party_id text)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\n  select jsonb_build_object('id',p.id,'title',p.title,'date',p.date,'location',p.location,'notes',p.notes,\r\n    'theme',p.theme,'hostId',p.host_id,'createdAt',p.created_at,'updatedAt',p.updated_at,'revision',p.revision,\r\n    'canEdit',exists(select 1 from partyplus_private.host_access h where h.party_id=p.id and h.principal_id=auth.uid()),\r\n    'items',coalesce((select jsonb_agg(jsonb_build_object('id',i.id,'name',i.name,'qty',i.qty,\r\n      'claimedBy',i.claimed_by,'claimedByUserId',i.claimed_by_user_id,'createdBy',i.created_by) order by i.sort_order,i.id)\r\n      from public.party_items i where i.party_id=p.id),'[]'::jsonb),\r\n    'rsvps',coalesce((select jsonb_agg(jsonb_build_object('id',r.id,'name',coalesce(r.name,to_jsonb(r)->>'guest_name','Guest'),'status',r.status,\r\n      'attendeeCount',greatest(coalesce(r.attendee_count,1),1),'updatedAt',coalesce(r.updated_at::text,to_jsonb(r)->>'created_at','')) order by r.id)\r\n      from public.party_rsvps r where r.party_id=p.id),'[]'::jsonb))\r\n  from public.parties p where p.id=p_party_id and p.deleted_at is null\r\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_rsvp",
+      "arguments": "p_party_id text, p_operation_id uuid, p_response jsonb",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_rsvp(p_party_id text, p_operation_id uuid, p_response jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare v_uid uuid := partyplus_private.require_principal();\r\n  v_request jsonb := jsonb_build_object('kind','rsvp','party',p_party_id,'response',p_response); v_receipt jsonb;\r\n  v_name text := trim(p_response->>'name'); v_status text := p_response->>'status'; v_count integer := (p_response->>'attendeeCount')::integer;\r\n  v_typed_rsvp public.party_rsvps;\r\nbegin\r\n  v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);\r\n  if v_receipt is not null then return v_receipt; end if;\r\n  if v_name is null or length(v_name) not between 1 and 100 or v_status is null or v_status not in ('yes','maybe','no')\r\n    or v_count is null or v_count not between 1 and 100 then raise exception 'invalid_rsvp'; end if;\r\n  perform partyplus_private.lock_party(p_party_id);\r\n  v_typed_rsvp := jsonb_populate_record(null::public.party_rsvps,jsonb_build_object('id',v_uid));\r\n  insert into public.party_rsvps(party_id,id,name,status,attendee_count,updated_at)\r\n    values(p_party_id,v_typed_rsvp.id,v_name,v_status,v_count,now())\r\n    on conflict(party_id,id) do update set name=excluded.name,status=excluded.status,attendee_count=excluded.attendee_count,updated_at=now();\r\n  update public.party_items set claimed_by=case when v_status='yes' then v_name else null end,\r\n    claimed_by_user_id=case when v_status='yes' then v_uid::text else null end\r\n    where party_id=p_party_id and claimed_by_user_id=v_uid::text;\r\n  update public.parties set revision=revision+1,updated_at=now() where id=p_party_id;\r\n  return partyplus_private.remember(v_uid,p_operation_id,v_request,jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(p_party_id)));\r\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_suggest_item",
+      "arguments": "p_party_id text, p_item_id text, p_name text, p_operation_id uuid",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": true,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_suggest_item(p_party_id text, p_item_id text, p_name text, p_operation_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'pg_catalog'\nAS $function$\r\ndeclare v_uid uuid := partyplus_private.require_principal();\r\n  v_request jsonb := jsonb_build_object('kind','suggest','party',p_party_id,'item',p_item_id,'name',p_name); v_receipt jsonb;\r\n  v_typed_item public.party_items;\r\nbegin\r\n  v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);\r\n  if v_receipt is not null then return v_receipt; end if;\r\n  if length(coalesce(p_item_id,'')) not between 1 and 200 or length(trim(coalesce(p_name,''))) not between 1 and 200 then raise exception 'invalid_item'; end if;\r\n  perform partyplus_private.lock_party(p_party_id);\r\n  if (select count(*) from public.party_items where party_id=p_party_id) >= 200 then raise exception 'item_limit'; end if;\r\n  v_typed_item := jsonb_populate_record(null::public.party_items,jsonb_build_object('id',p_item_id));\r\n  insert into public.party_items(party_id,id,name,created_by,sort_order)\r\n    values(p_party_id,v_typed_item.id,trim(p_name),v_uid::text,coalesce((select max(sort_order)+1 from public.party_items where party_id=p_party_id),0));\r\n  update public.parties set revision=revision+1,updated_at=now() where id=p_party_id;\r\n  return partyplus_private.remember(v_uid,p_operation_id,v_request,jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(p_party_id)));\r\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "partyplus_v2_sync_legacy_aliases",
+      "arguments": "",
+      "proconfig": [
+        "search_path=pg_catalog"
+      ],
+      "prosecdef": false,
+      "definition": "CREATE OR REPLACE FUNCTION public.partyplus_v2_sync_legacy_aliases()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog'\nAS $function$ begin\r\n  new.datetime := new.date;\r\n  new.location_name := new.location;\r\n  return new;\r\nend $function$\n"
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "proname": "set_updated_at",
+      "arguments": "",
+      "proconfig": null,
+      "prosecdef": false,
+      "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nbegin\r\n  new.updated_at = now();\r\n  return new;\r\nend;\r\n$function$\n"
+    }
+  ],
+  "read_only": "on",
+  "captured_at": "2026-10-03T00:13:08.796428+00:00",
+  "constraints": [
+    {
+      "conname": "parties_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "parties"
+    },
+    {
+      "conname": "party_items_party_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE CASCADE",
+      "table_name": "party_items"
+    },
+    {
+      "conname": "party_items_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "party_items"
+    },
+    {
+      "conname": "party_rsvps_party_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (party_id) REFERENCES parties(id) ON DELETE CASCADE",
+      "table_name": "party_rsvps"
+    },
+    {
+      "conname": "party_rsvps_party_id_guest_name_key",
+      "contype": "u",
+      "definition": "UNIQUE (party_id, guest_name)",
+      "table_name": "party_rsvps"
+    },
+    {
+      "conname": "party_rsvps_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (party_id, id)",
+      "table_name": "party_rsvps"
+    },
+    {
+      "conname": "party_rsvps_status_check",
+      "contype": "c",
+      "definition": "CHECK ((status = ANY (ARRAY['yes'::text, 'no'::text, 'maybe'::text])))",
+      "table_name": "party_rsvps"
+    }
+  ],
+  "publications": [
+    {
+      "pubname": "supabase_realtime",
+      "pubdelete": true,
+      "pubinsert": true,
+      "pubupdate": true,
+      "pubtruncate": true,
+      "puballtables": false
+    }
+  ],
+  "default_grants": [
+    {
+      "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+      "owner": "postgres",
+      "schema": "public",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "public",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "public",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "public",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,anon=arwdDxtm/postgres,authenticated=arwdDxtm/postgres,service_role=arwdDxtm/postgres}",
+      "owner": "postgres",
+      "schema": "storage",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "schema": "storage",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=rwU/postgres,anon=rwU/postgres,authenticated=rwU/postgres,service_role=rwU/postgres}",
+      "owner": "postgres",
+      "schema": "storage",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_auth_admin,dashboard_user=arwdDxtm/supabase_auth_admin}",
+      "owner": "supabase_auth_admin",
+      "schema": "auth",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=rwU/supabase_auth_admin,dashboard_user=rwU/supabase_auth_admin}",
+      "owner": "supabase_auth_admin",
+      "schema": "auth",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=X/supabase_auth_admin,dashboard_user=X/supabase_auth_admin}",
+      "owner": "supabase_auth_admin",
+      "schema": "auth",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "graphql_public",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "graphql_public",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "graphql_public",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=a*r*w*d*D*x*t*m*/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "extensions",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=X*/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "extensions",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=r*w*U*/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "extensions",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=arwdDxtm/supabase_admin,anon=arwdDxtm/supabase_admin,authenticated=arwdDxtm/supabase_admin,service_role=arwdDxtm/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "graphql",
+      "defaclobjtype": "r"
+    },
+    {
+      "acl": "{postgres=X/supabase_admin,anon=X/supabase_admin,authenticated=X/supabase_admin,service_role=X/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "graphql",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=rwU/supabase_admin,anon=rwU/supabase_admin,authenticated=rwU/supabase_admin,service_role=rwU/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "graphql",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=rwU/supabase_admin,dashboard_user=rwU/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "realtime",
+      "defaclobjtype": "S"
+    },
+    {
+      "acl": "{postgres=X/supabase_admin,dashboard_user=X/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "realtime",
+      "defaclobjtype": "f"
+    },
+    {
+      "acl": "{postgres=a*r*wdDxtm/supabase_admin,dashboard_user=arwdDxtm/supabase_admin}",
+      "owner": "supabase_admin",
+      "schema": "realtime",
+      "defaclobjtype": "r"
+    }
+  ],
+  "migration_ledger": null,
+  "publication_tables": null
+}

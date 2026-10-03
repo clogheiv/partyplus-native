@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "engine": "PostgreSQL 17.11 pg_dump custom archive / pg_restore",
+  "scope": "Metadata-matched synthetic database into separate blank loopback database, same cluster roles",
+  "checks": [
+    "Exact rows, IDs, legacy fields, guest state, host evidence and operation receipts",
+    "Table/function grants, RLS flags/policies and function definitions restored",
+    "Anonymous deletion denied after restore",
+    "Prior RSVP operation receipt replays exactly",
+    "Verified bridged host can list restored legacy party"
+  ],
+  "capturedAt": "2026-10-03T00:29:30.726Z"
+}

@@ -116,3 +116,31 @@ Next maintenance should review resolved paths against built artifacts, patch com
 No new product decision is required for this review point. Needed external access is an authorized metadata-only export of the existing Supabase project and a separate nonproduction Supabase project with Auth configuration. Store/EAS/Netlify build-to-commit provenance also needs authorized read access. Credentials should be supplied through secure environment/connection configuration, never committed or embedded in logs.
 
 Recommended next batch: capture schema/provenance; reconcile the candidate SQL with real constraints/grants; run PostgreSQL independent-session tests and isolated Supabase JWT/OTP/RLS integration; exercise two guest browsers plus a verified host on iOS/Android; verify cross-device return/recovery, offline replay, expired sessions, legacy bridge, publication/polling and backup restore. Prepare a versioned legacy read/write transition and production rollback plan. Then review staging evidence before requesting any production migration, deployment or store release approval.
+
+## Subsequent batch: authoritative reconciliation and real staging
+
+Michael authorized read-only production metadata and isolated free staging/testing. The earlier access-needed statements above describe the prior review point; this batch resolves the Supabase metadata/staging access gate.
+
+Captured catalogs through an explicit read-only production transaction without selecting customer records. C3 is now confirmed: eleven unconditional permissive policies enable anonymous edits and child deletion. Missing parent DELETE policy produces partial legacy deletion in synthetic reproduction. Actual schema uses UUID item/RSVP IDs and legacy date/location/name fields; claim ownership columns are not deployed, no migration ledger exists, and no PartyPlus tables are in the realtime publication. Request traffic does not establish actual customer usage, so production remains live and untouched.
+
+Created a separate Free organization instead of accepting the Pro organization's $10/month additional-project quote. Michael created the isolated project with his own database password. Project `qmbwrbxbbshbavfhkujx` now contains the metadata-matched candidate contract and real Auth. Its deployed metadata confirms RLS, removed legacy policies, revoked direct client grants and intended RPC grants. No spending, production changes or store/website publication occurred.
+
+Reconciled canonical/legacy fields additively; preserved UUID keys, address/coordinates, RSVP names and legacy claim labels. Typed item/RSVP operations and explicit insert columns now handle observed constraints. The synthetic transition proves unsafe policy behavior and safe retirement without identity rewriting. Ambiguous legacy ownership remains preserved rather than assigned from UUID knowledge.
+
+Validation:
+
+- Full regression suite: **71 passed**, zero failed; lint and TypeScript passed.
+- Independent PostgreSQL 17.11: **14 contract tests + 5 observed-schema tests passed**, with one PGlite-only restore case skipped on this path.
+- Separate real `pg_dump`/`pg_restore`: exact synthetic data, effective grants, RLS, functions, access evidence and receipts restored; denied anonymous deletion, replay and host listing worked afterward.
+- Real Supabase Auth/HTTP: **eight integration groups passed**, including stable receipts, concurrent same-name RSVPs/suggestions, one claim winner, transaction rollback, authorization denial, stale revision, independent-client email OTP recovery, session refresh/revocation and replayable tombstone.
+- Actual browser guest against staging: live read, saved RSVP, claim, suggestion and reload passed. Independent verified host saw all guest state, edited its title without loss, and the returning browser displayed that title. The website was served on loopback, not deployed.
+
+Autonomous corrections: made the Windows harness compatible with both Windows PowerShell and modern PowerShell; fixed a test-only random-UUID sort assumption; compare effective ACLs because PostgreSQL restores owner-only privileges using an equivalent default representation. Neither correction changed customer behavior. Temporary loopback servers are stopped, and local privileged staging credential files are removed after verification.
+
+Final source review found a **new candidate-only** null expected-revision bypass. A failing regression reproduced it; `IS DISTINCT FROM` fixes it, and the updated local/independent PostgreSQL suites and restore pass. Staging's installed commit function and the recorded eight-group integration result predate that correction. A generated function-only staging patch and updated integration assertion are ready; applying/reverifying them requires the Edge extension update requested from Michael. This is an access limitation, not a request for production permission. Staging is not fully qualified against the final source until that step succeeds.
+
+Evidence and the versioned transition/rollback proposal are in [the staging reconciliation review](PARTYPLUS_STAGING_RECONCILIATION_2026-10-02.md). C1/C2 now have real transaction/concurrency proof; C3 has authoritative production metadata and real staging denial proof; H3 has generated OTP/second-client recovery proof; H10 has a real staging guest/host journey. **No production finding is closed by this nonproduction work.**
+
+Remaining: physical iOS/Android and mobile-browser qualification, actual email delivery/code templates, anonymous-to-verified linking, hosted backup/Auth restoration, EAS/store/Netlify source provenance, hosted CI and a reviewed production upgrade/cutover. Immediate validity of an existing short-lived JWT after global sign-out is not claimed revoked. The candidate preserves known-ID web invitations but denies old direct-table readers; unchanged old native clients need an upgrade. Edge control stopped after evidence capture because the extension requires an update.
+
+Recommended next batch: qualify native staging previews and delivered email/linking flows, establish deployment provenance and hosted restoration, then finalize the exact production migration/compatibility review. No routine product approval is needed now; production migrations, policy changes, publication and any new spending remain separately gated.

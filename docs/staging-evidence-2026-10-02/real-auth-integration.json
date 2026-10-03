@@ -1,0 +1,18 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "run": "663db1c2-1828-42cd-b6d4-b6a10d5ff99e",
+  "partyId": "synthetic-663db1c2-1828-42cd-b6d4-b6a10d5ff99e",
+  "startedAt": "2026-10-03T00:22:49.702Z",
+  "checks": [
+    "Real verified host and distinct anonymous guest JWT sessions",
+    "Stable create receipt, uncertain-outcome replay and changed-payload rejection",
+    "Invitation read works; raw tables, private ledger and unsigned/anonymous host writes denied",
+    "Independent HTTP sessions retain same-name RSVPs, concurrent suggestions and one claim winner",
+    "Failed create rolls back; title edit preserves responses/claims; stale host revision rejected",
+    "Generated email OTP signs in on independent client; session refresh retains host access (no email delivered)",
+    "Authorized tombstone is replayable; guest deletion denied; invitation becomes unavailable",
+    "Global sign-out revokes independent client refresh; short-lived existing JWT validity is not claimed revoked"
+  ],
+  "status": "passed",
+  "finishedAt": "2026-10-03T00:22:53.443Z"
+}
