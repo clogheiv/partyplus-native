@@ -1,0 +1,15 @@
+# Staging email setup checkpoint
+
+Michael authorized the existing Clogher Labs Resend Free account for PartyPlus staging. No new spending, production change, or other application's credential change occurred.
+
+The human created and saved `PartyPlus Staging SMTP`, restricted to sending on the existing verified `test-mail.carehomeconsole.com` domain, then entered its credential and submitted staging Supabase SMTP settings. The agent never read or entered the credential. The persisted form shows custom SMTP enabled and a stored hidden password, with sender `partyplus-staging@test-mail.carehomeconsole.com`, sender name `PartyPlus Staging`, host `smtp.resend.com`, port 465 and username `resend`.
+
+The signup, magic-link/OTP and change-email template bodies were replaced with the exact checked-in `supabase/auth-templates/email-code.html` body. Each persisted after reload. Original bodies are preserved in `auth-template-backups.json`; existing subjects remain unchanged. Restore those bodies and save individually to reverse the template change. Restoring the SMTP provider requires secure human credential handling; the dedicated Resend key can be revoked after disconnecting the staging provider.
+
+Read-only Auth inspection found email confirmation and secure email change enabled, OTP expiry 3600 seconds, OTP length **8**, and manual linking **disabled**. No Auth security switches were changed. Supabase's [anonymous conversion documentation](https://supabase.com/docs/guides/auth/auth-anonymous) requires manual linking. Enabling that staging Auth capability requires action-time confirmation under the browser tool's security-sensitive access policy. This is still pending; production stays untouched.
+
+The native account screen previously rejected all codes except six digits. It now accepts numeric codes from six through ten digits, matching the [supported Supabase configuration range](https://supabase.com/docs/guides/local-development/cli/config). Supabase still validates the exact issued token, expiry and replay protection. Staging's eight-digit setting was preserved. TypeScript and ESLint passed. The replacement internal preview APK built successfully (SHA256 `31a78c50588abe61128635ca62611514ef87352920e4b9daa42b3cece12a2398`); the previously qualified preview's evidence is retained under the `before-code-length-fix` filenames. The replacement requires installation and physical requalification.
+
+Delivered Resend email, correct/wrong/expired/replayed code behavior, principal preservation, verified-host create/save/share and second-device recovery are **not yet verified**. SMTP/template persistence is configuration proof, not delivery proof. Android debugging currently reports no attached device. Michael was asked to reconnect his phone with a USB data cable as the next single human action.
+
+Proof images: `resend-smtp-saved.png`, `auth-code-template-saved.png`, `auth-email-settings.png`, and `auth-manual-linking-disabled.png`. Account input values and actual verification codes are not captured in these artifacts.

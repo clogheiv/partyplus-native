@@ -35,7 +35,9 @@ export default function HostAccountScreen() {
         setVerificationType(anonymous ? "email_change" : "email");
         setMessage("Check your email for the verification code. Enter it here to finish signing in.");
       } else {
-        if (!/^\d{6}$/.test(code.trim())) throw Error("Enter the six-digit verification code from your email.");
+        // Supabase supports configured email codes from six to ten digits.
+        // The server still verifies the exact code, expiry and one-time use.
+        if (!/^\d{6,10}$/.test(code.trim())) throw Error("Enter the verification code from your email (6–10 digits).");
         const response = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: verificationType });
         if (response.error) throw response.error;
         const user = response.data.user;
