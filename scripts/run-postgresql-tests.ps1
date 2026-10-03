@@ -15,7 +15,7 @@ $taskOldConnection = $env:PARTYPLUS_TEST_DATABASE_URL
 $taskPort = 55432
 try {
   $env:PGPASSWORD = $taskPassword
-  foreach ($taskTest in @('backend.test.mjs','observed-schema.test.mjs')) {
+  foreach ($taskTest in @('backend.test.mjs','observed-schema.test.mjs','security-rollout.test.mjs')) {
     $taskName = $taskTest.Replace('.test.mjs','')
     $taskData = Join-Path $taskRun $taskName
     $taskLog = Join-Path $taskRun ($taskName + '.server.log')

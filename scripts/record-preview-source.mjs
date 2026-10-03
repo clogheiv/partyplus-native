@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const files=spawnSync('git',['ls-files','-z'],{encoding:'utf8'}).stdout.split('\0').filter(p=>/^(app\/|src\/|components\/|constants\/|hooks\/|assets\/|app\.json$|app\.config\.js$|package(-lock)?\.json$|babel\.config|metro\.config|tsconfig)/.test(p)).sort();
+const hashes={};for(const f of files)hashes[f]=sha(await fs.readFile(f));
+const evidencePath='docs/staging-evidence-2026-10-02/android-preview-build.json';
+const evidence=JSON.parse(await fs.readFile(evidencePath,'utf8'));evidence.clientSourceFilesSha256=sha(JSON.stringify(hashes));evidence.sourceFileManifest='android-preview-source-files.json';
+evidence.sourceProvenanceNote='Source HEAD predates this uncommitted batch. Exact current client file-byte hashes recorded after build; these client sources were not edited while compilation ran. Signing is staging debug only.';
+await fs.writeFile('docs/staging-evidence-2026-10-02/android-preview-source-files.json',JSON.stringify({hashEncoding:'Exact file bytes at build completion',files:hashes},null,2)+'\n');
+await fs.writeFile(evidencePath,JSON.stringify(evidence,null,2)+'\n');
+console.log('Recorded exact client source hashes for the staging APK; no credentials or binary data emitted.');

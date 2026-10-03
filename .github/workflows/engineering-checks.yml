@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-file: [backend.test.mjs, observed-schema.test.mjs]
+        test-file: [backend.test.mjs, observed-schema.test.mjs, security-rollout.test.mjs]
     services:
       postgres:
         image: postgres:17

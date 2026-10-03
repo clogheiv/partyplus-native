@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {createClient} from '@supabase/supabase-js';
+const c=JSON.parse(await fs.readFile('.test-cache/staging-credentials.json','utf8'));
+assert.equal(c.url,'https://qmbwrbxbbshbavfhkujx.supabase.co');
+const admin=createClient(c.url,c.secretKey,{auth:{persistSession:false,autoRefreshToken:false}});
+const {data,error}=await admin.auth.admin.listUsers({perPage:100});if(error)throw Error(error.message);
+const host=data.users.find(u=>u.email?.startsWith('synthetic-')&&u.email.endsWith('@example.test')&&u.email_confirmed_at&&!u.is_anonymous);
+const guests=data.users.filter(u=>u.is_anonymous);assert.ok(host);assert.ok(guests.length>=2);
+await fs.writeFile('.test-cache/staging-security-principals.json',JSON.stringify({host:host.id,guestA:guests[0].id,guestB:guests[1].id}));
+console.log('Selected existing synthetic staging Auth principals; credentials and email addresses omitted.');

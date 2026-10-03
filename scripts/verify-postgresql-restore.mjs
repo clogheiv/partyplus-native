@@ -7,7 +7,7 @@ const restored=new URL(source);restored.pathname='/partyplus_restore';
 const a=new pg.Client({connectionString:source.href}),b=new pg.Client({connectionString:restored.href});
 try {
   await a.connect();await b.connect();
-  for(const relation of ['public.parties','public.party_items','public.party_rsvps','partyplus_private.host_access','partyplus_private.operations','auth.users']) {
+  for(const relation of ['public.parties','public.party_items','public.party_rsvps','partyplus_private.host_access','partyplus_private.operations','partyplus_private.release_control','auth.users']) {
     const query=`select to_jsonb(t) as row from ${relation} t order by to_jsonb(t)::text`;
     assert.deepEqual((await b.query(query)).rows,(await a.query(query)).rows,relation+' restores exactly');
   }

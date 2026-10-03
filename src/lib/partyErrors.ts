@@ -1,4 +1,4 @@
-export type PartyFailure = "configuration" | "offline" | "authorization" | "conflict" | "upgrade-required" | "server" | "local_corrupt" | "local_storage" | "missing";
+export type PartyFailure = "configuration" | "offline" | "authorization" | "conflict" | "upgrade-required" | "paused" | "server" | "local_corrupt" | "local_storage" | "missing";
 
 export class PartyOperationError extends Error {
   constructor(readonly kind: PartyFailure, message: string, readonly serverRejected = false) { super(message); }
@@ -7,6 +7,9 @@ export class PartyOperationError extends Error {
 export function classifyPartyError(error: unknown): PartyOperationError {
   if (error instanceof PartyOperationError) return error;
   const value = error as { code?: string; message?: string; status?: number };
+  if (value?.code === "55000" && value?.message?.includes("writes_paused")) {
+    return new PartyOperationError("paused", "Saving is temporarily paused. Your change is preserved; retry when service resumes.");
+  }
   if (value?.code === "local_unavailable") return new PartyOperationError("local_storage", "This device could not store or read saved data. Keep this screen open and retry before closing it.");
   if (value?.code === "local_corrupt") return new PartyOperationError("local_corrupt", "Saved data needs recovery. Its original contents are preserved.");
   if (value?.code === "42501" || value?.status === 401 || value?.status === 403) {

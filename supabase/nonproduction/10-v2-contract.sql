@@ -16,6 +16,12 @@ create table partyplus_private.operations (
   principal_id uuid not null, operation_id uuid not null, request jsonb not null, receipt jsonb not null,
   created_at timestamptz not null default now(), primary key(principal_id,operation_id)
 );
+create table partyplus_private.release_control (
+  singleton boolean primary key default true check(singleton),
+  writes_enabled boolean not null default false, updated_at timestamptz not null default now()
+);
+insert into partyplus_private.release_control(singleton,writes_enabled) values(true,true);
+alter table partyplus_private.release_control enable row level security;
 alter table public.parties enable row level security;
 alter table public.party_items enable row level security;
 alter table public.party_rsvps enable row level security;
@@ -43,6 +49,18 @@ begin
     raise exception 'verified_host_required' using errcode = '42501';
   end if;
   return v_uid;
+end $$;
+
+create function partyplus_private.require_writes() returns void
+language plpgsql security definer set search_path = pg_catalog as $$
+declare v_enabled boolean;
+begin
+  -- Hold a shared row lock through commit: pausing drains in-flight mutations
+  -- before the owner gate update can commit. Replay remains available above it.
+  select writes_enabled into v_enabled from partyplus_private.release_control where singleton for share;
+  if not coalesce(v_enabled,false) then
+    raise exception 'writes_paused' using errcode='55000';
+  end if;
 end $$;
 
 create function partyplus_private.replay(p_uid uuid, p_operation uuid, p_request jsonb) returns jsonb
@@ -98,6 +116,7 @@ declare v_uid uuid := partyplus_private.require_principal(true);
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
+  perform partyplus_private.require_writes();
   if v_id is null or length(v_id) not between 1 and 200 or length(trim(coalesce(p_party->>'title',''))) not between 1 and 200
     or jsonb_typeof(p_party->'items') is distinct from 'array' or jsonb_array_length(p_party->'items') > 200 then
     raise exception 'invalid_party';
@@ -149,6 +168,7 @@ declare v_uid uuid := partyplus_private.require_principal();
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
+  perform partyplus_private.require_writes();
   if v_name is null or length(v_name) not between 1 and 100 or v_status is null or v_status not in ('yes','maybe','no')
     or v_count is null or v_count not between 1 and 100 then raise exception 'invalid_rsvp'; end if;
   perform partyplus_private.lock_party(p_party_id);
@@ -171,6 +191,7 @@ declare v_uid uuid := partyplus_private.require_principal();
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
+  perform partyplus_private.require_writes();
   if p_claim is null then raise exception 'invalid_claim'; end if;
   perform partyplus_private.lock_party(p_party_id);
   select claimed_by_user_id,claimed_by into v_owner,v_label from public.party_items where party_id=p_party_id and id::text=p_item_id for update;
@@ -196,6 +217,7 @@ declare v_uid uuid := partyplus_private.require_principal();
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
+  perform partyplus_private.require_writes();
   if length(coalesce(p_item_id,'')) not between 1 and 200 or length(trim(coalesce(p_name,''))) not between 1 and 200 then raise exception 'invalid_item'; end if;
   perform partyplus_private.lock_party(p_party_id);
   if (select count(*) from public.party_items where party_id=p_party_id) >= 200 then raise exception 'item_limit'; end if;
@@ -213,6 +235,7 @@ declare v_uid uuid := partyplus_private.require_principal(true);
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
+  perform partyplus_private.require_writes();
   perform partyplus_private.lock_party(p_party_id);
   if not exists(select 1 from partyplus_private.host_access where party_id=p_party_id and principal_id=v_uid) then
     raise exception 'host_access_required' using errcode='42501'; end if;
