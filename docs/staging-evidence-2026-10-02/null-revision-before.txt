@@ -1,0 +1,43 @@
+▶ isolated PostgreSQL contract
+  ✔ signed guests and unconfirmed accounts cannot create hosts; anonymous roles cannot mutate (23.2635ms)
+  ✔ create/retry returns one explicit commit receipt with stable legacy IDs (16.6536ms)
+  ✔ RLS, direct grants and private helpers deny legacy destructive writes and enumeration (23.2487ms)
+  ✔ two independent guests retain their RSVPs and suggestions (16.9732ms)
+  ✔ host title edit cannot replace guest RSVP snapshots or new suggestions (5.4053ms)
+  ✔ competing clients leave exactly one claim winner (8.7654ms)
+  ✔ a stale host edit conflicts and never overwrites a guest claim (7.4ms)
+  ✖ a null expected revision cannot bypass conflict protection or create a receipt (8.6112ms)
+  ✔ claim retry cannot toggle ownership, and another guest cannot unclaim it (11.2841ms)
+  ✔ transaction failure rolls back metadata, revision, items and operation receipt (5.7195ms)
+  ✔ knowing party ID or legacy host UUID never grants host access; explicit bridge fixture does (6.085ms)
+  ✔ only an authorized verified host can tombstone; retry is idempotent and data remains recoverable (7.246ms)
+  ✔ host recovery lists only verified account grants and excludes tombstones (6.1038ms)
+  ✔ synthetic backup restores schema, grants, legacy IDs, bridge and operation receipts (254.4286ms)
+✖ isolated PostgreSQL contract (1995.4276ms)
+ℹ PGlite serializes connections; competing operations exercised, parallel-session proof deferred to CI/PostgreSQL
+ℹ tests 15
+ℹ suites 0
+ℹ pass 13
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2243.0549
+
+✖ failing tests:
+
+test at tests\backend.test.mjs:75:11
+✖ a null expected revision cannot bypass conflict protection or create a receipt (8.6112ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection.
+      at async TestContext.<anonymous> (file:///C:/Users/clogh/partyplus-native/.worktrees/modernization-phase-1/tests/backend.test.mjs:77:5)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async TestContext.<anonymous> (file:///C:/Users/clogh/partyplus-native/.worktrees/modernization-phase-1/tests/backend.test.mjs:75:3)
+      at async Test.run (node:internal/test_runner/test:1113:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /revision_conflict/,
+    operator: 'rejects',
+    diff: 'simple'
+  }

@@ -9,7 +9,7 @@ export const users = {
   guestB: "20000000-0000-4000-8000-000000000002",
   unverified: "30000000-0000-4000-8000-000000000001",
 };
-export async function backendHarness() {
+export async function backendHarness({observed=false,contract=true}={}) {
   const connectionString = process.env.PARTYPLUS_TEST_DATABASE_URL;
   let db, pool;
   if (connectionString) {
@@ -22,7 +22,9 @@ export async function backendHarness() {
   } else db = new PGlite();
   await db.exec("select set_config('partyplus.environment','synthetic',false)");
   // Pool sessions do not retain session settings: mark each SQL installation explicitly.
-  for (const name of ["00-synthetic-baseline.sql","10-v2-contract.sql"]) {
+  const installation = observed ? ["00-synthetic-auth.sql","observed-legacy-schema.sql"] : ["00-synthetic-baseline.sql"];
+  if (contract) installation.push(...(observed ? ["05-reconcile-observed-schema.sql"] : []),"10-v2-contract.sql");
+  for (const name of installation) {
     await db.exec("select set_config('partyplus.environment','synthetic',false);\n" + await fs.readFile("supabase/nonproduction/" + name,"utf8"));
   }
   for (const [name,id] of Object.entries(users)) {

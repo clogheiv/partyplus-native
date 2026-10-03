@@ -26,6 +26,9 @@ jobs:
           PARTYPLUS_SUPABASE_PUBLISHABLE_KEY: synthetic-placeholder
   concurrent-postgresql:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-file: [backend.test.mjs, observed-schema.test.mjs]
     services:
       postgres:
         image: postgres:17
@@ -43,6 +46,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci --ignore-scripts --no-audit
-      - run: node --test tests/backend.test.mjs
+      - run: node --test tests/${{ matrix.test-file }}
         env:
           PARTYPLUS_TEST_DATABASE_URL: postgres://postgres:synthetic-ci-only@127.0.0.1:5432/partyplus_synthetic

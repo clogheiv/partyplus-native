@@ -72,6 +72,12 @@ test("isolated PostgreSQL contract", async t => {
     const after = edited.party.items.find(i => i.id === "legacy-item-A");
     assert.equal(after.claimedByUserId,before.claimedByUserId); assert.equal(after.claimedBy,before.claimedBy);
   });
+  await t.test("a null expected revision cannot bypass conflict protection or create a receipt", async () => {
+    const before=await read(id);const op=randomUUID();
+    await assert.rejects(commit(users.host,{...fixture(id),title:"Null bypass"},null,op),/revision_conflict/);
+    assert.deepEqual(await read(id),before);
+    assert.equal((await h.db.query("select operation_id from partyplus_private.operations where operation_id=$1",[op])).rows.length,0);
+  });
   await t.test("claim retry cannot toggle ownership, and another guest cannot unclaim it", async () => {
     const op = randomUUID(); const first = await claim(users.guestA,id,"legacy-item-B",true,op);
     assert.deepEqual(await claim(users.guestA,id,"legacy-item-B",true,op),first);

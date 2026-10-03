@@ -23,6 +23,13 @@ alter table partyplus_private.host_access enable row level security;
 alter table partyplus_private.operations enable row level security;
 revoke all on public.parties, public.party_items, public.party_rsvps from public, anon, authenticated;
 revoke all on all tables in schema partyplus_private from public, anon, authenticated;
+-- Revoke the legacy permissive policies too, so later default grants cannot revive them.
+do $$ declare v_policy record; begin
+  for v_policy in select tablename,policyname from pg_policies
+    where schemaname='public' and tablename in ('parties','party_items','party_rsvps') loop
+    execute format('drop policy %I on public.%I',v_policy.policyname,v_policy.tablename);
+  end loop;
+end $$;
 
 create function partyplus_private.require_principal(p_host boolean default false) returns uuid
 language plpgsql security definer set search_path = pg_catalog as $$
@@ -67,8 +74,8 @@ language sql stable security definer set search_path = pg_catalog as $$
     'items',coalesce((select jsonb_agg(jsonb_build_object('id',i.id,'name',i.name,'qty',i.qty,
       'claimedBy',i.claimed_by,'claimedByUserId',i.claimed_by_user_id,'createdBy',i.created_by) order by i.sort_order,i.id)
       from public.party_items i where i.party_id=p.id),'[]'::jsonb),
-    'rsvps',coalesce((select jsonb_agg(jsonb_build_object('id',r.id,'name',r.name,'status',r.status,
-      'attendeeCount',r.attendee_count,'updatedAt',r.updated_at) order by r.id)
+    'rsvps',coalesce((select jsonb_agg(jsonb_build_object('id',r.id,'name',coalesce(r.name,to_jsonb(r)->>'guest_name','Guest'),'status',r.status,
+      'attendeeCount',greatest(coalesce(r.attendee_count,1),1),'updatedAt',coalesce(r.updated_at::text,to_jsonb(r)->>'created_at','')) order by r.id)
       from public.party_rsvps r where r.party_id=p.id),'[]'::jsonb))
   from public.parties p where p.id=p_party_id and p.deleted_at is null
 $$;
@@ -87,6 +94,7 @@ language plpgsql security definer set search_path = pg_catalog as $$
 declare v_uid uuid := partyplus_private.require_principal(true);
   v_id text := p_party->>'id'; v_request jsonb := jsonb_build_object('kind','commit','revision',p_expected_revision,'party',p_party);
   v_receipt jsonb; v_revision bigint; v_item jsonb; v_ordinal integer := 0; v_remove text;
+  v_typed_item public.party_items;
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
@@ -101,7 +109,7 @@ begin
       or exists(select 1 from public.parties where id=v_id and deleted_at is not null) then
       raise exception 'host_access_required' using errcode='42501';
     end if;
-    if v_revision <> p_expected_revision then raise exception 'revision_conflict'; end if;
+    if v_revision is distinct from p_expected_revision then raise exception 'revision_conflict'; end if;
     update public.parties set title=trim(p_party->>'title'), date=nullif(p_party->>'date','')::timestamptz,
       location=p_party->>'location',notes=p_party->>'notes',theme=p_party->>'theme',
       revision=revision+1,updated_at=now() where id=v_id;
@@ -115,16 +123,17 @@ begin
     if length(coalesce(v_item->>'id','')) not between 1 and 200 or length(trim(coalesce(v_item->>'name',''))) not between 1 and 200 then
       raise exception 'invalid_item';
     end if;
+    v_typed_item := jsonb_populate_record(null::public.party_items,v_item);
     insert into public.party_items(party_id,id,name,qty,created_by,sort_order)
-      values(v_id,v_item->>'id',trim(v_item->>'name'),v_item->>'qty',v_uid::text,v_ordinal)
+      values(v_id,v_typed_item.id,trim(v_item->>'name'),v_item->>'qty',v_uid::text,v_ordinal)
       on conflict(party_id,id) do update set name=excluded.name,qty=excluded.qty,sort_order=excluded.sort_order;
     -- Never accept a claim owner or creator from the host's cached snapshot.
     v_ordinal := v_ordinal+1;
   end loop;
   for v_remove in select jsonb_array_elements_text(coalesce(p_party->'removedItemIds','[]'::jsonb)) loop
-    if exists(select 1 from public.party_items where party_id=v_id and id=v_remove and
+    if exists(select 1 from public.party_items where party_id=v_id and id::text=v_remove and
       (claimed_by_user_id is not null or claimed_by is not null)) then raise exception 'claim_conflict'; end if;
-    delete from public.party_items where party_id=v_id and id=v_remove;
+    delete from public.party_items where party_id=v_id and id::text=v_remove;
   end loop;
   -- RSVP rows are intentionally untouched by host edits.
   v_receipt := jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(v_id));
@@ -136,13 +145,16 @@ language plpgsql security definer set search_path = pg_catalog as $$
 declare v_uid uuid := partyplus_private.require_principal();
   v_request jsonb := jsonb_build_object('kind','rsvp','party',p_party_id,'response',p_response); v_receipt jsonb;
   v_name text := trim(p_response->>'name'); v_status text := p_response->>'status'; v_count integer := (p_response->>'attendeeCount')::integer;
+  v_typed_rsvp public.party_rsvps;
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
   if v_name is null or length(v_name) not between 1 and 100 or v_status is null or v_status not in ('yes','maybe','no')
     or v_count is null or v_count not between 1 and 100 then raise exception 'invalid_rsvp'; end if;
   perform partyplus_private.lock_party(p_party_id);
-  insert into public.party_rsvps values(p_party_id,v_uid::text,v_name,v_status,v_count,now())
+  v_typed_rsvp := jsonb_populate_record(null::public.party_rsvps,jsonb_build_object('id',v_uid));
+  insert into public.party_rsvps(party_id,id,name,status,attendee_count,updated_at)
+    values(p_party_id,v_typed_rsvp.id,v_name,v_status,v_count,now())
     on conflict(party_id,id) do update set name=excluded.name,status=excluded.status,attendee_count=excluded.attendee_count,updated_at=now();
   update public.party_items set claimed_by=case when v_status='yes' then v_name else null end,
     claimed_by_user_id=case when v_status='yes' then v_uid::text else null end
@@ -161,16 +173,16 @@ begin
   if v_receipt is not null then return v_receipt; end if;
   if p_claim is null then raise exception 'invalid_claim'; end if;
   perform partyplus_private.lock_party(p_party_id);
-  select claimed_by_user_id,claimed_by into v_owner,v_label from public.party_items where party_id=p_party_id and id=p_item_id for update;
+  select claimed_by_user_id,claimed_by into v_owner,v_label from public.party_items where party_id=p_party_id and id::text=p_item_id for update;
   if not found then raise exception 'item_missing'; end if;
   if p_claim then
-    select name into v_name from public.party_rsvps where party_id=p_party_id and id=v_uid::text and status='yes';
+    select name into v_name from public.party_rsvps where party_id=p_party_id and id::text=v_uid::text and status='yes';
     if not found then raise exception 'yes_rsvp_required' using errcode='42501'; end if;
     if (v_owner is not null and v_owner<>v_uid::text) or (v_owner is null and v_label is not null) then raise exception 'claim_conflict'; end if;
-    update public.party_items set claimed_by_user_id=v_uid::text,claimed_by=v_name where party_id=p_party_id and id=p_item_id;
+    update public.party_items set claimed_by_user_id=v_uid::text,claimed_by=v_name where party_id=p_party_id and id::text=p_item_id;
   else
     if v_owner is distinct from v_uid::text then raise exception 'claim_owner_required' using errcode='42501'; end if;
-    update public.party_items set claimed_by_user_id=null,claimed_by=null where party_id=p_party_id and id=p_item_id;
+    update public.party_items set claimed_by_user_id=null,claimed_by=null where party_id=p_party_id and id::text=p_item_id;
   end if;
   update public.parties set revision=revision+1,updated_at=now() where id=p_party_id;
   return partyplus_private.remember(v_uid,p_operation_id,v_request,jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(p_party_id)));
@@ -180,14 +192,16 @@ create function public.partyplus_v2_suggest_item(p_party_id text,p_item_id text,
 language plpgsql security definer set search_path = pg_catalog as $$
 declare v_uid uuid := partyplus_private.require_principal();
   v_request jsonb := jsonb_build_object('kind','suggest','party',p_party_id,'item',p_item_id,'name',p_name); v_receipt jsonb;
+  v_typed_item public.party_items;
 begin
   v_receipt := partyplus_private.replay(v_uid,p_operation_id,v_request);
   if v_receipt is not null then return v_receipt; end if;
   if length(coalesce(p_item_id,'')) not between 1 and 200 or length(trim(coalesce(p_name,''))) not between 1 and 200 then raise exception 'invalid_item'; end if;
   perform partyplus_private.lock_party(p_party_id);
   if (select count(*) from public.party_items where party_id=p_party_id) >= 200 then raise exception 'item_limit'; end if;
+  v_typed_item := jsonb_populate_record(null::public.party_items,jsonb_build_object('id',p_item_id));
   insert into public.party_items(party_id,id,name,created_by,sort_order)
-    values(p_party_id,p_item_id,trim(p_name),v_uid::text,coalesce((select max(sort_order)+1 from public.party_items where party_id=p_party_id),0));
+    values(p_party_id,v_typed_item.id,trim(p_name),v_uid::text,coalesce((select max(sort_order)+1 from public.party_items where party_id=p_party_id),0));
   update public.parties set revision=revision+1,updated_at=now() where id=p_party_id;
   return partyplus_private.remember(v_uid,p_operation_id,v_request,jsonb_build_object('committed',true,'operationId',p_operation_id,'party',public.partyplus_v2_read_party(p_party_id)));
 end $$;
