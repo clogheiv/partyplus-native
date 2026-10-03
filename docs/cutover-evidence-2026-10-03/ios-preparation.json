@@ -1,0 +1,13 @@
+{
+  "status": "ios-js-assets-compiled",
+  "bundleIdentifier": "com.partyplus.app.preview",
+  "scheme": "partyplusnative-preview",
+  "backendRef": "qmbwrbxbbshbavfhkujx",
+  "physicalIphoneTested": false,
+  "nativeIosBuildProduced": false,
+  "signingChanged": false,
+  "easBuildStarted": false,
+  "publication": false,
+  "limitations": "Loopback invitation URL for local preparation only; iPhone-accessible staging URL, native build/signing, device and store-upgrade qualification still required.",
+  "capturedAt": "2026-10-03T04:20:32.030Z"
+}

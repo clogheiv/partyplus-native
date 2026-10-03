@@ -1,0 +1,11 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "paused",
+  "startedAt": "2026-10-03T04:11:27.970Z",
+  "checks": [
+    "Committed staging pause denies new host/guest writes and preserves reads/data; original create receipt still replays"
+  ],
+  "status": "passed",
+  "partyId": "synthetic-android-8e0acf50-d0b5-4ad2-9c10-5d14a5b577ad",
+  "finishedAt": "2026-10-03T04:11:29.284Z"
+}

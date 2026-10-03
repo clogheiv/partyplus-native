@@ -1,0 +1,12 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "phone-host-edit",
+  "startedAt": "2026-10-03T04:17:38.608Z",
+  "checks": [
+    "Independent verified host sees physical Android RSVP/2, same-principal claim and one suggestion",
+    "Host title edit preserves exact physical guest rows, claims and suggestions"
+  ],
+  "status": "passed",
+  "partyId": "synthetic-android-8e0acf50-d0b5-4ad2-9c10-5d14a5b577ad",
+  "finishedAt": "2026-10-03T04:17:39.341Z"
+}

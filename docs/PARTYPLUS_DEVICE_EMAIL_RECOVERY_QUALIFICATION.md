@@ -1,5 +1,7 @@
 # PartyPlus remaining external qualification
 
+**2026-10-03 update:** Android is connected and its staging guest/pause/preview-upgrade journey has passed. The current APK is `.test-cache/android-preview/partyplus-staging-cutover.apk`, SHA256 `bcae11ce5ed38bb327c1b870d567d3ca22f7a2480f5469f350d1a451bca232a0`. Delivered link-only mail confirms the code-template blocker; verified-host phone coverage remains open. Play production release and signing certificate are now confirmed read-only. [Current readiness report](PARTYPLUS_VERIFIED_CUTOVER_READINESS_2026-10-03.md) supersedes the earlier Android/access/provenance status below; the remaining acceptance matrix still applies.
+
 All fixtures must use staging `qmbwrbxbbshbavfhkujx`. No production customer data, test writes or exploit probes. Production store identity remains `com.partyplus.app`; the internal preview is `com.partyplus.app.preview` / `partyplusnative-preview`. Separate preview installation does not prove an in-place store upgrade.
 
 ## Ready Android artifact

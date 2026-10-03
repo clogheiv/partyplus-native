@@ -1,0 +1,12 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "web-check",
+  "startedAt": "2026-10-03T04:42:51.841Z",
+  "checks": [
+    "Independent verified host sees physical Android RSVP/2, same-principal claim and one suggestion",
+    "Independent web and phone principals retain separate RSVP rows; original phone claim is unchanged"
+  ],
+  "status": "passed",
+  "partyId": "synthetic-android-8e0acf50-d0b5-4ad2-9c10-5d14a5b577ad",
+  "finishedAt": "2026-10-03T04:42:53.491Z"
+}

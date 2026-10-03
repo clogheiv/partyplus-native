@@ -1,0 +1,13 @@
+{
+  "observedDateUtc": "2026-10-03",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "scope": "Physical Android signed anonymous guest requests email_change; user enters address privately",
+  "requestAccepted": true,
+  "userConfirmedDelivery": true,
+  "deliveredContent": "Confirm new email address link; no verification code",
+  "dashboardTemplate": "Default change-email ConfirmationURL template, custom SMTP disabled, edits require custom SMTP",
+  "accountLinkingVerified": false,
+  "nativeVerifiedHostLoopQualified": false,
+  "emailOrOtpRecorded": false,
+  "nextRequirement": "Existing PartyPlus SMTP provider configured securely in staging with Token code templates; no new spending without approval"
+}

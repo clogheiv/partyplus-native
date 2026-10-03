@@ -1,0 +1,12 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "enabled",
+  "startedAt": "2026-10-03T04:14:42.917Z",
+  "checks": [
+    "Host, guest, stranger and unsigned legacy reads/deletes denied; no partial loss; forged host ID grants no access",
+    "Exact committed enable gate permits only authorized verified host writes"
+  ],
+  "status": "passed",
+  "partyId": "synthetic-android-8e0acf50-d0b5-4ad2-9c10-5d14a5b577ad",
+  "finishedAt": "2026-10-03T04:14:46.499Z"
+}

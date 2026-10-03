@@ -1,0 +1,5 @@
+    versionCode=12 minSdk=24 targetSdk=36
+    versionName=1.0.3
+    installerPackageName=com.android.vending
+    initiatingPackageName=com.android.vending
+    originatingPackageName=null

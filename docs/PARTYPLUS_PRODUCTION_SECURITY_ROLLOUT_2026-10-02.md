@@ -1,5 +1,7 @@
 # PartyPlus production security rollout proposal
 
+**2026-10-03 preparation update:** [Current cutover evidence and remaining gates](PARTYPLUS_VERIFIED_CUTOVER_READINESS_2026-10-03.md) supersede the historical device/mail/store-access status in this document. Exact proposed SQL is unchanged. Production 02/03 remain unauthorized and unexecuted.
+
 Phase 1 was separately approved and executed on production `typbofemqhjoiwbkdvuc` at **2026-10-03T03:36:58.518Z**, after verified fresh backup, aggregate usage and an exact baseline match. [Execution and verification evidence](production-freeze-evidence-2026-10-03/REPORT.md) records the result. All later phases remain review only and require separate approval. No store publication, website deployment, destructive recovery, or spending is authorized by this document.
 
 ## Recommended decision

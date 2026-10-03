@@ -1,0 +1,14 @@
+{
+  "status": "built-not-device-qualified",
+  "package": "com.partyplus.app.preview",
+  "scheme": "partyplusnative-preview",
+  "backendRef": "qmbwrbxbbshbavfhkujx",
+  "inviteBase": "http://127.0.0.1:8090",
+  "sourceCommit": "f78bb480d4767314e01b80dc38b448acc74999f4",
+  "sourceMayIncludeUncommittedBatch": true,
+  "apkSha256": "bcae11ce5ed38bb327c1b870d567d3ca22f7a2480f5469f350d1a451bca232a0",
+  "apkPath": "C:\\Users\\clogh\\partyplus-native\\.worktrees\\modernization-phase-1\\.test-cache\\android-preview\\partyplus-staging-cutover.apk",
+  "signing": "Local generated debug signing, internal staging only; unsuitable for production/store upgrade",
+  "physicalDeviceTested": false,
+  "capturedAt": "2026-10-03T04:07:33.718Z"
+}

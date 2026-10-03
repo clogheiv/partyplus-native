@@ -1,0 +1,20 @@
+{
+  "observedDateUtc": "2026-10-03",
+  "scope": "Read-only Google Play Console and installed APK inspection; no release changes",
+  "package": "com.partyplus.app",
+  "productionVersion": "1.0.3",
+  "productionVersionCode": 12,
+  "productionReleasedOn": "2026-06-10",
+  "rolloutPercent": 100,
+  "releaseDetailsUrl": "https://play.google.com/console/u/0/developers/5083096777292892899/app/4972870030016238155/tracks/4697898268722237578/releases/3/details",
+  "signingDetailsUrl": "https://play.google.com/console/u/0/developers/5083096777292892899/app/4972870030016238155/keymanagement",
+  "playAppSigningCertificateSha256": "1c67d65d267ebf140abfb3b95ac5c40ae562b142f1e60aaf961b067e2ee1637f",
+  "installedCertificateMatchesPlay": true,
+  "installedBaseApkSha256": "48287d58e163e4d9a4c14ba4f2cb9124d05268747bceb5cd856c256297e5dd1e",
+  "playUploadCertificateSha256": "ff0895b28fd1e3635f21306feada328d7c07c43f1d152fe7ec22a823a5b1a13b",
+  "availableInternalEasArtifactMatchesUploadCertificate": true,
+  "currentReleasedBinaryToGitCommitMappingVerified": false,
+  "inPlaceProductionStoreUpgradeTested": false,
+  "appStoreConnectAccess": "Existing account identifier available; password prompt requires human access",
+  "screenshots": "Play/SMTP Page.captureScreenshot timed out; no fabricated screenshot supplied"
+}

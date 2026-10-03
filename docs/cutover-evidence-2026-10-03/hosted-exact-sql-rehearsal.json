@@ -1,0 +1,15 @@
+{
+  "scope": "Exact proposal statements on transient metadata-matched public clone; entire transaction rolled back",
+  "checks": [
+    "Legacy reads retained; unsigned and signed raw insert/update/delete/truncate denied",
+    "No partial child deletion",
+    "Verified contract initially paused and raw reads denied",
+    "Independent-evidence host bridge; guest host-delete denied; legacy claim preserved",
+    "Same-name real Auth principals retain distinct RSVPs; host edit preserves guests",
+    "Null revision rejected",
+    "Safe rollback pauses new writes; exact old receipts replay; host listing works"
+  ],
+  "status": "passed",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "verifiedAt": "2026-10-03T04:02:48.944Z"
+}

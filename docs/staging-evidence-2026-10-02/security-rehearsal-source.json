@@ -1,6 +1,6 @@
 {
   "projectRef": "qmbwrbxbbshbavfhkujx",
-  "rehearsalSha256": "c448fd64c65c6b461029243be66f9aaebdb52ba14ee31bae4911042cd2661d6a",
+  "rehearsalSha256": "77be04692134f6aa21eb528e938fe28e9291e3f47f008d742721faef9208aa6c",
   "proposalManifest": {
     "status": "review-only-not-production-authorized",
     "hashEncoding": "UTF-8 with CRLF normalized to LF",

@@ -1,0 +1,11 @@
+{
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "prepare",
+  "startedAt": "2026-10-03T04:08:47.276Z",
+  "checks": [
+    "Verified synthetic host, verified stranger and signed anonymous guest; durable phone fixture created"
+  ],
+  "status": "passed",
+  "partyId": "synthetic-android-8e0acf50-d0b5-4ad2-9c10-5d14a5b577ad",
+  "finishedAt": "2026-10-03T04:08:49.379Z"
+}

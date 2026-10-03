@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-10-03T04:33:16.909Z",
+  "gateRls": true,
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "writesEnabled": true,
+  "anonGateSelect": false,
+  "drainsInFlight": true,
+  "gatedMutations": 5,
+  "legacyPolicies": 0,
+  "rehearsalSchemasAbsent": true,
+  "authenticatedGateUpdate": false,
+  "retainedSyntheticParties": 13,
+  "retainedSyntheticReceipts": 77
+}

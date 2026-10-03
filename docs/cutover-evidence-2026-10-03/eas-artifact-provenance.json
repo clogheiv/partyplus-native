@@ -1,0 +1,44 @@
+{
+  "capturedAt": "2026-10-03T04:32:29.677Z",
+  "scope": "Existing build artifacts; not current App Store Connect/Play release proof",
+  "builds": [
+    {
+      "id": "02cf1dd2-fbf1-4e43-84fa-d0282a19636c",
+      "platform": "ANDROID",
+      "status": "FINISHED",
+      "distribution": "STORE",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "12",
+      "gitCommitHash": "d1972a0a762b71e71869fe9dd230f29adc1c3184",
+      "createdAt": "2026-06-10T17:58:03.460Z",
+      "artifactAccessible": false,
+      "httpStatus": 404
+    },
+    {
+      "id": "0a4769b4-5929-45fb-ae5a-712c2d7c4a0d",
+      "platform": "ANDROID",
+      "status": "FINISHED",
+      "distribution": "INTERNAL",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "12",
+      "gitCommitHash": "d4502b1573c5e69902dc7d651ad15f315e8feb54",
+      "createdAt": "2026-08-05T23:33:12.118Z",
+      "artifactAccessible": true,
+      "artifactBytes": 206648607,
+      "artifactSha256": "58c16f90b20779663603a2223f3b9f42de9fda46ca48de8cc98d5b6c99429029",
+      "artifactFilename": "0a4769b4-5929-45fb-ae5a-712c2d7c4a0d.apk"
+    },
+    {
+      "id": "ebad06eb-0e0c-43fc-a0fe-0ea9f7d6c7f2",
+      "platform": "IOS",
+      "status": "FINISHED",
+      "distribution": "STORE",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "15",
+      "gitCommitHash": "d1972a0a762b71e71869fe9dd230f29adc1c3184",
+      "createdAt": "2026-06-10T18:29:04.741Z",
+      "artifactAccessible": false,
+      "httpStatus": 404
+    }
+  ]
+}
