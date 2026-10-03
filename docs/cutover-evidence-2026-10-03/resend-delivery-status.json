@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-03T05:50:29.519Z",
+  "account": "clogherlabs",
+  "filter": "PartyPlus Staging SMTP",
+  "records": [
+    {
+      "sent": "6min ago",
+      "status": "Delivered",
+      "subject": "Your sign-in link"
+    }
+  ],
+  "messageId": "01a10049-757e-795c-8d34-78c8deadd7e3",
+  "recipientAddressRecorded": false,
+  "messageBodyOpened": false,
+  "verificationCodeRead": false,
+  "recipientReportsNotReceived": true,
+  "conclusion": "Provider reports Delivered; recipient inbox/code qualification still pending",
+  "nextHumanAction": "Check Spam/Junk for subject Your sign-in link from the staging sender"
+}
