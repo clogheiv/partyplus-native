@@ -1,0 +1,142 @@
+{
+  "capturedAt": "2026-10-03T00:37:10.125Z",
+  "scope": "Existing EAS builds; not proof of current App Store/Play release",
+  "builds": [
+    {
+      "id": "851703e0-354a-4fa8-9305-29c0937eb04e",
+      "status": "FINISHED",
+      "platform": "ANDROID",
+      "buildProfile": "development",
+      "distribution": "INTERNAL",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "1",
+      "gitCommitHash": "d4502b1573c5e69902dc7d651ad15f315e8feb54",
+      "createdAt": "2026-08-06T00:35:59.957Z",
+      "completedAt": "2026-08-06T00:52:44.307Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "0a4769b4-5929-45fb-ae5a-712c2d7c4a0d",
+      "status": "FINISHED",
+      "platform": "ANDROID",
+      "buildProfile": "development",
+      "distribution": "INTERNAL",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "12",
+      "gitCommitHash": "d4502b1573c5e69902dc7d651ad15f315e8feb54",
+      "createdAt": "2026-08-05T23:33:12.118Z",
+      "completedAt": "2026-08-05T23:49:30.088Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "ebad06eb-0e0c-43fc-a0fe-0ea9f7d6c7f2",
+      "status": "FINISHED",
+      "platform": "IOS",
+      "buildProfile": "production",
+      "distribution": "STORE",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "15",
+      "gitCommitHash": "d1972a0a762b71e71869fe9dd230f29adc1c3184",
+      "createdAt": "2026-06-10T18:29:04.741Z",
+      "completedAt": "2026-06-10T18:33:48.463Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "02cf1dd2-fbf1-4e43-84fa-d0282a19636c",
+      "status": "FINISHED",
+      "platform": "ANDROID",
+      "buildProfile": "production",
+      "distribution": "STORE",
+      "appVersion": "1.0.3",
+      "appBuildVersion": "12",
+      "gitCommitHash": "d1972a0a762b71e71869fe9dd230f29adc1c3184",
+      "createdAt": "2026-06-10T17:58:03.460Z",
+      "completedAt": "2026-06-10T18:16:12.607Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "6516a9d4-ea40-4aa1-9da0-f3c3d0736801",
+      "status": "FINISHED",
+      "platform": "IOS",
+      "buildProfile": "production",
+      "distribution": "STORE",
+      "appVersion": "1.0.2",
+      "appBuildVersion": "14",
+      "gitCommitHash": "2b75114beb884e5ad23a170b3da2e9896483d47c",
+      "createdAt": "2026-05-23T03:11:17.423Z",
+      "completedAt": "2026-05-23T03:17:00.138Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "1abd57f5-9729-4163-aa40-1aa08a23557f",
+      "status": "FINISHED",
+      "platform": "IOS",
+      "buildProfile": "production",
+      "distribution": "STORE",
+      "appVersion": "1.0.1",
+      "appBuildVersion": "13",
+      "gitCommitHash": "2b75114beb884e5ad23a170b3da2e9896483d47c",
+      "createdAt": "2026-05-23T02:33:48.766Z",
+      "completedAt": "2026-05-23T02:38:39.964Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "fdc47ddc-781f-4c07-96a2-f8a9d2db46b2",
+      "status": "FINISHED",
+      "platform": "ANDROID",
+      "buildProfile": "production",
+      "distribution": "STORE",
+      "appVersion": "1.0.1",
+      "appBuildVersion": "11",
+      "gitCommitHash": "2b75114beb884e5ad23a170b3da2e9896483d47c",
+      "createdAt": "2026-05-22T23:45:30.420Z",
+      "completedAt": "2026-05-23T00:03:35.943Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    },
+    {
+      "id": "b4aaa739-2372-438e-a470-a3e4d3bb96f5",
+      "status": "FINISHED",
+      "platform": "IOS",
+      "buildProfile": "production",
+      "distribution": "STORE",
+      "appVersion": "1.0.1",
+      "appBuildVersion": "11",
+      "gitCommitHash": "9bd032611b82afbc7ecf6d4318677ff031c54fce",
+      "createdAt": "2026-05-01T23:48:43.987Z",
+      "completedAt": "2026-05-01T23:54:32.013Z",
+      "project": {
+        "id": "1baa13de-9930-4571-91dc-f16df7ec2bfe",
+        "name": "PartyPlusNative",
+        "slug": "PartyPlusNative"
+      }
+    }
+  ]
+}

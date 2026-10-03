@@ -1,0 +1,17 @@
+{
+  "capturedAt": "2026-10-03T00:40:15.377Z",
+  "source": "Authenticated Netlify deploys and published deployment detail UI; read only",
+  "project": "partyplus-invite",
+  "primaryDomain": "https://partyplusapp.com",
+  "repository": "https://github.com/clogheiv/partyplus-native",
+  "productionBranch": "backup/share-working",
+  "publishedCommit": "510430c04df1013e0f5825f70cc0d5caf4a4309b",
+  "publishedDeployId": "6a94a5c77c86e100080fe9fc",
+  "publishedOn": "2026-08-30 (dashboard local display 4:51 PM)",
+  "autoPublishingEnabled": true,
+  "deployedFileRoot": "invite-web",
+  "assessmentCommitPreviewOnly": "6af06cc",
+  "assessmentPreviewDeployId": "6a97523d0f3e2800083e1d41",
+  "warning": "1 of 3 redirect rules could not be processed; exact rule and impact not established",
+  "settingsChanged": false
+}

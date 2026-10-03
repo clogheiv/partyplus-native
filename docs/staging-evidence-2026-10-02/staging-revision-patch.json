@@ -1,8 +1,12 @@
 {
   "projectRef": "qmbwrbxbbshbavfhkujx",
-  "status": "pending",
-  "reason": "Edge browser tool requires the ChatGPT extension update before staging function replacement and metadata verification can continue",
+  "status": "passed",
   "fix": "Reject null expected edit revision with IS DISTINCT FROM",
   "localVerification": "71 full-suite tests; 14 contract and 5 observed-schema PostgreSQL tests; genuine dump/restore passed",
-  "requiredNextSteps": ["Apply generated .test-cache/staging-revision-patch.sql to isolated staging only", "Recapture staging catalog metadata", "Rerun scripts/test-staging.mjs with real JWTs and null-revision assertion"]
+  "stagingVerification": [
+    "Function-only patch applied after extension update",
+    "Refreshed catalog confirms corrected function and unchanged client grant denial",
+    "Final real JWT integration run passes null-revision rejection and unchanged snapshot assertion"
+  ],
+  "verifiedAt": "2026-10-03T00:40:31.113Z"
 }

@@ -114,7 +114,7 @@ Before production approval, document backup/restore and a versioned read/write t
 
 `node scripts/prepare-staging-contract.mjs` reads the recorded production **metadata only** and generates `observed-legacy-schema.sql` plus `.test-cache/staging-install.sql`. The combined script requires blank application tables and installs the clone, additive reconciliation and v2 contract in one transaction. The deployed staging project is already installed: **do not rerun the one-time installation there**. Never run `00-synthetic-auth.sql` or `00-synthetic-baseline.sql` against Supabase; those files are only for blank local test databases.
 
-The final null-revision fix is not yet deployed to staging because Edge extension control became unavailable. The generator also emits `.test-cache/staging-revision-patch.sql`, replacing only the commit function. Verify project reference `qmbwrbxbbshbavfhkujx` before applying that patch, recapture deployed metadata, then run the updated real integration script. Earlier eight-group staging evidence predates this fix.
+The final null-revision fix is deployed and verified in staging. The generator also emits `.test-cache/staging-revision-patch.sql`, replacing only the commit function. Its application, refreshed metadata and the final eight-group real integration run completed after the temporary Edge extension issue was resolved. Do not apply it to production.
 
 For Windows local PostgreSQL, extract the official PostgreSQL 17.11 vendor binary runtime under `.test-cache/postgresql-17.11-runtime/pgsql`. Then run:
 

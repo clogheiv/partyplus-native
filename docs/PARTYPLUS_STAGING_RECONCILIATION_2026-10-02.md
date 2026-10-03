@@ -4,7 +4,7 @@ Engineering date: October 2, 2026, America/Chicago. Some evidence timestamps are
 
 ## Result and boundaries
 
-The candidate contract runs against the observed production table shapes in a completely separate **Free** Supabase project. Real Supabase Auth/JWT, multiple HTTP clients, independent PostgreSQL sessions and a real `pg_dump`/`pg_restore` passed. **A final null-revision correction is tested locally but still needs staging application/reverification; Edge extension access is currently unavailable.** Production was inspected only through a metadata query inside `BEGIN TRANSACTION READ ONLY`; no customer rows were selected, exported, copied or changed.
+The final candidate contract runs against the observed production table shapes in a completely separate **Free** Supabase project. Real Supabase Auth/JWT, multiple HTTP clients, independent PostgreSQL sessions and a real `pg_dump`/`pg_restore` passed, including the final null-revision correction. Production was inspected only through a metadata query inside `BEGIN TRANSACTION READ ONLY`; no customer rows were selected, exported, copied or changed.
 
 | Environment | Project | Organization | Use |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ Evidence: [production catalog export](staging-evidence-2026-10-02/production-met
 - Party IDs are text; item and RSVP IDs are UUID. Production has `datetime`, `location_name`, address/coordinates and nullable legacy `guest_name`; the earlier inferred fixture did not fully represent these shapes.
 - `claimed_by_user_id` and `created_by` are absent. The repository's earlier claim migration is not evidence of deployment. Existing claim labels cannot establish a principal's ownership.
 - No `supabase_migrations.schema_migrations` relation exists. No PartyPlus tables appear in `supabase_realtime`; native subscriptions cannot be assumed to deliver updates. Candidate clients use explicit polling.
-- The dashboard showed request traffic during the preceding day and an existing backup indicator. Neither proves actual customer activity or a successful recoverable backup. Production remains live. Store/EAS/Netlify build-to-commit provenance remains unresolved.
+- The dashboard showed request traffic during the preceding day and an existing backup indicator. Neither proves actual customer activity or a successful recoverable backup. Production remains live. EAS build and published Netlify source provenance are now captured below; matching actual store releases remains unresolved.
 
 ## Reconciliation and verification
 
@@ -38,7 +38,7 @@ Additive reconciliation preserves UUID primary keys, party IDs, old columns, for
 | Full regression suite | 71 passed, zero failed | Includes PGlite and final null-revision fix; not physical devices |
 | PostgreSQL 17.11 | 14 contract tests and 5 observed-schema tests passed | Includes final null-revision fix; one PGlite-only restore test skipped |
 | Real PostgreSQL archive restore | Passed | Separate blank database in same local cluster; existing test roles retained |
-| Real Supabase Auth/RPC | Eight integration groups passed before final revision correction | Synthetic accounts; generated OTP, no delivered mail; rerun required after patch |
+| Real Supabase Auth/RPC | Eight integration groups passed after final revision correction | Synthetic accounts; generated OTP, no delivered mail |
 | Browser invitation → RSVP → claim → suggestion → reload | Passed against real staging | Edge desktop; loopback-served website, not published hosting |
 | Independent verified host | Saw guest state; title edit preserved it; returning browser saw edit | SDK session, not an installed native app |
 | ESLint / TypeScript | Passed | Source validation |
@@ -47,9 +47,15 @@ Concurrency includes same-operation retries, two same-name guest RSVPs, two sugg
 
 Restore compares exact synthetic rows, receipts, access evidence, effective ACLs, RLS and functions; it then executes denied anonymous deletion, receipt replay and verified host listing. PostgreSQL normalizes an explicit owner-only ACL to its equivalent default during restore, so effective ACLs are compared. A test-only assumption that random UUID sorting placed Ice first was corrected to find the item by ID.
 
-Final source review reproduced a candidate-only conflict bypass: `v_revision <> NULL` evaluates to unknown, allowing a verified host edit with a null expected revision. The fix uses `IS DISTINCT FROM`, rejects null on both create/edit paths and leaves no mutation or receipt. Regression evidence includes the failing pre-fix case and passing tests against both local schemas and independent PostgreSQL. `prepare-staging-contract.mjs` also emits `.test-cache/staging-revision-patch.sql` to replace only the commit function in **staging**. Apply it in project `qmbwrbxbbshbavfhkujx` once Edge control is restored, recapture metadata and rerun `test-staging.mjs` (now including null-revision rejection). Existing recorded staging metadata predates this fix. Do not mistake earlier integration success for final-source staging qualification.
+Final source review reproduced a candidate-only conflict bypass: `v_revision <> NULL` evaluates to unknown, allowing a verified host edit with a null expected revision. The fix uses `IS DISTINCT FROM`, rejects null on both create/edit paths and leaves no mutation or receipt. Regression evidence includes the failing pre-fix case and passing tests against both local schemas and independent PostgreSQL. `prepare-staging-contract.mjs` also emits `.test-cache/staging-revision-patch.sql` to replace only the commit function in **staging**. After Michael updated the Edge extension, this patch was applied to `qmbwrbxbbshbavfhkujx`; refreshed metadata confirms the function, unchanged client grant denials and fixed search path. The final real integration rerun passed, including the null-revision rejection and unchanged authoritative snapshot assertion.
 
 Evidence is under [staging-evidence-2026-10-02](staging-evidence-2026-10-02). Synthetic accounts and records are retained for inspection. Privileged keys/passwords are never tracked or included in evidence. The official PostgreSQL binary archive came from EnterpriseDB, linked by PostgreSQL's Windows download page; observed archive SHA256 is `80379B2C04D51C30225532E0AE04509899141E9957ED096FE749D7FD9DF8F82F` (recorded integrity value, not an independently verified vendor signature). Temporary servers were stopped.
+
+## Deployment provenance captured read-only
+
+[EAS metadata](staging-evidence-2026-10-02/eas-build-provenance.json) was retrieved through the existing installed/authenticated CLI without starting builds or submissions. Project is `1baa13de-9930-4571-91dc-f16df7ec2bfe` / `PartyPlusNative`. The latest returned store-distribution builds are June 10, 2026: iOS version 1.0.3 build 15 (`ebad06eb-0e0c-43fc-a0fe-0ea9f7d6c7f2`) and Android version 1.0.3 build 12 (`02cf1dd2-fbf1-4e43-84fa-d0282a19636c`), both at `d1972a0a762b71e71869fe9dd230f29adc1c3184`. More recent August Android builds are internal development builds at `d4502b1573c5e69902dc7d651ad15f315e8feb54`. These records **do not prove which binary is currently released in either store**.
+
+The authenticated [Netlify production deploy](https://app.netlify.com/projects/partyplus-invite/deploys/6a94a5c77c86e100080fe9fc) identifies published branch `backup/share-working`, commit `510430c04df1013e0f5825f70cc0d5caf4a4309b`, August 30, 2026, and primary domain `partyplusapp.com`. The deployed files are under `invite-web`. Auto-publishing from that branch is enabled; no setting was changed. Assessment HEAD `6af06cc` appears only as a September 1 **deploy preview**, not the published production revision. The deployment reports one of three redirect rules invalid; the exact rejected rule and installed-device impact are not yet established. Do not deploy or push to the production branch as a diagnostic. See [sanitized website provenance](staging-evidence-2026-10-02/netlify-provenance.json).
 
 ## Versioned legacy transition proposal
 
@@ -72,6 +78,6 @@ This is a **review plan**, not production authorization or an executable product
 
 ## Remaining gates and next batch
 
-No further product choice or spending is needed for the completed batch. Production C1–C3 remain open until approved rollout and verification. C1/C2 and C3 now have real staging evidence; H3 has real OTP/session evidence; H10 has a real staging browser journey. Physical iOS/Android, mobile browsers, delivered email/code templates, anonymous-to-verified linking, hosted restoration, source/store provenance and hosted CI remain open. Edge browser control stopped after proof capture because its extension requires an update; this does not indicate an app failure.
+No further product choice or spending is needed for the completed batch. Production C1–C3 remain open until approved rollout and verification. C1/C2 and C3 now have real staging evidence; H3 has real OTP/session evidence; H10 has a real staging browser journey. Physical iOS/Android, mobile browsers, delivered email/code templates, anonymous-to-verified linking, hosted restoration, actual store-release mapping and hosted CI remain open. The temporary Edge extension access issue was resolved by Michael; the final staging patch and tests completed afterward.
 
-Immediate remaining step: update the Edge ChatGPT extension, apply the prepared staging revision patch and rerun real integration tests. Then qualify staging native previews and actual email/account-linking flows, verify provenance and a hosted backup restoration, and finish the precise production cutover/upgrade communication and migration review. Framework upgrades and remaining dependency findings stay a separately controlled maintenance phase.
+Next batch: qualify staging native previews and actual email/account-linking flows, verify store-release mapping and a hosted backup restoration, and finish the precise production cutover/upgrade communication and migration review. Framework upgrades and remaining dependency findings stay a separately controlled maintenance phase.
