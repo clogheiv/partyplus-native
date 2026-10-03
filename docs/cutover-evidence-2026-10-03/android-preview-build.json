@@ -1,5 +1,5 @@
 {
-  "status": "built-not-device-qualified",
+  "status": "installed-in-place-account-test-pending",
   "package": "com.partyplus.app.preview",
   "scheme": "partyplusnative-preview",
   "backendRef": "qmbwrbxbbshbavfhkujx",
@@ -10,5 +10,8 @@
   "apkPath": "C:\\Users\\clogh\\partyplus-native\\.worktrees\\modernization-phase-1\\.test-cache\\android-preview\\partyplus-staging-cutover.apk",
   "signing": "Local generated debug signing, internal staging only; unsuitable for production/store upgrade",
   "physicalDeviceTested": false,
-  "capturedAt": "2026-10-03T05:28:40.961Z"
+  "capturedAt": "2026-10-03T05:28:40.961Z",
+  "installedInPlace": true,
+  "installedAt": "2026-10-03T05:33:39.0912002Z",
+  "upgradeResult": "adb install -r Success; no uninstall or data clearing; preview opens"
 }

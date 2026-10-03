@@ -40,7 +40,11 @@
     "change-email-address"
   ],
   "emailOtpLength": 8,
-  "manualLinkingEnabled": false,
+  "manualLinkingEnabled": true,
   "deliveredEmailVerified": false,
-  "observedAt": "2026-10-03T05:28:18.9133187Z"
+  "observedAt": "2026-10-03T05:28:18.9133187Z",
+  "manualLinkingApproval": "Michael approved staging account linking at action time; only qmbwrbxbbshbavfhkujx",
+  "manualLinkingPersistedAfterReload": true,
+  "emailConfirmationEnabled": true,
+  "manualLinkingEnabledAt": "2026-10-03T05:33:39.0493186Z"
 }
