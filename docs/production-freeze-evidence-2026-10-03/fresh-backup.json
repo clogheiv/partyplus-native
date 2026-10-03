@@ -1,0 +1,31 @@
+{
+  "status": "VERIFIED_FRESH_BACKUP",
+  "projectRef": "typbofemqhjoiwbkdvuc",
+  "capturedAt": "2026-10-03T03:36:01.033Z",
+  "completedAt": "2026-10-03T03:36:22.300Z",
+  "snapshotConsistent": true,
+  "archiveEntries": 639,
+  "verification": "pg_dump successful; expected app/Auth data entries present; pg_restore decoded the entire archive to NUL without executing SQL; DPAPI decrypt matches original SHA256",
+  "files": {
+    "production.dump": {
+      "encryptedBytes": 445782,
+      "verified": true,
+      "plainSha256": "42de771c6821313839be49afc0952d3c083985c40a2e267ec71ab236dc02b871",
+      "bytes": 445556
+    },
+    "roles.sql": {
+      "encryptedBytes": 5638,
+      "verified": true,
+      "plainSha256": "1e1e69712b86e3e434d421cbe21e353329f14b1d4d6ddef9bc2f4871356c35ae",
+      "bytes": 5413
+    }
+  },
+  "backupDirectory": "C:\\Users\\clogh\\partyplus-native\\.worktrees\\modernization-phase-1\\.test-cache\\production-backups\\2026-10-03T03-36-01-033Z",
+  "clientTlsVerified": true,
+  "caSha256": "700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7",
+  "customerContentInspected": false,
+  "usedAsTestData": false,
+  "restoredToDatabase": false,
+  "custody": "Ignored local directory restricted to current Windows user, SYSTEM and Administrators. DPAPI CurrentUser encryption; preserve this Windows identity/key for recovery. Not an offsite backup.",
+  "limitations": "Archive integrity verified; no full hosted restoration performed. Storage binary objects/external configuration and role passwords are outside this logical database/role backup."
+}

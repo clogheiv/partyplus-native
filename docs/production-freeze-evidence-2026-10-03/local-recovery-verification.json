@@ -1,0 +1,26 @@
+{
+  "verifiedAt": "2026-10-03T03:45:41.4596609Z",
+  "dpapiCurrentUserDecryptionAndOriginalHashesVerified": true,
+  "plaintextBackupAbsent": true,
+  "temporaryCredentialCleared": true,
+  "inheritanceDisabled": true,
+  "acl": [
+    {
+      "identity": "NT AUTHORITY\\SYSTEM",
+      "rights": "FullControl",
+      "inherited": false
+    },
+    {
+      "identity": "BUILTIN\\Administrators",
+      "rights": "FullControl",
+      "inherited": false
+    },
+    {
+      "identity": "ClogherLabs\\clogh",
+      "rights": "FullControl",
+      "inherited": false
+    }
+  ],
+  "databaseRestorePerformed": false,
+  "unsafePolicyRollbackExecuted": false
+}

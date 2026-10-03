@@ -1,10 +1,10 @@
 # PartyPlus production security rollout proposal
 
-Review only. Production `typbofemqhjoiwbkdvuc` is unchanged. Only isolated staging `qmbwrbxbbshbavfhkujx` and synthetic loopback databases were written. Michael must separately approve each production phase; an approval of this document does not authorize store publication, a website deployment, destructive recovery, or spending.
+Phase 1 was separately approved and executed on production `typbofemqhjoiwbkdvuc` at **2026-10-03T03:36:58.518Z**, after verified fresh backup, aggregate usage and an exact baseline match. [Execution and verification evidence](production-freeze-evidence-2026-10-03/REPORT.md) records the result. All later phases remain review only and require separate approval. No store publication, website deployment, destructive recovery, or spending is authorized by this document.
 
 ## Recommended decision
 
-Approve a **time-bounded legacy write freeze**, followed by a separately gated verified-contract cutover. Retaining unsafe writes while waiting for every device/recovery gate leaves the confirmed vulnerability open. The freeze changes authorization, not customer rows. Existing clients can still read; all legacy saves, RSVPs, claims, suggestions and deletes stop. Full v2 enablement is **not operationally ready** until the open device, delivered-email, hosted recovery and release gates below pass.
+The approved **time-bounded legacy write freeze** is now in effect. Compatibility review is due **2026-10-10T03:37:04.453Z**; this deadline does not automatically reopen writes. The freeze changes authorization, not customer rows. Existing clients can still read; all legacy saves, RSVPs, claims, suggestions and deletes stop. Full v2 enablement is **not operationally ready** until the open device, delivered-email, hosted recovery and release gates below pass and a separately approved verified-contract cutover occurs.
 
 The freeze intentionally preserves the three existing unrestricted SELECT policies temporarily. Consequently, existing raw enumeration exposure remains during that period. It does not expand reading access. Set a cutover deadline before executing phase 1; my recommended maximum compatibility window is seven days, with daily readiness review. If readiness remains blocked, retain the write freeze and obtain a decision on closing raw reads; never reopen unsafe writes. Existing invite URLs and party IDs are retained throughout.
 

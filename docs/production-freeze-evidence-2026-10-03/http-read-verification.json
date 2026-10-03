@@ -1,0 +1,30 @@
+{
+  "status": "PASSED",
+  "verifiedAt": "2026-10-03T03:37:51.648Z",
+  "checks": [
+    {
+      "table": "parties",
+      "status": 200,
+      "contentRange": "0-346/347",
+      "passed": true,
+      "method": "HEAD",
+      "privateContentRetrieved": false
+    },
+    {
+      "table": "party_items",
+      "status": 200,
+      "contentRange": "0-636/637",
+      "passed": true,
+      "method": "HEAD",
+      "privateContentRetrieved": false
+    },
+    {
+      "table": "party_rsvps",
+      "status": 200,
+      "contentRange": "0-117/118",
+      "passed": true,
+      "method": "HEAD",
+      "privateContentRetrieved": false
+    }
+  ]
+}

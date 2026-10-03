@@ -1,0 +1,192 @@
+{
+  "status": "APPROVED_LEGACY_WRITE_FREEZE_VERIFIED",
+  "verifiedAt": "2026-10-03T03:37:04.453Z",
+  "projectRef": "typbofemqhjoiwbkdvuc",
+  "freezeSha256": "b87fef62a48798d71d633a7e0d4074e29abeb884507d51ba9511d22d1796959b",
+  "backupCapturedAt": "2026-10-03T03:36:01.033Z",
+  "beforeCounts": {
+    "parties": {
+      "total": "347",
+      "latest_created_at": "2026-10-02T15:35:49.026Z",
+      "latest_updated_at": "2026-10-02T15:35:49.026Z"
+    },
+    "party_items": {
+      "total": "637",
+      "latest_created_at": "2026-10-02T15:43:42.183Z"
+    },
+    "party_rsvps": {
+      "total": "118",
+      "latest_created_at": "2026-10-02T15:38:35.979Z",
+      "latest_updated_at": "2026-10-02T15:38:34.863Z"
+    }
+  },
+  "afterCounts": {
+    "parties": {
+      "total": "347",
+      "latest_created_at": "2026-10-02T15:35:49.026Z",
+      "latest_updated_at": "2026-10-02T15:35:49.026Z"
+    },
+    "party_items": {
+      "total": "637",
+      "latest_created_at": "2026-10-02T15:43:42.183Z"
+    },
+    "party_rsvps": {
+      "total": "118",
+      "latest_created_at": "2026-10-02T15:38:35.979Z",
+      "latest_updated_at": "2026-10-02T15:38:34.863Z"
+    }
+  },
+  "dataCountsUnchanged": true,
+  "unchangedMetadata": {
+    "tables": true,
+    "columns": true,
+    "indexes": true,
+    "schemas": true,
+    "version": true,
+    "database": true,
+    "triggers": true,
+    "functions": true,
+    "constraints": true,
+    "publications": true,
+    "default_grants": true,
+    "migration_ledger": true,
+    "publication_tables": true
+  },
+  "retainedSelectPolicies": 3,
+  "restrictiveWriteDenies": 9,
+  "removedUnsafeWritePolicies": 8,
+  "permissionChecks": [
+    {
+      "role": "anon",
+      "table": "parties",
+      "operation": "INSERT",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "parties",
+      "operation": "UPDATE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "parties",
+      "operation": "DELETE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "party_items",
+      "operation": "INSERT",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "party_items",
+      "operation": "UPDATE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "party_items",
+      "operation": "DELETE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "party_rsvps",
+      "operation": "INSERT",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "party_rsvps",
+      "operation": "UPDATE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "anon",
+      "table": "party_rsvps",
+      "operation": "DELETE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "parties",
+      "operation": "INSERT",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "parties",
+      "operation": "UPDATE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "parties",
+      "operation": "DELETE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "party_items",
+      "operation": "INSERT",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "party_items",
+      "operation": "UPDATE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "party_items",
+      "operation": "DELETE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "party_rsvps",
+      "operation": "INSERT",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "party_rsvps",
+      "operation": "UPDATE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    },
+    {
+      "role": "authenticated",
+      "table": "party_rsvps",
+      "operation": "DELETE",
+      "result": "42501_PERMISSION_DENIED",
+      "probe": "EXPLAIN only; no DML executed"
+    }
+  ],
+  "roleReadCountsMatched": true,
+  "otherProductionMigrationsApplied": false,
+  "rollback": "Pre-commit transactional rollback; post-commit retain safe read-only freeze. No unsafe unfreeze is authorized. File04 v2 gate is absent and inapplicable.",
+  "compatibilityDeadline": "2026-10-10T03:37:04.453Z",
+  "deadlineMeaning": "Review/upgrade deadline; NO automatic restoration of unsafe write permissions",
+  "customerContentInspected": false
+}
