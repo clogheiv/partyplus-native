@@ -69,8 +69,8 @@ const server=http.createServer(async(req,res)=>{
    json(res,200,result);return;
   }
   const base=path.resolve('web-dist');const file=path.resolve(base,'.'+route);
-  let selected=path.join(base,'index.html');if(file.startsWith(base+path.sep)&&['.js','.css','.svg'].includes(path.extname(file)))selected=file;
-  const data=await fs.readFile(selected);res.writeHead(200,{'content-type':({'.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.html':'text/html'})[path.extname(selected)],'cache-control':'no-store'});res.end(data);
+  let selected=path.join(base,'index.html');if(file.startsWith(base+path.sep)&&['.js','.css','.svg','.woff2','.txt','.json'].includes(path.extname(file)))selected=file;
+  const data=await fs.readFile(selected);res.writeHead(200,{'content-type':({'.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.html':'text/html','.woff2':'font/woff2','.txt':'text/plain','.json':'application/json'})[path.extname(selected)],'cache-control':'no-store'});res.end(data);
  }catch(error){json(res,error.code==='42501'?403:409,{code:error.code??'synthetic_error',message:error.message});}
 });
 server.listen(8091,'127.0.0.1',()=>console.log('Synthetic-only browser QA http://127.0.0.1:8091/i/welcome-dinner — email code 12345678'));

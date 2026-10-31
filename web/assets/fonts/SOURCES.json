@@ -1,0 +1,36 @@
+{
+  "downloadedAt": "2026-10-31T21:33:43.601Z",
+  "license": "SIL Open Font License 1.1 (full text bundled for each family)",
+  "assets": [
+    {
+      "name": "SpaceGrotesk-Variable.woff2",
+      "url": "https://raw.githubusercontent.com/floriankarsten/space-grotesk/master/fonts/woff2/SpaceGrotesk%5Bwght%5D.woff2",
+      "bytes": 49256,
+      "sha256": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07"
+    },
+    {
+      "name": "SpaceGrotesk-OFL.txt",
+      "url": "https://raw.githubusercontent.com/floriankarsten/space-grotesk/master/OFL.txt",
+      "bytes": 4495,
+      "sha256": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72"
+    },
+    {
+      "name": "Fraunces-Display-Semibold.woff2",
+      "url": "https://raw.githubusercontent.com/undercasetype/Fraunces/master/fonts/webfonts/Fraunces144pt-SemiBold.woff2",
+      "bytes": 37228,
+      "sha256": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65"
+    },
+    {
+      "name": "Fraunces-Display-Italic.woff2",
+      "url": "https://raw.githubusercontent.com/undercasetype/Fraunces/master/fonts/webfonts/Fraunces144pt-Italic.woff2",
+      "bytes": 43620,
+      "sha256": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb"
+    },
+    {
+      "name": "Fraunces-OFL.txt",
+      "url": "https://raw.githubusercontent.com/undercasetype/Fraunces/master/OFL.txt",
+      "bytes": 4391,
+      "sha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b"
+    }
+  ]
+}

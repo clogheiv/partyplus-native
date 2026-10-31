@@ -51,24 +51,32 @@ if(switches.has('--build')){
 }
 const artifact=path.join(root,'web-dist');
 const allowed=new Set(['index.html','app.js','app.css','favicon.svg','_headers','_redirects']);
+const allowedFonts=new Set(['SpaceGrotesk-Variable.woff2','Fraunces-Display-Semibold.woff2','Fraunces-Display-Italic.woff2','SpaceGrotesk-OFL.txt','Fraunces-OFL.txt','SOURCES.json'].map(name=>'assets/fonts/'+name));
 const files={};
 const bodies=new Map();
 const sha256={};
 let totalBytes=0;
-for(const entry of await fs.readdir(artifact,{withFileTypes:true})){
-  if(!entry.isFile()||!allowed.has(entry.name))throw Error('Artifact contains an unexpected file, directory, or link. Upload stopped.');
-  const body=await fs.readFile(path.join(artifact,entry.name));
+async function collect(relative=''){
+for(const entry of await fs.readdir(path.join(artifact,relative),{withFileTypes:true})){
+  const asset=relative?relative+'/'+entry.name:entry.name;
+  if(entry.isDirectory()&&['assets','assets/fonts'].includes(asset)){await collect(asset);continue;}
+  if(!entry.isFile()||(!allowed.has(asset)&&!allowedFonts.has(asset)))throw Error('Artifact contains an unexpected file, directory, or link. Upload stopped.');
+  const body=await fs.readFile(path.join(artifact,asset));
   if(body.length>10_000_000)throw Error('Unexpectedly large browser asset.');
+  if(asset.endsWith('.woff2')&&body.subarray(0,4).toString()!=='wOF2')throw Error('Font asset is not the expected WOFF2 format.');
   const source=body.toString('utf8');
   if(/sb_secret_[A-Za-z0-9_-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:NETLIFY_AUTH_TOKEN|SUPABASE_SERVICE_ROLE_KEY)\s*[:=]/.test(source))throw Error('Artifact secret scan rejected an asset.');
   for(const jwt of source.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g)||[]){
     try{if(JSON.parse(Buffer.from(jwt.split('.')[1],'base64url').toString()).role==='service_role')throw Error('Privileged JWT found in public artifact.');}catch(error){if(error.message==='Privileged JWT found in public artifact.')throw error;}
   }
-  const file='/'+entry.name;
+  const file='/'+asset;
   const hash=createHash('sha1').update(body).digest('hex');
   files[file]=hash;bodies.set(hash,{file,body});sha256[file]=createHash('sha256').update(body).digest('hex');totalBytes+=body.length;
 }
+}
+await collect();
 for(const name of allowed)if(!files['/'+name])throw Error(`Required browser artifact is missing: ${name}`);
+if((await fs.readFile(path.join(artifact,'app.css'),'utf8')).includes('/assets/fonts/'))for(const name of allowedFonts)if(!files['/'+name])throw Error('Required local font or license asset is missing: '+name);
 if(totalBytes>25_000_000)throw Error('Unexpectedly large browser artifact.');
 const app=(await fs.readFile(path.join(artifact,'app.js'))).toString('utf8');
 if(!app.includes(publicConfig.url)||!app.includes(publicKey)||!app.includes(`environment:"${environment}"`))throw Error('Built public configuration does not match the selected environment. Rebuild first.');

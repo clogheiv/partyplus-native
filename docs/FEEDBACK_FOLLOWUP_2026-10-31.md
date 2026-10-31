@@ -29,3 +29,9 @@ Focused helper checks: four pass; TypeScript passes. Rendered synthetic browser 
 ## Subsequent phases authorized by the user
 
 After this first functional release, add optional Supabase password sign-in for existing verified accounts on the same principal, retain email-code sign-in/recovery and persisted sessions, and leave guest RSVP unchanged. Then execute a substantial, distinctive visual redesign across creation, My Parties, invitations, RSVP and bring lists. The present site is a first working version; the design phase must create an intentional visual identity and clear everyday actions, beyond a minor color adjustment. Keep responsive behavior, contrast, keyboard access and existing no-cost resources. Release each functional correction independently before that design phase.
+
+## Password release and visual integration
+
+Optional password source `046190d98ab0cf6b703d2f09d5c0572576711213` was published and locked at21:42:07 UTC as deploy `6ae6607931398212cdfba8df`. It followed the already-released item correction. Existing customers choose their own passwords; no customer credential or global Auth setting was modified.
+
+The subsequent full visual redesign replaces the generic sidebar/card presentation with an invitation/poster identity, bundled licensed Space Grotesk/Fraunces type, event palettes, dated ticket agenda, and live creation preview. Parent desktop/phone visual review passed after loosening serif headline spacing. Phone widths and readable input sizing were checked; the final integrated local creation/guest/claim/host-edit/share/copy path passed without changing Michael’s party or Tiffany’s RSVP. See `WEB_VISUAL_REDESIGN_2026-10-31.md`.

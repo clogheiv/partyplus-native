@@ -10,7 +10,11 @@ const key=process.env.PARTYPLUS_SUPABASE_PUBLISHABLE_KEY;
 const boundary=loadTs('src/lib/backendBoundary.ts').validateBackendBoundary(environment,url,key,false);
 if(!boundary.configured)throw Error(boundary.reason);
 const output=path.join(root,'web-dist');
+if(path.dirname(output)!==root||path.basename(output)!=='web-dist')throw Error('Refusing an unexpected generated output path.');
+await fs.rm(output,{recursive:true,force:true});
 await fs.mkdir(output,{recursive:true});
 for(const name of ['index.html','favicon.svg','_headers','_redirects'])await fs.copyFile(path.join(root,'web',name),path.join(output,name));
-await build({entryPoints:[path.join(root,'web/src/main.tsx')],outfile:path.join(output,'app.js'),bundle:true,platform:'browser',format:'iife',target:'es2022',minify:true,legalComments:'none',define:{'process.env.NODE_ENV':JSON.stringify('production'),__PARTYPLUS_WEB_CONFIG__:JSON.stringify({environment,url,key})}});
+const fonts=path.join(root,'web/assets/fonts');
+try{await fs.access(fonts);await fs.cp(fonts,path.join(output,'assets/fonts'),{recursive:true});}catch(error){if(error.code!=='ENOENT')throw error;}
+await build({entryPoints:[path.join(root,'web/src/main.tsx')],outfile:path.join(output,'app.js'),bundle:true,platform:'browser',format:'iife',target:'es2022',minify:true,legalComments:'none',external:['/assets/fonts/*'],define:{'process.env.NODE_ENV':JSON.stringify('production'),__PARTYPLUS_WEB_CONFIG__:JSON.stringify({environment,url,key})}});
 console.log(`PartyPlus web built for ${environment}; public configuration validated.`);
