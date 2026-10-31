@@ -1,0 +1,16 @@
+import {build} from 'esbuild';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {loadTs} from '../tests/load-ts.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const environment=process.env.PARTYPLUS_BACKEND_ENV;
+const url=process.env.PARTYPLUS_SUPABASE_URL;
+const key=process.env.PARTYPLUS_SUPABASE_PUBLISHABLE_KEY;
+const boundary=loadTs('src/lib/backendBoundary.ts').validateBackendBoundary(environment,url,key,false);
+if(!boundary.configured)throw Error(boundary.reason);
+const output=path.join(root,'web-dist');
+await fs.mkdir(output,{recursive:true});
+for(const name of ['index.html','favicon.svg','_headers','_redirects'])await fs.copyFile(path.join(root,'web',name),path.join(output,name));
+await build({entryPoints:[path.join(root,'web/src/main.tsx')],outfile:path.join(output,'app.js'),bundle:true,platform:'browser',format:'iife',target:'es2022',minify:true,legalComments:'none',define:{'process.env.NODE_ENV':JSON.stringify('production'),__PARTYPLUS_WEB_CONFIG__:JSON.stringify({environment,url,key})}});
+console.log(`PartyPlus web built for ${environment}; public configuration validated.`);

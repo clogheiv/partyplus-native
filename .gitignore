@@ -48,4 +48,5 @@ app-example
 .env.local
 .test-cache/
 .worktrees/
+web-dist/
 

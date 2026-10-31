@@ -1,0 +1,16 @@
+{
+  "preparedAt": "2026-10-31T20:04:45.315Z",
+  "status": "prepared-not-executed-production",
+  "inputs": {
+    "production-proposal/02-install-verified-contract.sql": "43d36d9a8c4524c15c7258836eeb62777fc2f420e97455e71e1d78d1d46476bb",
+    "web-rebuild/01-browser-contract.sql": "49e558980c6e2aa54133f08c7db896a42fae5a88fd3e82db923ed4548e29e306",
+    "web-rebuild/02-invitation-address.sql": "b48dc20449a7057cc9a0e1871f5e56f2e903a022c0b508661891d0c7dd95c621"
+  },
+  "output": {
+    "03-production-install-paused.sql": "b1a28c330427778bacf48adc83a5a9d5f061fd3c53e1489ff01e11462f556204"
+  },
+  "verifiedWritesInitiallyEnabled": false,
+  "customerRowsDeleted": false,
+  "legacyWritesReopened": false,
+  "timestampPreservation": "Disable and re-enable only original updated_at trigger around alias backfill; assert original-column full-table fingerprints before commit."
+}

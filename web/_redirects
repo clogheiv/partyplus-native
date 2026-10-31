@@ -1,0 +1,4 @@
+/share /index.html 200
+/_share /index.html 200
+/__share /index.html 200
+/* /index.html 200

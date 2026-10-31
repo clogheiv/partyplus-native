@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+import {backendHarness,users} from '../../tests/backend-harness.mjs';
+
+test('combined production browser installation preserves every original field and stays paused',async t=>{
+  const h=await backendHarness({observed:true,contract:false});t.after(()=>h.close());
+  await h.db.query("insert into public.parties(id,title,host_id,datetime,location_name,address,lat,lng,notes,created_at,updated_at) values('legacy-preserve','Legacy','device-only','2027-01-01','Hall','123 Synthetic Lane',1.2,3.4,'Retained','2026-01-01','2026-02-01')");
+  await h.db.query("insert into public.party_items(id,party_id,name,claimed_by) values($1,'legacy-preserve','Ice','Legacy guest')",[randomUUID()]);
+  await h.db.query("insert into public.party_rsvps(id,party_id,guest_name,name,status,attendee_count) values($1,'legacy-preserve','Legacy guest','Legacy guest','yes',2)",[randomUUID()]);
+  const snapshot=async()=>Object.fromEntries(await Promise.all(['parties','party_items','party_rsvps'].map(async table=>[table,(await h.db.query('select to_jsonb(t) as value from public.'+table+' t')).rows.map(r=>r.value)])));
+  const before=await snapshot();
+  await h.db.exec("select set_config('partyplus.security_approval','freeze-v1',false),set_config('partyplus.target_project','synthetic',false);\n"+await fs.readFile('supabase/production-proposal/01-freeze-legacy-writes.sql','utf8'));
+  await h.db.exec("select set_config('partyplus.security_approval','cutover-v2',false);\n"+await fs.readFile('supabase/web-rebuild/03-production-install-paused.sql','utf8'));
+  const after=await snapshot();
+  for(const row of after.parties)for(const key of ['revision','deleted_at','date','location','theme'])delete row[key];
+  for(const row of after.party_items)for(const key of ['claimed_by_user_id','created_by'])delete row[key];
+  assert.deepEqual(after,before);
+  assert.equal((await h.db.query('select writes_enabled from partyplus_private.release_control')).rows[0].writes_enabled,false);
+  const pub=await h.rpc(null,'partyplus_v2_read_party',['legacy-preserve'],'anon');
+  assert.equal(pub.address,'123 Synthetic Lane');assert.deepEqual(pub.rsvps,[]);assert.equal(pub.hostId,undefined);
+  await assert.rejects(h.rpc(users.host,'partyplus_v2_commit_party',[randomUUID(),1,{id:'legacy-preserve',title:'Takeover',items:[]}]),/writes_paused/);
+  for(const role of ['anon','authenticated'])await assert.rejects(h.transaction(users.guestA,role,tx=>tx.query('select * from public.parties')),{code:'42501'});
+  await h.db.exec("select set_config('partyplus.security_approval','enable-v2',false);\n"+await fs.readFile('supabase/production-proposal/03-enable-verified-writes.sql','utf8'));
+  await assert.rejects(h.rpc(users.host,'partyplus_v2_commit_party',[randomUUID(),1,{id:'legacy-preserve',title:'Takeover',items:[]}]),/host_access_required/);
+  const op=randomUUID();const response={name:'New guest',status:'yes',attendeeCount:1};
+  const first=await h.rpc(users.guestA,'partyplus_v2_rsvp',['legacy-preserve',op,response]);
+  assert.equal(first.party.isJoined,true);assert.equal(first.party.ownRsvp.id,users.guestA);
+  assert.equal(first.party.rsvps.length,1);assert.equal(first.party.totals.attending,3);
+  await h.db.exec("select set_config('partyplus.security_approval','pause-v2',false);\n"+await fs.readFile('supabase/production-proposal/04-safe-rollback-pause.sql','utf8'));
+  assert.deepEqual(await h.rpc(users.guestA,'partyplus_v2_rsvp',['legacy-preserve',op,response]),first);
+  await assert.rejects(h.rpc(users.guestA,'partyplus_v2_rsvp',['legacy-preserve',randomUUID(),response]),/writes_paused/);
+  assert.equal((await h.rpc(null,'partyplus_v2_read_party',['legacy-preserve'],'anon')).address,'123 Synthetic Lane');
+});

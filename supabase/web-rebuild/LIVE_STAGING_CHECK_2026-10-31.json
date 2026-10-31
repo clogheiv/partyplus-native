@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-31T20:05:58.753Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "partyId": "8a5d1c2c-9db8-4501-b742-b88de149a582",
+  "checks": [
+    "verified-host-create-replay-and-automatic-hosting",
+    "anonymous-auth-guest-suggestion-persists-membership",
+    "rsvp-claim-and-idempotent-receipts",
+    "unsigned-and-host-privacy-projections",
+    "stale-edit-conflict-and-guest-state-preserved-on-host-edit",
+    "stranger-edit-delete-unclaim-and-list-denied",
+    "unsigned-open-deduplication-and-other-events-denied",
+    "signed-and-unsigned-raw-enumeration-denied"
+  ],
+  "checksPassed": 8,
+  "emailDeliveryTested": false,
+  "productionAccessed": false,
+  "customerRowsUsed": false
+}
