@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-31T20:37:34.918Z",
+  "sourceCommit": "e7e748efe8ba43c8fd94b4e72946f72fa6ee13a4",
+  "siteId": "f7af2b09-2f8a-44d7-bf17-b8993eb17492",
+  "publishedDeploy": "6ae65016a97425eaaa716db8",
+  "autoPublishingLocked": true,
+  "previousPublished": "6a94a5c77c86e100080fe9fc",
+  "url": "https://partyplusapp.com",
+  "rollback": "Pause v2 writes and retain compatible frontend; old raw-table reader is incompatible with safe cutover."
+}

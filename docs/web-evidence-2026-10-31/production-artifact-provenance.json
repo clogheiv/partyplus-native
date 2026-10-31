@@ -1,0 +1,108 @@
+{
+  "verifiedAt": "2026-10-31T20:31:54.476Z",
+  "approvedBrowserCommit": "e7e748efe8ba43c8fd94b4e72946f72fa6ee13a4",
+  "trackedBrowserInputsMatch": true,
+  "browserInputPaths": [
+    "web",
+    "src/lib",
+    "scripts/build-web.mjs",
+    "scripts/deploy-web-netlify.mjs",
+    "tests/load-ts.mjs",
+    "package.json",
+    "package-lock.json"
+  ],
+  "unrelatedDirtyFiles": [
+    "scripts/prepare-web-production.mjs",
+    "supabase/web-rebuild/03-production-install-paused.sql",
+    "supabase/web-rebuild/production-browser.test.mjs",
+    "supabase/web-rebuild/production-manifest.json"
+  ],
+  "environment": "production",
+  "backendOrigin": "https://typbofemqhjoiwbkdvuc.supabase.co",
+  "publicKeyType": "sb_publishable",
+  "publicKeySha256": "81f5a7bdc998e96e3cceca4b12b2e09715bc42e843f675b34f39f221c6590091",
+  "deployId": "6ae65016a97425eaaa716db8",
+  "preview": "https://6ae65016a97425eaaa716db8--partyplus-invite.netlify.app",
+  "draft": true,
+  "publicationUnchanged": true,
+  "rollbackPublishedId": "6a94a5c77c86e100080fe9fc",
+  "artifact": {
+    "files": {
+      "/app.css": "a56274355143fbb45a103f5bd0037f1c5dde2006d006dba3deefeac35639b84b",
+      "/app.js": "4f3d7324a094833b6f77f18562d8e591c9d981420f6167ba2b6d6b06f2fc4e77",
+      "/favicon.svg": "a659d2ef848545ad04497d81c68007b3db361f7428289a2671367dc205a877c2",
+      "/index.html": "b8aa923a7e5bcb0859e82209912a23dc864e0e78fc27319852349d3ddb3a0673",
+      "/_headers": "b8b3a50f991d22efd2dbb4cdc8dde7d55a93b2202b1174520783e178ff41c398",
+      "/_redirects": "1a19e5c5f88552f864ef32e91621da3414a9386727048ac521f26ab04c0abc41"
+    },
+    "totalBytes": 458695
+  },
+  "downloadedAssets": [
+    {
+      "file": "/index.html",
+      "status": 200,
+      "sha256": "b8aa923a7e5bcb0859e82209912a23dc864e0e78fc27319852349d3ddb3a0673"
+    },
+    {
+      "file": "/app.js",
+      "status": 200,
+      "sha256": "4f3d7324a094833b6f77f18562d8e591c9d981420f6167ba2b6d6b06f2fc4e77"
+    },
+    {
+      "file": "/app.css",
+      "status": 200,
+      "sha256": "a56274355143fbb45a103f5bd0037f1c5dde2006d006dba3deefeac35639b84b"
+    },
+    {
+      "file": "/favicon.svg",
+      "status": 200,
+      "sha256": "a659d2ef848545ad04497d81c68007b3db361f7428289a2671367dc205a877c2"
+    }
+  ],
+  "netlifyConsumedFilesVerifiedByBehavior": [
+    "_headers",
+    "_redirects"
+  ],
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/create",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/account",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/i/00000000-0000-4000-8000-000000000000",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/share?id=00000000-0000-4000-8000-000000000000",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/support",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "csp": true
+    }
+  ]
+}

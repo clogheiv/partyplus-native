@@ -1,5 +1,9 @@
 # Browser rebuild verification — October 31, 2026
 
+## Final production acceptance
+
+Production secure installation committed paused with original-column fingerprints and counts preserved; reviewed gate enable independently confirmed at 20:36:58 UTC. Actual production email delivered through the existing Free sender and its code verified a legitimate company account. No synthetic parties, items or RSVPs were written in production. The release published and locked at 20:37:34 UTC; https://partyplusapp.com renders the new browser app. Seven public app/deep routes return200 with CSP, and four served public assets match the reviewed six-file artifact. Screenshot `web-evidence-2026-10-31/production-released.png` records the live product. All broader host/guest workflows below passed in staging; no new production customer fixtures were created to repeat them.
+
 ## Focused checks
 
 | Check | Result | Limits |
@@ -15,7 +19,7 @@
 Ephemeral loopback test process uses mock Auth with actual SQL behavior. It is not shipped and binds loopback only. No customer data used.
 
 1. Draft title/location/note/items survives navigation to host sign-in and back.
-2. Local date/time remains after another field changes; save displays selected November20 6PM. A real observed date reset was fixed with native input handling and then reverified.
+2. Local date/time remains after another field changes; save displays selected November 20 6PM. A real observed date reset was fixed with native input handling and then reverified.
 3. Verified host creates party, sees host controls without joining, and returns from Hosting after reload.
 4. Copied clipboard URL is current origin `/i/<same-id>`.
 5. Fresh guest signs anonymously on first response, saves Going /2; claims Fresh bread; suggests Sparkling lemonade. Reload retains response/count/own claim and all items.
@@ -36,7 +40,7 @@ Synthetic staging fixture `20667f51-1e84-4784-b2ba-895b86d91fa0` created by auth
 - Reload to My Parties opens Joined1 automatically; same party retained. Banner explains browser-bound guest access and email verification for another device.
 - Screenshot `web-evidence-2026-10-31/live-staging-joined.png` records hosted return behavior.
 - After exact user approval, the latest PartyPlus staging message was read through a narrowly scoped company Gmail search. Its code was extracted in memory with output masked, entered into the first preview, then cleared. Real delivered-code sign-in recovered the existing verified host's Hosting2/Joined1. No unrelated message was opened, and new mail tabs were closed.
-- Verified host created `0ca7544c-d486-4672-b55f-1b3ed49db883` through the actual product, with selected December12 6:30PM date/time and Fruit salad. Saved party showed host controls and appeared in Hosting3 after reload, without a join step.
+- Verified host created `0ca7544c-d486-4672-b55f-1b3ed49db883` through the actual product, with selected December 12 6:30PM date/time and Fruit salad. Saved party showed host controls and appeared in Hosting3 after reload, without a join step.
 - Existing independent guest preview opened that new invitation, RSVP Going/3 and Fruit salad claim passed. Host saw guest group count/name and claim, then changed the title to “Web host acceptance — updated”; response/count and claim remained.
 - Third clean origin `https://6ae64afaaa5fee650a934c14--famous-fairy-b9cb63.netlify.app` used another delivered code for the same account. It recovered Hosting3 including that updated party and Joined1 including the existing synthetic joined party. This proves independent browser storage return; it is not a physical second-device test.
 - Guest identity was preserved: automatic approval review rejected ending the anonymous test session to sign into an existing account. The safer third-origin test avoided that switch; no workaround changed the guest identity or records.

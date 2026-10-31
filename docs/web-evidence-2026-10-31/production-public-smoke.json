@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-31T20:38:18.092Z",
+  "url": "https://partyplusapp.com",
+  "publishedDeploy": "6ae65016a97425eaaa716db8",
+  "browserSourceCommit": "e7e748efe8ba43c8fd94b4e72946f72fa6ee13a4",
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/create",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/account",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/support",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/terms",
+      "status": 200,
+      "csp": true
+    },
+    {
+      "route": "/share?id=route-smoke",
+      "status": 200,
+      "csp": true
+    }
+  ],
+  "matchedPublicAssets": 4,
+  "customerDataRead": false
+}

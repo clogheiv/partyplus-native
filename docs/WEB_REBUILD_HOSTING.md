@@ -1,5 +1,13 @@
 # PartyPlus browser hosting
 
+## Released production state
+
+On October 31 at 20:37:34 UTC the verified production artifact `6ae65016a97425eaaa716db8` was published to https://partyplusapp.com and locked using Netlify's supported deploy-lock API. This publishes the ready atomic deploy and prevents old `backup/share-working` Git builds from replacing it. Browser inputs match `e7e748efe8ba43c8fd94b4e72946f72fa6ee13a4`; public root/routes and served asset hashes passed after publication. The previous deploy `6a94a5c77c86e100080fe9fc` is retained, but its raw-table invitation reader is incompatible with the secure database contract.
+
+For a future release, build and verify a new compatible draft, then intentionally publish and lock that exact ready deploy. Keep auto publishing locked until the repository's continuous-deployment branch/publish settings have been deliberately migrated to `web-dist`. Unlocking now would allow the old native/invitation branch to overwrite the new product. Netlify's Deploys page provides the reversible unlock control; the [official lockDeploy API](https://open-api.netlify.com/) also documents supported locking. Do not change DNS or create another site.
+
+Operational rollback is the reviewed database write pause plus retaining a compatible frontend; accepted responses and receipts stay intact. Restoring the older raw reader is maintenance-only, not a functioning invitation rollback, and must never be paired with reopening unsafe table grants. Current publication and artifact evidence are in `docs/web-evidence-2026-10-31/production-*.json`. The original preview preparation instructions below remain useful for building future drafts.
+
 The browser rebuild uses the existing Netlify resources. Staging previews are draft deployments; they do not replace the published staging site. The production site, custom domain, published deployment, and backend are not changed by this staging preview workflow.
 
 | Environment | Existing site | Site ID | Backend |

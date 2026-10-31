@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-10-31T20:40:14.922Z",
+  "performedBy": "independent backend agent",
+  "scope": "one original record, read-only transaction rolled back; no IDs or customer content output",
+  "sameInvitationId": true,
+  "dateMatches": true,
+  "locationMatches": true,
+  "legacyAddressMatches": true,
+  "unsignedContext": true,
+  "noHostPrincipalField": true,
+  "noClaimantPrincipalFields": true,
+  "noGuestResponseNames": true,
+  "noSelfResponse": true,
+  "noEditCapability": true,
+  "customerWrites": false
+}

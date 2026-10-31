@@ -1,5 +1,7 @@
 # PartyPlus Web Rebuild — durable checkpoint
 
+**RELEASED October 31 20:37:34 UTC:** https://partyplusapp.com now serves deploy `6ae65016a97425eaaa716db8`. The production verified-write gate is enabled, all 347 parties / 637 items / 118 RSVPs and original columns are preserved, raw client table access remains closed, and real production delivered-code sign-in passed. Netlify publication is locked against the old Git branch overwriting the new app. Browser source `e7e748e` includes explicit Share invite and Copy link. See `WEB_REBUILD_RELEASE_RECEIPT_2026-10-31.md` for current delivery, limits and rollback; the preparation checkpoints below are historical.
+
 Owner: 6.1 Sol integration lead. User brief dated October 31 supersedes earlier mobile-first and milestone-approval instructions. Web production release is authorized with existing resources and no additional charges once core journeys pass. Preserve customer records, keep unsafe legacy writes closed, defer mobile submissions.
 
 ## Baseline and location
@@ -8,7 +10,7 @@ Owner: 6.1 Sol integration lead. User brief dated October 31 supersedes earlier 
 - Root `audit/modernization-2026-08-31` and `.worktrees/modernization-phase-1` both have preexisting dirty work, left intact. No AGENTS.md found under repository.
 - Existing website: https://partyplusapp.com; existing Supabase production project `typbofemqhjoiwbkdvuc`; staging `qmbwrbxbbshbavfhkujx`; existing staging Netlify site `famous-fairy-b9cb63.netlify.app`.
 - Independent backend diagnosis confirmed production SELECT HTTP 200 with aggregate 347 parties / 637 items / 118 RSVPs on October 31. October 3 intentional security freeze denies all unsafe legacy writes. Secure v2 production contract was not installed. This explains failure of old write operations; the precise device error wording remains unverified.
-- Last documented store state October 10: iOS 1.0.3(15) and Android 1.0.3(12) publicly released, staging private iOS17 waiting for review / Android14 changes in review. Current store state unverified; mobile deferred.
+- Last documented store state October 10: iOS 1.0.3(15) and Android 1.0.3(12) publicly released, staging private iOS 17 waiting for review / Android 14 changes in review. Current store state unverified; mobile deferred.
 
 ## Decisions
 

@@ -1,0 +1,79 @@
+{
+  "projectRef": "typbofemqhjoiwbkdvuc",
+  "status": "released-verified-writes-enabled",
+  "approval": "Michael: Approve this exact PartyPlus rollout; SMTP privately saved and continuation authorized",
+  "appliedSql": "03-production-install-paused.sql",
+  "appliedSqlSha256Lf": "7faf8c472a82bf65c316a2a4d2c0c0287850ff603f7efa93b2212d8ce938a097",
+  "originalDraftExecuted": false,
+  "saferRevision": {
+    "temporaryPreservationTableRlsEnabled": true,
+    "temporaryPreservationTableClientAccessRevokedAndAsserted": true,
+    "aliasBackfillHasDifferenceWhereCondition": true,
+    "focusedPreservationTestPassed": true,
+    "acceptedThroughOriginalSqlUi": true
+  },
+  "independentReadOnlyVerification": {
+    "observedAt": "2026-10-31T20:32:12.571582Z",
+    "parties": 347,
+    "items": 637,
+    "rsvps": 118,
+    "authUsersAtThisCheckpoint": 0,
+    "hostGrantsAtThisCheckpoint": 0,
+    "membershipsAtThisCheckpoint": 0,
+    "writesEnabled": false,
+    "webContractInstalled": true,
+    "allRawClientAccessIncludingMaintainDenied": true,
+    "originalTimestampTriggerEnabled": true
+  },
+  "inTransactionOriginalColumnFingerprintComparisonPassedBeforeCommit": true,
+  "finalIndependentReadOnlyVerification": {
+    "observedAt": "2026-10-31T20:36:58.482129Z",
+    "parties": 347,
+    "items": 637,
+    "rsvps": 118,
+    "authUsers": 1,
+    "authUserExplanation": "Legitimate company account from actual approved delivered production sign-in code",
+    "hostGrants": 0,
+    "memberships": 0,
+    "writesEnabled": true,
+    "webContractInstalled": true,
+    "allRawClientAccessIncludingMaintainDenied": true,
+    "originalTimestampTriggerEnabled": true
+  },
+  "productionCompanyDeliveredOtpVerifiedByIntegrationLead": true,
+  "customerRowsDeleted": false,
+  "customerRowsUsedAsQaFixtures": false,
+  "legacyWritesReopened": false,
+  "configurationSaved": {
+    "anonymousSignIns": true,
+    "manualLinking": true,
+    "emailConfirmationRetained": true,
+    "codeTemplateBodies": [
+      "confirm-sign-up",
+      "magic-link-or-otp",
+      "change-email-address"
+    ],
+    "templateSubjectsChanged": false,
+    "siteUrl": "https://partyplusapp.com",
+    "previousRedirectListWasEmpty": true,
+    "smtpSavedPrivatelyByMichael": true,
+    "smtpEnabledOnSelectiveDomCheck": true,
+    "smtpHost": "smtp.resend.com",
+    "smtpPort": 465,
+    "smtpSenderName": "PartyPlus",
+    "smtpPasswordInputReadByAgent": false,
+    "resendOneTimeSecretDialogReadByAgent": false,
+    "smtpFormHadUnsavedChanges": false
+  },
+  "otherApplicationSettingsChanged": false,
+  "paidResourceCreatedOrPayAsYouGoEnabled": false,
+  "remainingAtThisCheckpoint": [],
+  "rollback": "Pause reviewed verified-write release gate and retain compatible current frontend; preserve reads/data/receipts. The previous raw-table-reader Netlify deploy is maintenance-only and cannot restore working live invitations after this secure cutover. Never reopen unsafe raw grants.",
+  "frontendPublication": {
+    "publishedAt": "2026-10-31T20:37:34.918Z",
+    "url": "https://partyplusapp.com",
+    "deployId": "6ae65016a97425eaaa716db8",
+    "browserSourceCommit": "e7e748efe8ba43c8fd94b4e72946f72fa6ee13a4",
+    "autoPublishingLocked": true
+  }
+}

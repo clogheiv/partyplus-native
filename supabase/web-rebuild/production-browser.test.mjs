@@ -7,9 +7,10 @@ import {backendHarness,users} from '../../tests/backend-harness.mjs';
 test('combined production browser installation preserves every original field and stays paused',async t=>{
   const h=await backendHarness({observed:true,contract:false});t.after(()=>h.close());
   await h.db.query("insert into public.parties(id,title,host_id,datetime,location_name,address,lat,lng,notes,created_at,updated_at) values('legacy-preserve','Legacy','device-only','2027-01-01','Hall','123 Synthetic Lane',1.2,3.4,'Retained','2026-01-01','2026-02-01')");
+  await h.db.query("insert into public.parties(id,title,host_id,updated_at) values('legacy-null-aliases','No date/location','another-device','2026-02-01')");
   await h.db.query("insert into public.party_items(id,party_id,name,claimed_by) values($1,'legacy-preserve','Ice','Legacy guest')",[randomUUID()]);
   await h.db.query("insert into public.party_rsvps(id,party_id,guest_name,name,status,attendee_count) values($1,'legacy-preserve','Legacy guest','Legacy guest','yes',2)",[randomUUID()]);
-  const snapshot=async()=>Object.fromEntries(await Promise.all(['parties','party_items','party_rsvps'].map(async table=>[table,(await h.db.query('select to_jsonb(t) as value from public.'+table+' t')).rows.map(r=>r.value)])));
+  const snapshot=async()=>Object.fromEntries(await Promise.all(['parties','party_items','party_rsvps'].map(async table=>[table,(await h.db.query('select to_jsonb(t) as value from public.'+table+' t order by t.id::text')).rows.map(r=>r.value)])));
   const before=await snapshot();
   await h.db.exec("select set_config('partyplus.security_approval','freeze-v1',false),set_config('partyplus.target_project','synthetic',false);\n"+await fs.readFile('supabase/production-proposal/01-freeze-legacy-writes.sql','utf8'));
   await h.db.exec("select set_config('partyplus.security_approval','cutover-v2',false);\n"+await fs.readFile('supabase/web-rebuild/03-production-install-paused.sql','utf8'));

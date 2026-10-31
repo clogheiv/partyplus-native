@@ -7,6 +7,8 @@ set local lock_timeout='5s';
 set local statement_timeout='60s';
 lock table public.parties,public.party_items,public.party_rsvps in access exclusive mode;
 create temporary table partyplus_web_preservation on commit drop as select jsonb_build_object('parties',(select jsonb_build_object('count',count(*),'fingerprint',md5(coalesce(string_agg(value,E'\n' order by value),''))) from (select (to_jsonb(t))::text value from public.parties t) s),'party_items',(select jsonb_build_object('count',count(*),'fingerprint',md5(coalesce(string_agg(value,E'\n' order by value),''))) from (select (to_jsonb(t))::text value from public.party_items t) s),'party_rsvps',(select jsonb_build_object('count',count(*),'fingerprint',md5(coalesce(string_agg(value,E'\n' order by value),''))) from (select (to_jsonb(t))::text value from public.party_rsvps t) s)) as snapshot;
+alter table partyplus_web_preservation enable row level security;
+revoke all on table partyplus_web_preservation from public,anon,authenticated;
 -- REVIEW ONLY. Separate Michael production approval is required. No deployment automation.
 -- Baseline metadata SHA256 9830e20e7708dcf596d6c4a2f435ae31da2ae42c64f1fe7fa5854d5fc2639d88
 -- Before execution, operator must set SESSION partyplus.security_approval='cutover-v2'
@@ -51,7 +53,8 @@ alter table public.parties add column location text;
 alter table public.parties add column theme text;
 -- Preserve historical customer updated_at while adding read aliases.
 alter table public.parties disable trigger trg_parties_updated_at;
-update public.parties set date=datetime,location=location_name;
+update public.parties set date=datetime,location=location_name
+  where date is distinct from datetime or location is distinct from location_name;
 alter table public.parties enable trigger trg_parties_updated_at;
 alter table public.party_items add column claimed_by_user_id text;
 alter table public.party_items add column created_by text;
@@ -564,6 +567,11 @@ notify pgrst,'reload schema';
 do $$ begin
   if (select snapshot from pg_temp.partyplus_web_preservation) is distinct from jsonb_build_object('parties',(select jsonb_build_object('count',count(*),'fingerprint',md5(coalesce(string_agg(value,E'\n' order by value),''))) from (select (to_jsonb(t) - array['revision','deleted_at','date','location','theme'])::text value from public.parties t) s),'party_items',(select jsonb_build_object('count',count(*),'fingerprint',md5(coalesce(string_agg(value,E'\n' order by value),''))) from (select (to_jsonb(t) - array['claimed_by_user_id','created_by'])::text value from public.party_items t) s),'party_rsvps',(select jsonb_build_object('count',count(*),'fingerprint',md5(coalesce(string_agg(value,E'\n' order by value),''))) from (select (to_jsonb(t))::text value from public.party_rsvps t) s)) then
     raise exception 'Customer original-column preservation check failed';
+  end if;
+  if not (select relrowsecurity from pg_class where oid='pg_temp.partyplus_web_preservation'::regclass)
+    or has_table_privilege('anon','pg_temp.partyplus_web_preservation','SELECT,INSERT,UPDATE,DELETE')
+    or has_table_privilege('authenticated','pg_temp.partyplus_web_preservation','SELECT,INSERT,UPDATE,DELETE') then
+    raise exception 'Preservation temporary table must remain client-inaccessible with RLS';
   end if;
   if (select writes_enabled from partyplus_private.release_control where singleton) is distinct from false then
     raise exception 'Installation must keep verified writes paused';
