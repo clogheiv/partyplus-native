@@ -10,6 +10,7 @@ export type WebParty = Omit<Party,'items'> & {
   isJoined?:boolean;
   totals?: {yes:number;maybe:number;no:number;attending:number};
 };
+export type WebEditorDraft = Partial<WebParty> & {pendingItemName?:string;pendingItemQty?:string;pendingItemId?:string};
 declare const __PARTYPLUS_WEB_CONFIG__: {environment:string;url:string;key:string};
 const config=__PARTYPLUS_WEB_CONFIG__;
 const client=createClient(config.url,config.key,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true}});
@@ -111,7 +112,7 @@ export const api={
  },
  async signOut(){const {error}=await client.auth.signOut();if(error)throw classifyPartyError(error);},
  track:async(kind:string,_partyId?:string)=>track(kind),
- loadDraft:()=>read<Partial<WebParty>>('editor'),
- storeDraft:(draft:Partial<WebParty>)=>write('editor',draft),
+ loadDraft:()=>read<WebEditorDraft>('editor'),
+ storeDraft:(draft:WebEditorDraft)=>write('editor',draft),
  clearDraft:()=>localStorage.removeItem(prefix+'editor'),
 };

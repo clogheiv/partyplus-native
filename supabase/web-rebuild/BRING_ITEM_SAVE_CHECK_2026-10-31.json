@@ -1,0 +1,19 @@
+{
+  "observedAt": "2026-10-31T21:25:05.412Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "productionAccessed": false,
+  "actualMichaelPartyOrTiffanyResponseAccessed": false,
+  "fixtureIsSynthetic": true,
+  "fixturePartyId": "8459c567-ec21-4002-b6ea-60666b84e55e",
+  "checks": {
+    "explicitDessertAndQuantitySubmitted": true,
+    "createReceiptRetainsItem": true,
+    "replayDoesNotDuplicateItem": true,
+    "freshHostAndGuestAndUnsignedReadsRetainItem": true,
+    "independentHostSignInRetainsItemAndOwnership": true,
+    "hostEditRetainsSameItemIdentityAndQuantity": true,
+    "hostEditPreservesGuestClaimAndRsvp": true,
+    "editReplayDoesNotDuplicateItem": true
+  },
+  "scopeLimit": "Proves explicitly included payload items persist. Does not prove a pending unadded form input was included in the released UI request."
+}
