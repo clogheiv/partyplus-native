@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import type { PartyItem, PartyRsvpStatus } from '../../src/lib/partyTypes';
 import { api, type WebParty as Party, type WebEditorDraft } from './api';
 import {includePendingItem,partyMapLinks} from './editorDraft';
+import Account from './Account';
+import {Icon,Notice} from './ui';
 import './styles.css';
 
 type Session = Awaited<ReturnType<typeof api.getSession>>;
@@ -22,20 +24,6 @@ const dateInput = (value?: string) => {
   const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
 };
-function Icon({ name, size = 20 }: { name: string; size?: number }) {
-  const paths: Record<string, ReactNode> = {
-    plus: <path d="M12 5v14M5 12h14" />, arrow: <path d="m9 5 7 7-7 7M4 12h12" />,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4m10-4v4M3 11h18" /></>,
-    pin: <><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
-    people: <><circle cx="9" cy="7" r="3" /><path d="M3 21v-3a6 6 0 0 1 12 0v3m1-17a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 5v2" /></>,
-    grid: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
-    check: <path d="m5 12 4 4L19 6" />, share: <><path d="M12 16V3m-5 5 5-5 5 5M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8" /></>,
-    back: <path d="m12 5-7 7 7 7M5 12h15" />, sparkle: <><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8Z" /></>,
-  };
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name] || paths.sparkle}</svg>;
-}
-function Notice({ children, kind = 'info' }: { children: ReactNode; kind?: string }) { return <div className={`notice ${kind}`} role={kind === 'error' ? 'alert' : 'status'}>{children}</div>; }
-
 export default function App() {
   const [path, setPath] = useState(location.pathname + location.search);
   const [session, setSession] = useState<Session>(null);
@@ -149,13 +137,6 @@ function PartyPage({ id, session, refresh, joined, navigate, notify, editing, is
       {host && <section className="panel host-panel"><span className="eyebrow">HOST CORNER</span><h3>Your party, your plan.</h3><button className="button outline full-width" onClick={() => navigate(`/party/${id}?edit=1`)}>Edit party details</button>{!confirmDelete ? <button className="danger-text" onClick={() => setConfirmDelete(true)}>Delete party</button> : <div className="delete-confirm" role="alertdialog" aria-labelledby="delete-heading"><h4 id="delete-heading">Delete this party?</h4><p>This removes the party and its invitation for everyone.</p><div><button className="button danger small" disabled={!!busy} onClick={() => act('delete', async () => { await api.deleteParty(id); await refresh(); notify('Party deleted.'); navigate('/'); })}>{busy === 'delete' ? 'Deleting…' : 'Yes, delete'}</button><button className="text-button" onClick={() => setConfirmDelete(false)}>Keep party</button></div></div>}</section>}
     </aside></div>
   </>;
-}
-
-function Account({ session, refresh, navigate, notify }: { session: Session; refresh: () => Promise<Session>; navigate: (p: string) => void; notify: (s: string) => void }) {
-  const [email, setEmail] = useState(session?.email || ''); const [code, setCode] = useState(''); const [sent, setSent] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [switching, setSwitching] = useState(false);
-  const submit = async (e: FormEvent) => { e.preventDefault(); setBusy(true); setError(''); try { if (sent) { await api.verifyCode(email.trim(), code.trim()); await refresh(); notify('You’re signed in. Your parties are ready.'); const next = new URLSearchParams(location.search).get('next'); navigate(next?.startsWith('/') && !next.startsWith('//') ? next : '/'); } else { await api.sendCode(email.trim()); setSent(true); } } catch (e) { setError(message(e)); } finally { setBusy(false); } };
-  const verified = session && !session.isAnonymous;
-  return <><div className="page-heading"><span className="eyebrow">A FAMILIAR FACE</span><h1>{verified ? 'You’re right at home.' : 'Keep the good times together.'}</h1><p>{verified ? 'Your account keeps your parties close.' : 'Sign in with your email. No password to remember.'}</p></div><div className="account-layout"><section className="panel account-panel"><div className="account-icon"><Icon name="people" size={28} /></div><h2>{verified ? 'My account' : sent ? 'Check your inbox' : 'Welcome to PartyPlus'}</h2>{verified ? <><p className="muted">You’re signed in as</p><strong className="account-email">{session.email}</strong><p className="muted">Your hosted and joined parties are linked to this account.</p><button className="button primary full-width" onClick={() => navigate('/')}>Go to my parties <Icon name="arrow" size={17} /></button><button className="text-button sign-out" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { await api.signOut(); await refresh(); notify('You’re signed out.'); navigate('/'); } catch (e) { setError(message(e)); } finally { setBusy(false); } }}>{busy ? 'Signing out…' : 'Sign out'}</button></> : <><p className="muted">{sent ? `We sent a sign-in code to ${email}. Enter it below to continue.` : 'Host a party or find the gatherings you’ve already joined.'}</p><form onSubmit={submit}><label>Email address<input type="email" required autoComplete="email" disabled={sent} value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" /></label>{sent && <label>Sign-in code<input autoFocus inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" minLength={6} maxLength={10} required value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))} placeholder="Enter your email code" /><small>Use the 6–10 digit code from your email.</small></label>}<button className="button primary full-width" disabled={busy}>{busy ? sent ? 'Signing in…' : 'Sending code…' : sent ? 'Verify & sign in' : 'Send sign-in code'}<Icon name="arrow" size={17} /></button></form>{sent && <button className="text-button sign-out" disabled={busy} onClick={() => { setSent(false); setCode(''); setError(''); }}>Use another email or request a new code</button>}<p className="form-fine-print">{session?.isAnonymous ? 'Your joined parties stay with you when you verify your email in this browser.' : 'Email verification is required to host. Guests can RSVP without creating an account.'}</p></>}{error && <Notice kind="error">{error}</Notice>}{session?.isAnonymous && <div className="guest-account-help"><button className="text-button" disabled={busy} onClick={() => setSwitching(true)}>Sign in to an existing account</button>{switching && <div className="notice warning" role="alertdialog" aria-labelledby="switch-title"><strong id="switch-title">Leave this guest session?</strong><p>Verifying a new email keeps your guest responses with you. Signing in to a different existing account ends this guest session and may prevent you from updating its responses. Save your invitation links first.</p><button className="button secondary small" disabled={busy} onClick={async () => { setBusy(true); setError(''); try { await api.signOut(); await refresh(); setSent(false); setCode(''); setSwitching(false); notify('Guest session ended. You can now sign in to your existing account.'); } catch (e) { setError(message(e)); } finally { setBusy(false); } }}>Continue to existing account</button><button className="text-button" onClick={() => setSwitching(false)}>Keep guest access</button></div>}</div>}</section><aside className="account-story"><span aria-hidden="true">✳</span><h2>More “see you there.”<br />Less back and forth.</h2><p>One place for the plan, the people, and what everyone’s bringing.</p></aside></div></>;
 }
 
 function InfoPage({ page, navigate }: { page: string; navigate: (p: string) => void }) {

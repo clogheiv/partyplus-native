@@ -37,6 +37,15 @@ function authFailure(error:{code?:string;status?:number;message?:string}):Error 
  if(/fetch|network|timeout/i.test(error.message??''))return Error('Could not reach the sign-in service. Check your connection and try again.');
  return Error('Sign-in could not be completed. Check your email address and code, then try again.');
 }
+function passwordFailure(error:unknown,setting=false):Error {
+ const failure=error as {code?:string;status?:number;message?:string};
+ if(failure?.status===429||/rate_limit/.test(failure?.code??''))return Error('Too many attempts. Wait a few minutes before trying again, or use an email code.');
+ if(/fetch|network|timeout/i.test(failure?.message??''))return Error(setting?'Could not confirm the password change. Check your connection, then try the new password or use an email code.':'Could not reach the sign-in service. Check your connection and try again.');
+ if(setting && (/reauthentication|session|jwt|refresh_token/.test(failure?.code??'')||failure?.status===401))return Error('Sign in again with an email code, then set your password. Your parties stay with your account.');
+ if(setting && failure?.code==='weak_password')return Error('Choose a stronger password with at least 8 characters. The sign-in service may require a longer password or a mix of characters.');
+ if(setting && failure?.code==='same_password')return Error('Choose a different password, or keep using your current password.');
+ return Error(setting?'The password change could not be confirmed. Try again, or sign in with an email code first.':'Email or password was not accepted. Try again or use an email code.');
+}
 async function lock<T>(id:string,operation:()=>Promise<T>):Promise<T> {
   if(!navigator.locks) throw Error('Please update your browser before saving. You can still view invitations.');
   return navigator.locks.request(prefix+id,operation);
@@ -104,11 +113,65 @@ export const api={
   if(result.error)throw authFailure(result.error);
   write('authIntent',{email,type:current?.isAnonymous?'email_change':'email'});
  },
+ async sendRecoveryCode(email:string):Promise<void>{
+  if(signing)await signing;
+  const current=await session();
+  if(current?.isAnonymous)throw Error('Your guest session is still active. Keep guest access or explicitly switch to an existing account before recovering a password.');
+  const address=email.trim();
+  if(current && current.email?.toLowerCase()!==address.toLowerCase())throw Error('You are already signed in. Use the current account email or sign out before recovering another account.');
+  let result;
+  try {result=await client.auth.signInWithOtp({email:address,options:{shouldCreateUser:false}});}
+  catch {throw Error('Could not request a recovery code. Check your connection and try again.');}
+  // Unknown-account responses follow the same visible path as accepted requests.
+  // Recovery never creates an account or converts an existing guest identity.
+  if(result.error && !['otp_disabled','user_not_found','signup_disabled'].includes(result.error.code??'')){
+   if(result.error.status===429||/rate_limit/.test(result.error.code??''))throw Error('Too many code requests. Wait a few minutes before trying again.');
+   throw Error('Could not request a recovery code. Check the email address or try again later.');
+  }
+  write('authIntent',{email:address,type:'email'});
+ },
  async verifyCode(email:string,token:string){
   const intent=read<{email:string;type:'email'|'email_change'}>('authIntent');
   const {error}=await client.auth.verifyOtp({email,token,type:intent?.email===email?intent.type:'email'});
   if(error)throw authFailure(error);
   localStorage.removeItem(prefix+'authIntent');
+ },
+ async signInWithPassword(email:string,password:string):Promise<void>{
+  if(signing)await signing;
+  const current=await session();
+  if(current?.isAnonymous)throw Error('Your guest session is still active. Keep guest access or explicitly switch to an existing account before signing in with a password.');
+  const address=email.trim();
+  if(current && current.email?.toLowerCase()!==address.toLowerCase())throw Error('You are already signed in. Sign out before using a different account.');
+  let result;
+  try {result=await client.auth.signInWithPassword({email:address,password});}
+  catch(error){throw passwordFailure(error);}
+  if(result.error)throw passwordFailure(result.error);
+  const user=result.data.user;
+  if(!result.data.session || !user || user.is_anonymous || !user.email_confirmed_at
+    || user.email?.toLowerCase()!==address.toLowerCase() || (current && user.id!==current.id)){
+   throw Error('The sign-in service did not confirm this account. Use an email code to sign in again.');
+  }
+  localStorage.removeItem(prefix+'authIntent');
+ },
+ async setPassword(password:string):Promise<void>{
+  if(typeof password!=='string'||password.length<8)throw Error('Use a password with at least 8 characters.');
+  const current=await session();
+  if(!current || current.isAnonymous)throw Error('Verify your email with a sign-in code before setting a password.');
+  let verified;
+  try {verified=await client.auth.getUser();}
+  catch(error){throw passwordFailure(error,true);}
+  if(verified.error)throw passwordFailure(verified.error,true);
+  const user=verified.data.user;
+  if(!user || user.id!==current.id || user.is_anonymous || !user.email || !user.email_confirmed_at){
+   throw Error('Verify your current account email with a sign-in code before setting a password.');
+  }
+  let result;
+  try {result=await client.auth.updateUser({password});}
+  catch(error){throw passwordFailure(error,true);}
+  if(result.error)throw passwordFailure(result.error,true);
+  if(!result.data.user || result.data.user.id!==user.id || result.data.user.is_anonymous || !result.data.user.email_confirmed_at){
+   throw Error('The sign-in service did not confirm a password for your current account. Use an email code to sign in again.');
+  }
  },
  async signOut(){const {error}=await client.auth.signOut();if(error)throw classifyPartyError(error);},
  track:async(kind:string,_partyId?:string)=>track(kind),

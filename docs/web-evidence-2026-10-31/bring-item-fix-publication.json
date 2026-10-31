@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-31T21:30:38.187Z",
+  "sourceCommit": "3c64d877e05aa705eea39e91022df420521b7b03",
+  "siteId": "f7af2b09-2f8a-44d7-bf17-b8993eb17492",
+  "publishedDeploy": "6ae65dbe5436fd281118167c",
+  "autoPublishingLocked": true,
+  "previousPublished": "6ae65016a97425eaaa716db8",
+  "url": "https://partyplusapp.com",
+  "rollback": "Restore compatible previous frontend6ae65016a97425eaaa716db8 and lock it; no database changes were part of this correction.",
+  "checkedPublicAssets": 4,
+  "customerRecordsReadOrChanged": false
+}
