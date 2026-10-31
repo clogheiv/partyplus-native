@@ -1,10 +1,12 @@
 # PartyPlus customer feedback follow-up — October 31, 2026
 
+**Completed:** item/maps/copy source `3c64d87`, optional-password source `046190d`, and substantial visual source `182c67d` are released in that order. Current locked deploy is `6ae663c013623bb52b726f3d`. Final outcomes and retained limitations are in `FEEDBACK_RELEASE_RECEIPT_2026-10-31.md`.
+
 User reports desktop and phone email-code sign-in worked on release `44af0a6`; Tiffany's anonymous RSVP appeared after refresh. User also reports missing bring-list text after saving, requests clearer RSVP/bring-list copy, clickable location/directions, and optional password sign-in.
 
 Priority is a separate bring-list/copy/maps release before optional passwords. Existing Michael party and Tiffany RSVP are preserved; mutations for verification use synthetic staging records only.
 
-**Priority correction released at21:30:38 UTC:** source `3c64d877e05aa705eea39e91022df420521b7b03`, locked deploy `6ae65dbe5436fd281118167c`, https://partyplusapp.com. Four live public asset hashes matched the reviewed artifact. Previous compatible deploy `6ae65016a97425eaaa716db8` is retained for frontend rollback; no database change was needed. Password work began after this publication.
+**Priority correction released at 21:30:38 UTC:** source `3c64d877e05aa705eea39e91022df420521b7b03`, locked deploy `6ae65dbe5436fd281118167c`, https://partyplusapp.com. Four live public asset hashes matched the reviewed artifact. Previous compatible deploy `6ae65016a97425eaaa716db8` is retained for frontend rollback; no database change was needed. Password work began after this publication.
 
 ## Optional password acceptance
 
@@ -32,6 +34,6 @@ After this first functional release, add optional Supabase password sign-in for 
 
 ## Password release and visual integration
 
-Optional password source `046190d98ab0cf6b703d2f09d5c0572576711213` was published and locked at21:42:07 UTC as deploy `6ae6607931398212cdfba8df`. It followed the already-released item correction. Existing customers choose their own passwords; no customer credential or global Auth setting was modified.
+Optional password source `046190d98ab0cf6b703d2f09d5c0572576711213` was published and locked at 21:42:07 UTC as deploy `6ae6607931398212cdfba8df`. It followed the already-released item correction. Existing customers choose their own passwords; no customer credential or global Auth setting was modified.
 
 The subsequent full visual redesign replaces the generic sidebar/card presentation with an invitation/poster identity, bundled licensed Space Grotesk/Fraunces type, event palettes, dated ticket agenda, and live creation preview. Parent desktop/phone visual review passed after loosening serif headline spacing. Phone widths and readable input sizing were checked; the final integrated local creation/guest/claim/host-edit/share/copy path passed without changing Michael’s party or Tiffany’s RSVP. See `WEB_VISUAL_REDESIGN_2026-10-31.md`.

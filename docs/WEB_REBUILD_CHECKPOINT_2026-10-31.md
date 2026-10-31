@@ -1,5 +1,7 @@
 # PartyPlus Web Rebuild — durable checkpoint
 
+**LATEST feedback work completed:** priority item/maps/copy correction shipped at 21:30 UTC, optional password/recovery at 21:42 UTC, and the complete invitation/poster redesign at 21:56 UTC. Live https://partyplusapp.com now serves locked deploy `6ae663c013623bb52b726f3d`, browser source `182c67d`. Michael's party/Tiffany's RSVP were not modified. Use `FEEDBACK_RELEASE_RECEIPT_2026-10-31.md` for current source, checks, limitations, the one-time Dessert re-entry action and compatible rollback. Earlier preparation/release checkpoints below are historical.
+
 **RELEASED October 31 20:37:34 UTC:** https://partyplusapp.com now serves deploy `6ae65016a97425eaaa716db8`. The production verified-write gate is enabled, all 347 parties / 637 items / 118 RSVPs and original columns are preserved, raw client table access remains closed, and real production delivered-code sign-in passed. Netlify publication is locked against the old Git branch overwriting the new app. Browser source `e7e748e` includes explicit Share invite and Copy link. See `WEB_REBUILD_RELEASE_RECEIPT_2026-10-31.md` for current delivery, limits and rollback; the preparation checkpoints below are historical.
 
 Owner: 6.1 Sol integration lead. User brief dated October 31 supersedes earlier mobile-first and milestone-approval instructions. Web production release is authorized with existing resources and no additional charges once core journeys pass. Preserve customer records, keep unsafe legacy writes closed, defer mobile submissions.

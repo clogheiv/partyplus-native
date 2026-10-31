@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-31T21:56:30.571Z",
+  "sourceCommit": "182c67ddc2ca36316e5e43aff77548f54a83e321",
+  "siteId": "f7af2b09-2f8a-44d7-bf17-b8993eb17492",
+  "publishedDeploy": "6ae663c013623bb52b726f3d",
+  "autoPublishingLocked": true,
+  "previousPublished": "6ae6607931398212cdfba8df",
+  "url": "https://partyplusapp.com",
+  "rollback": "Restore and lock the previous compatible frontend if needed; no database change is part of this update.",
+  "publicAssetsMatched": 10,
+  "artifactFiles": {
+    "/app.css": "7d3ebabb20e54e202e9115e16c67b423431be77273b03796cb3c3b4aceab84e9",
+    "/app.js": "3e90644c5acd6b07cf7ed79a8a40cddcb14942f7fc070e64574018543a97a1e3",
+    "/assets/fonts/Fraunces-Display-Italic.woff2": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb",
+    "/assets/fonts/Fraunces-Display-Semibold.woff2": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65",
+    "/assets/fonts/Fraunces-OFL.txt": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+    "/assets/fonts/SOURCES.json": "8e67aa8d489b99b62e874a0bca0d1dcb3474b33be47c97ea789b6ba2fec1865e",
+    "/assets/fonts/SpaceGrotesk-OFL.txt": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+    "/assets/fonts/SpaceGrotesk-Variable.woff2": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07",
+    "/favicon.svg": "923ad85af343eb5966aeefb9682629d4b465bfc4c8f4a44d4be7f9a35c4fb174",
+    "/index.html": "8e3899b395ce3d5cc15fb1c729c195ffeac2a4e5612da859651ce4f6de658cc5",
+    "/_headers": "b8b3a50f991d22efd2dbb4cdc8dde7d55a93b2202b1174520783e178ff41c398",
+    "/_redirects": "1a19e5c5f88552f864ef32e91621da3414a9386727048ac521f26ab04c0abc41"
+  },
+  "customerRecordsReadOrChanged": false,
+  "passwordsChangedByAgent": false,
+  "checkedAt": "2026-10-31T21:57:17.388Z"
+}

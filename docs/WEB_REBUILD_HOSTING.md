@@ -1,5 +1,7 @@
 # PartyPlus browser hosting
 
+**Current follow-up release:** locked deploy `6ae663c013623bb52b726f3d`, source `182c67d`, published October 31 at 21:56:30 UTC. The preceding compatible password/item-fix deployment `6ae6607931398212cdfba8df` is the direct frontend rollback. The source helper now validates twelve explicit assets, including self-hosted fonts and their licenses. The original six-asset release/preview records below are historical.
+
 ## Released production state
 
 On October 31 at 20:37:34 UTC the verified production artifact `6ae65016a97425eaaa716db8` was published to https://partyplusapp.com and locked using Netlify's supported deploy-lock API. This publishes the ready atomic deploy and prevents old `backup/share-working` Git builds from replacing it. Browser inputs match `e7e748efe8ba43c8fd94b4e72946f72fa6ee13a4`; public root/routes and served asset hashes passed after publication. The previous deploy `6a94a5c77c86e100080fe9fc` is retained, but its raw-table invitation reader is incompatible with the secure database contract.
