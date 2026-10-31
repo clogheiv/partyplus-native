@@ -52,3 +52,9 @@ Synthetic staging fixture `20667f51-1e84-4784-b2ba-895b86d91fa0` created by auth
 ## Remaining acceptance
 
 Verified production public SMTP and reversible data-preserving cutover/release remain. Historical device-only host ownership is preserved but cannot be safely self-claimed; support review required. Existing-account sign-in does not merge a different anonymous guest identity; UI warns before ending that guest session. No current production acquisition/activation/retention or promotion metric is claimed.
+
+## Explicit invitation-sharing clarification
+
+The user's final clarification requested both Share invite and Copy link, with available messaging outlets. The former browser-native action was renamed and expanded into an always-available share panel. It exposes the device's native share chooser when supported, plus text message, WhatsApp and email handoffs. Messenger and other apps can use the native chooser when available or the copied invitation link. The recipient always receives the same `/i/<party-id>` browser invitation; no PartyPlus app is required. The sender chooses recipients and sends within their chosen app.
+
+Focused browser verification opened the panel, confirmed all three encoded outlet links preserve the exact invitation and include its browser context, confirmed native chooser availability, and separately copied the exact link after acknowledgement. No message was sent to anyone and no delivery was claimed. Screenshot: `web-evidence-2026-10-31/share-invite-options.png`. TypeScript and the production build pass after this necessary UI clarification; backend/auth/ownership behavior is unchanged.
