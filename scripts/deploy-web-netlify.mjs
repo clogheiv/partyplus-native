@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {Buffer} from 'node:buffer';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
@@ -52,6 +53,7 @@ if(switches.has('--build')){
 const artifact=path.join(root,'web-dist');
 const allowed=new Set(['index.html','app.js','app.css','favicon.svg','_headers','_redirects']);
 const allowedFonts=new Set(['SpaceGrotesk-Variable.woff2','Fraunces-Display-Semibold.woff2','Fraunces-Display-Italic.woff2','SpaceGrotesk-OFL.txt','Fraunces-OFL.txt','SOURCES.json'].map(name=>'assets/fonts/'+name));
+const allowedBrand=new Set(['partyplus-icon.png','partyplus-banner.jpg','partyplus-banner-small.jpg','favicon.png','apple-touch-icon.png','SOURCES.json'].map(name=>'assets/brand/'+name));
 const files={};
 const bodies=new Map();
 const sha256={};
@@ -59,11 +61,13 @@ let totalBytes=0;
 async function collect(relative=''){
 for(const entry of await fs.readdir(path.join(artifact,relative),{withFileTypes:true})){
   const asset=relative?relative+'/'+entry.name:entry.name;
-  if(entry.isDirectory()&&['assets','assets/fonts'].includes(asset)){await collect(asset);continue;}
-  if(!entry.isFile()||(!allowed.has(asset)&&!allowedFonts.has(asset)))throw Error('Artifact contains an unexpected file, directory, or link. Upload stopped.');
+  if(entry.isDirectory()&&['assets','assets/fonts','assets/brand'].includes(asset)){await collect(asset);continue;}
+  if(!entry.isFile()||(!allowed.has(asset)&&!allowedFonts.has(asset)&&!allowedBrand.has(asset)))throw Error('Artifact contains an unexpected file, directory, or link. Upload stopped.');
   const body=await fs.readFile(path.join(artifact,asset));
   if(body.length>10_000_000)throw Error('Unexpectedly large browser asset.');
   if(asset.endsWith('.woff2')&&body.subarray(0,4).toString()!=='wOF2')throw Error('Font asset is not the expected WOFF2 format.');
+  if(asset.endsWith('.png')&&body.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')throw Error('Brand icon is not the expected PNG format.');
+  if(asset.endsWith('.jpg')&&body.subarray(0,3).toString('hex')!=='ffd8ff')throw Error('Brand banner is not the expected JPEG format.');
   const source=body.toString('utf8');
   if(/sb_secret_[A-Za-z0-9_-]+|-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:NETLIFY_AUTH_TOKEN|SUPABASE_SERVICE_ROLE_KEY)\s*[:=]/.test(source))throw Error('Artifact secret scan rejected an asset.');
   for(const jwt of source.match(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g)||[]){
@@ -76,6 +80,7 @@ for(const entry of await fs.readdir(path.join(artifact,relative),{withFileTypes:
 }
 await collect();
 for(const name of allowed)if(!files['/'+name])throw Error(`Required browser artifact is missing: ${name}`);
+for(const name of allowedBrand)if(!files['/'+name])throw Error('Required original brand asset is missing: '+name);
 if((await fs.readFile(path.join(artifact,'app.css'),'utf8')).includes('/assets/fonts/'))for(const name of allowedFonts)if(!files['/'+name])throw Error('Required local font or license asset is missing: '+name);
 if(totalBytes>25_000_000)throw Error('Unexpectedly large browser artifact.');
 const app=(await fs.readFile(path.join(artifact,'app.js'))).toString('utf8');

@@ -16,5 +16,6 @@ await fs.mkdir(output,{recursive:true});
 for(const name of ['index.html','favicon.svg','_headers','_redirects'])await fs.copyFile(path.join(root,'web',name),path.join(output,name));
 const fonts=path.join(root,'web/assets/fonts');
 try{await fs.access(fonts);await fs.cp(fonts,path.join(output,'assets/fonts'),{recursive:true});}catch(error){if(error.code!=='ENOENT')throw error;}
+await fs.cp(path.join(root,'web/assets/brand'),path.join(output,'assets/brand'),{recursive:true});
 await build({entryPoints:[path.join(root,'web/src/main.tsx')],outfile:path.join(output,'app.js'),bundle:true,platform:'browser',format:'iife',target:'es2022',minify:true,legalComments:'none',external:['/assets/fonts/*'],define:{'process.env.NODE_ENV':JSON.stringify('production'),__PARTYPLUS_WEB_CONFIG__:JSON.stringify({environment,url,key})}});
 console.log(`PartyPlus web built for ${environment}; public configuration validated.`);

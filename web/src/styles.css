@@ -27,7 +27,7 @@
   font-weight: 400;
   color: #191b23;
   background: #fbf8ef;
-  --ink: #191b23;
+  --ink: #132038;
   --paper: #fbf8ef;
   --white: #fffdf8;
   --cobalt: #233de2;
@@ -36,6 +36,10 @@
   --sun: #ffd443;
   --muted: #5d6069;
   --line: #d7d2c6;
+  --brand-navy: #08111f;
+  --brand-panel: #101a2b;
+  --brand-line: #243554;
+  --brand-soft: #dfe7f5;
 }
 * { box-sizing: border-box; }
 html { scroll-padding-top: 100px; }
@@ -829,4 +833,156 @@ h1, h2, .feature-copy h2, .dashboard-intro h1, .page-heading h1,
     letter-spacing: -.01em;
     word-spacing: .055em;
   }
+}
+
+/* Original PartyPlus artwork anchors the product; everyday planning stays light. */
+.site-header {
+  background: var(--brand-navy);
+  color: #f6efe7;
+  border-bottom-color: var(--brand-line);
+}
+.site-header .brand {
+  flex-direction: row;
+  align-items: center;
+  gap: 13px;
+  color: #f6efe7;
+  min-width: 0;
+}
+.brand-icon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 13px;
+  flex-shrink: 0;
+}
+.brand-copy { display: flex; flex-direction: column; min-width: 0; }
+.site-header .brand-word { font-size: 31px; letter-spacing: -.8px; line-height: 1.1; }
+.site-header .brand-caption { font-size: 12px; font-weight: 400; letter-spacing: 0; line-height: 1.5; margin-top: 5px; color: var(--brand-soft); }
+.site-header .nav-link { color: #dfe7f5; }
+.site-header .nav-link.active { background: #1b2d4b; color: #fff; box-shadow: inset 0 -3px #ffd166; }
+.site-header .nav-link:hover { background: #132038; border-color: #3b4e70; }
+.site-header .account-nav { color: #f6efe7; }
+.site-header .avatar { background: #ffd166; border-color: #ffd166; color: #08111f; }
+.site-header .environment-tag { border-color: #53627b; color: #dfe7f5; }
+.site-header a:focus-visible { outline-color: #ffd166; }
+
+.dashboard-brand-feature {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 37px;
+  padding: 34px;
+  background: var(--brand-navy);
+  color: #f6efe7;
+  border-color: var(--brand-line);
+  border-left: 4px solid var(--poster-accent);
+}
+.dashboard-brand-feature .feature-copy .eyebrow { color: #a5f3cf; }
+.dashboard-brand-feature .feature-copy h2 { font-size: clamp(35px, 3.5vw, 48px); }
+.dashboard-brand-feature .feature-copy p { color: var(--brand-soft); }
+.dashboard-brand-feature .button.paper { background: #f6efe7; color: #08111f; border-color: #f6efe7; }
+.dashboard-brand-feature .button.paper:hover { background: #ffd166; border-color: #ffd166; }
+.dashboard-brand-feature .button:focus-visible { outline-color: #ffd166; }
+.brand-banner-panel { width: 100%; min-width: 0; margin: 0; align-self: center; border: 1px solid #354263; background: var(--brand-panel); }
+.brand-banner-image { width: 100%; height: auto; display: block; }
+.brand-banner-panel figcaption { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 16px 18px; border-top: 1px solid #354263; }
+.brand-banner-panel figcaption > span:first-child { color: #f6efe7; font-size: 16px; line-height: 1.5; }
+.banner-confetti { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.banner-confetti i { display: block; width: 5px; height: 12px; background: #c668df; transform: rotate(-18deg); }
+.banner-confetti i:nth-child(2) { height: 7px; width: 7px; border-radius: 50%; background: #72d680; }
+.banner-confetti i:nth-child(3) { height: 12px; background: #ffd166; transform: rotate(20deg); }
+
+.invitation-poster .poster-topline {
+  margin: -25px -35px 0;
+  padding: 15px 25px;
+  background: var(--brand-navy);
+  color: #f6efe7;
+  border-bottom: 1px solid var(--brand-line);
+  gap: 18px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+.poster-brand { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.poster-brand > img { display: block; object-fit: contain; width: 36px; height: 36px; flex-shrink: 0; border-radius: 8px; }
+.poster-brand > div { display: flex; flex-direction: column; min-width: 0; }
+.poster-brand-name { font-size: 17px; font-weight: 600; letter-spacing: -.3px; line-height: 1.3; }
+.poster-brand-tagline { font-size: 12px; font-weight: 400; letter-spacing: 0; line-height: 1.5; color: #dfe7f5; margin-top: 2px; }
+.poster-preview .poster-topline { margin: -18px -22px 0; padding: 13px 17px; gap: 12px; font-size: 10px; letter-spacing: .5px; }
+.poster-preview .poster-brand { gap: 7px; }
+.poster-preview .poster-brand > img { width: 30px; height: 30px; border-radius: 7px; }
+.poster-preview .poster-brand-name { font-size: 15px; }
+.poster-preview .poster-brand-tagline { font-size: 12px; max-width: 155px; }
+
+.site-footer {
+  max-width: none;
+  margin: 0;
+  padding: 34px max(48px, calc((100% - 1264px) / 2)) 38px;
+  background: var(--brand-navy);
+  color: #f6efe7;
+  border-top-color: var(--brand-line);
+}
+.footer-wordmark { display: inline-flex; align-items: center; gap: 11px; font-size: 23px; letter-spacing: -.5px; }
+.footer-wordmark img { display: block; object-fit: contain; width: 34px; height: 34px; border-radius: 8px; }
+.site-footer p { color: #bdcbe1; }
+.footer-motto { font-family: "Space Grotesk", "Segoe UI", sans-serif; font-size: 18px; letter-spacing: -.3px; line-height: 1.5; }
+.site-footer nav a { color: #dfe7f5; }
+.site-footer nav a:hover { color: #ffd166; }
+.site-footer a:focus-visible { outline-color: #ffd166; }
+
+@media (max-width: 1150px) {
+  .site-header .brand-word { font-size: 29px; }
+  .brand-icon { width: 51px; height: 51px; border-radius: 12px; }
+  .site-header .brand { gap: 10px; }
+  .dashboard-brand-feature { padding: 28px; gap: 25px; }
+  .brand-banner-panel figcaption { padding: 14px; }
+  .site-footer { margin: 0; padding-left: 32px; padding-right: 32px; }
+}
+@media (max-width: 900px) {
+  .site-header .brand-word { font-size: 26px; }
+  .site-header .brand-caption { font-size: 12px; max-width: 175px; }
+  .brand-icon { width: 47px; height: 47px; border-radius: 11px; }
+  .dashboard-brand-feature { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding: 27px 24px; gap: 23px; }
+  .dashboard-brand-feature .feature-copy h2 { font-size: 36px; }
+  .brand-banner-panel figcaption { flex-wrap: wrap; padding: 12px; gap: 8px; }
+  .brand-banner-panel figcaption > span:first-child { font-size: 14px; }
+  .invitation-poster:not(.poster-preview) .poster-topline { margin: -22px -28px 0; padding: 15px 22px; }
+  .poster-preview .poster-topline { margin-left: -23px; margin-right: -23px; }
+  .site-footer { margin: 0; padding-left: 25px; padding-right: 25px; }
+}
+@media (max-width: 640px) {
+  .site-header .brand { gap: 10px; }
+  .brand-icon { width: 44px; height: 44px; border-radius: 10px; }
+  .site-header .brand-word { font-size: 26px; }
+  .site-header .brand-caption { font-size: 12px; letter-spacing: 0; margin-top: 4px; max-width: 176px; }
+  .site-header .primary-nav { border-top-color: #354263; }
+  .site-header .nav-link.active { background: #132038; color: #fff; box-shadow: inset 0 -3px #ffd166; }
+  .site-header .nav-link:hover { background: #1b2d4b; }
+  .dashboard-brand-feature { grid-template-columns: minmax(0,1fr); padding: 26px 24px; gap: 26px; }
+  .dashboard-brand-feature .feature-copy h2 { font-size: 39px; max-width: 100%; }
+  .dashboard-brand-feature .feature-copy p { max-width: 100%; }
+  .brand-banner-panel figcaption { flex-wrap: nowrap; padding: 14px; }
+  .brand-banner-panel figcaption > span:first-child { font-size: 14px; }
+  .invitation-poster:not(.poster-preview) .poster-topline { margin: -19px -23px 0; padding: 14px 17px; gap: 12px; font-size: 10px; letter-spacing: .4px; }
+  .poster-brand { gap: 7px; }
+  .poster-brand > img { width: 31px; height: 31px; border-radius: 7px; }
+  .poster-brand-name { font-size: 15px; }
+  .poster-brand-tagline { font-size: 12px; max-width: 155px; }
+  .poster-preview .poster-topline { margin: -18px -24px 0; padding: 13px 15px; gap: 11px; }
+  .site-footer { margin: 0; padding: 28px 20px 32px; }
+  .footer-motto { font-size: 17px; }
+}
+@media (max-width: 380px) {
+  .site-header .account-nav > span:not(.avatar) { display: none; }
+  .site-header .brand-word { font-size: 25px; }
+  .site-header .brand-caption { max-width: 167px; }
+  .dashboard-brand-feature { padding: 24px 20px; }
+  .dashboard-brand-feature .feature-copy h2 { font-size: 35px; }
+  .brand-banner-panel figcaption { padding: 12px; }
+  .banner-confetti { gap: 5px; }
+}
+@media (max-width: 360px) {
+  .site-header .brand-caption { max-width: 160px; }
+  .invitation-poster:not(.poster-preview) .poster-topline { margin-left: -20px; margin-right: -20px; padding-left: 14px; padding-right: 14px; }
+  .poster-brand-tagline { max-width: 136px; }
+  .poster-preview .poster-brand-tagline { max-width: 136px; }
+  .site-footer { margin: 0; padding-left: 16px; padding-right: 16px; }
 }

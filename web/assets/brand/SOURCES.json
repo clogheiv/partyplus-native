@@ -1,0 +1,69 @@
+{
+  "preparedAt": "2026-11-01",
+  "artwork": "Original PartyPlus repository artwork supplied by the owner. No generated replacement artwork.",
+  "sources": {
+    "icon": {
+      "path": "assets/partyplus-icon.png",
+      "sha256": "6533a2dda2d1ead3fc40b080890f7487e2b7821caad3c8b4074f0c6217e99164",
+      "bytes": 2232613,
+      "width": 1024,
+      "height": 1024
+    },
+    "banner": {
+      "path": "invite-web/assets/PartyPlusbanner.png",
+      "sha256": "96e01affbbd7748117d7a93396a60b4576556876b838cd3173c22cf86278b389",
+      "bytes": 7776966,
+      "width": 2976,
+      "height": 1440
+    }
+  },
+  "derivatives": [
+    {
+      "file": "partyplus-icon.png",
+      "source": "icon",
+      "width": 256,
+      "height": 256,
+      "bytes": 110818,
+      "sha256": "36c52bea8ba998ae19975cc205e2b5a7d0fc06feab0e67cd2544878553be60f7",
+      "transformation": "Proportional resize only; full original composition and colors retained."
+    },
+    {
+      "file": "favicon.png",
+      "source": "icon",
+      "width": 48,
+      "height": 48,
+      "bytes": 5546,
+      "sha256": "b4e65e19beec096a2ecc2cd7d3e8e98ccd17249b8468405f75dddee846ba0095",
+      "transformation": "Proportional resize only; full original composition and colors retained."
+    },
+    {
+      "file": "apple-touch-icon.png",
+      "source": "icon",
+      "width": 180,
+      "height": 180,
+      "bytes": 57069,
+      "sha256": "c07027406e2ff4020071806cc4541af8687304367d0357e366cd462613b83a05",
+      "transformation": "Proportional resize only; full original composition and colors retained."
+    },
+    {
+      "file": "partyplus-banner.jpg",
+      "source": "banner",
+      "width": 1440,
+      "height": 697,
+      "bytes": 289320,
+      "sha256": "dce112c013c98cf1646fbedbc4dfa2cedc6936ddca37b61bf3c3370c92d81116",
+      "transformation": "Proportional resize only; full original composition and colors retained.",
+      "jpegQuality": 86
+    },
+    {
+      "file": "partyplus-banner-small.jpg",
+      "source": "banner",
+      "width": 768,
+      "height": 372,
+      "bytes": 117886,
+      "sha256": "fca50f2c08a3405da40620dc793564c640657da60d1ac7288ef391169bed33a9",
+      "transformation": "Proportional resize only; full original composition and colors retained.",
+      "jpegQuality": 86
+    }
+  ]
+}
