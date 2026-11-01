@@ -1,0 +1,14 @@
+{
+  "name": "partyplus-party-images",
+  "public": true,
+  "fileSizeLimit": 1500000,
+  "allowedMimeTypes": ["image/jpeg"],
+  "accessModel": "Anyone with an invitation or retained image URL can view. Public GET bypasses RLS; listing, overwriting and cross-host writes are not allowed.",
+  "clientPreparation": "Decode pixels, flatten on white, strip metadata by canvas re-encoding JPEG, maximum long edge 1600, output at most 1500000 bytes. Source limit 20 MB and 48 megapixels.",
+  "serverValidationLimit": "Bucket enforces declared MIME and file byte size; commit checks actual Storage metadata against the registered slot. It does not independently decode or sanitize image bytes.",
+  "worstCaseReservedBudgetBytes": 240000000,
+  "maximumActiveSlots": 160,
+  "maximumActiveSlotsPerPrincipal": 40,
+  "maximumActiveSlotsPerParty": 8,
+  "paidFeatureOrPlanEnabled": false
+}

@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-01T22:49:37.366Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "productionAccessed": false,
+  "customerDataUsed": false,
+  "syntheticPartyId": "4ddb2bd7-922b-4b45-ad89-60b5e0d2545d",
+  "checks": {
+    "unsavedReservationCreatesNoParty": true,
+    "publicGuestGetWithoutAccountReturnsExactJpeg": true,
+    "savedAppearanceReturnsAcrossHostSessionGuestInviteAndMyParties": true,
+    "bucketListingDeniedForGuestHostAndStranger": true,
+    "crossHostWriteAndOverwriteDenied": true,
+    "bucketRejectsOversizeAndUnapprovedMime": true,
+    "oldClientEditRetainsPhotoAndGuestClaim": true,
+    "referencedPhotoRemovalDeniedAndReplacementCleanupConfirmed": true
+  },
+  "publicUrlRevocationIsNotClaimed": true,
+  "completedAt": "2026-11-01T22:49:43.817Z"
+}

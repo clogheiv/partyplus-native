@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-01T22:49:23.076Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "bucket": "partyplus-party-images",
+  "public": true,
+  "fileSizeLimit": 1500000,
+  "allowedMimeTypes": [
+    "image/jpeg"
+  ],
+  "productionAccessed": false,
+  "createdOrVerifiedViaStorageApi": true
+}

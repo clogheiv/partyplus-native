@@ -1,0 +1,22 @@
+// Synthetic staging UI fixture only. No production access or mail.
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {createClient} from '@supabase/supabase-js';
+const config=JSON.parse(await fs.readFile(path.join(process.env.PARTYPLUS_BACKEND_DEPENDENCIES,'.test-cache/staging-credentials.json'),'utf8'));
+assert.equal(config.url,'https://qmbwrbxbbshbavfhkujx.supabase.co');
+const partyId='7b2e63f6-68de-47ea-a344-2691e8b77ec6';
+const guest=createClient(config.url,config.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+const ok=async request=>{const r=await request;assert.equal(r.error,null);return r.data;};
+const before=await ok(guest.rpc('partyplus_web_read_party',{p_party_id:partyId}));
+assert.match(before.title,/synthetic|appearance|browser/i);
+const item=before.items.find(i=>i.name==='Dessert');assert.ok(item);
+await ok(guest.auth.signInAnonymously());
+await ok(guest.rpc('partyplus_v2_rsvp',{p_party_id:partyId,p_operation_id:randomUUID(),p_response:{name:'Synthetic Appearance Guest',status:'yes',attendeeCount:2}}));
+await ok(guest.rpc('partyplus_v2_claim_item',{p_party_id:partyId,p_item_id:item.id,p_claim:true,p_operation_id:randomUUID()}));
+const after=await ok(guest.rpc('partyplus_web_read_party',{p_party_id:partyId}));
+assert.equal(after.items.find(i=>i.id===item.id).isMine,true);assert.deepEqual(after.appearance,before.appearance);
+const result={at:new Date().toISOString(),projectRef:'qmbwrbxbbshbavfhkujx',productionAccessed:false,syntheticPartyId:partyId,anonymousRsvpForTwoSaved:true,dessertClaimSaved:true,appearanceUnchanged:true};
+await fs.writeFile('docs/appearance-evidence-2026-11-01/staging-ui-guest.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result));await guest.auth.signOut({scope:'local'});

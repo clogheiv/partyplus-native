@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-01T23:01:37.556Z",
+  "browserSource": "d27b4a3e2609900dc77fa364994344522b4917b9",
+  "stagingPreview": "https://6ae7c293d242f5f5b5716580--famous-fairy-b9cb63.netlify.app",
+  "independentOrigin": "https://6ae7c3843d6d676a5d669b9d--famous-fairy-b9cb63.netlify.app",
+  "syntheticPartyId": "7b2e63f6-68de-47ea-a344-2691e8b77ec6",
+  "checks": {
+    "presetImmediatePreview": true,
+    "localMetadataFreeJpegPrepared": true,
+    "binaryPhotoDraftSurvivedSyntheticAuthAndRefresh": true,
+    "pendingItemAndQuantitySavedOnce": true,
+    "realVerifiedHostStagingPasswordSignIn": true,
+    "noEmailDeliveryClaim": true,
+    "temporaryCredentialFilesRemoved": true,
+    "actualSlotUploadAndHostCommit": true,
+    "savedPhotoLoadedFromStorage": true,
+    "refreshAndMyPartiesPhotoThumbnail": true,
+    "unsignedIndependentOriginPhotoRead": true,
+    "unsignedHasRsvpAndNoHostControls": true,
+    "hostAppearanceEditRetainedSamePhotoCropAndZoom": true,
+    "guestGoingTwoAndItemClaimPreserved": true,
+    "unsignedReloadSeesEditedLook": true,
+    "sameHostIndependentOriginRecoveredSavedLookAndEditCapability": true,
+    "localAndHostedPhotoImageFallbackImplemented": true,
+    "viewportReset": true,
+    "customerOrProductionMutation": false
+  },
+  "savedAppearance": {
+    "initialDesign": "cookout",
+    "initialAccent": "coral",
+    "initialFont": "modern",
+    "finalDesign": "holiday",
+    "finalAccent": "forest",
+    "finalFont": "classic",
+    "layout": "photo",
+    "photoWidth": 768,
+    "positionX": 100,
+    "positionY": 0,
+    "zoom": 1.15
+  },
+  "visual": {
+    "desktopCssWidth": 1413,
+    "localPhoneCssWidth": 390,
+    "localPhoneScrollWidth": 373,
+    "hostedPhoneCssWidth": 351,
+    "hostedPhoneScrollWidth": 336,
+    "parentDesktopAndPhoneReview": "No blocking issue",
+    "screenshots": [
+      "desktop-gallery.png",
+      "phone-live-invitation.png"
+    ],
+    "physicalDeviceTest": false
+  },
+  "limitations": [
+    "Some phone screenshot calls timed out; a fresh hosted browser capture succeeded. Native fallback stopped before state/input and was not retried.",
+    "Independent browser origins test separate session storage, not physical second devices."
+  ]
+}

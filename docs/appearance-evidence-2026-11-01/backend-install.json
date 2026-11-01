@@ -1,0 +1,79 @@
+{
+  "at": "2026-11-01T22:47:35.369Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "install",
+  "productionAccessed": false,
+  "installedBefore": false,
+  "gate": true,
+  "before": {
+    "public.parties": {
+      "count": 23,
+      "fingerprint": "e721cb8481072d217c31d99bebb14710"
+    },
+    "public.party_items": {
+      "count": 55,
+      "fingerprint": "944be14ef36587ab403f689582828894"
+    },
+    "public.party_rsvps": {
+      "count": 26,
+      "fingerprint": "9bc4f27b34dfbba1769665d8089756a7"
+    },
+    "partyplus_private.host_access": {
+      "count": 23,
+      "fingerprint": "a9bb1834fe86502af457ea8bc02b19c1"
+    },
+    "partyplus_private.memberships": {
+      "count": 27,
+      "fingerprint": "8e8121d561a417b95929ea016d18b153"
+    },
+    "partyplus_private.operations": {
+      "count": 124,
+      "fingerprint": "30f60b8d191d6e3d5fb1f34f607fa3ba"
+    },
+    "auth.users": {
+      "count": 46,
+      "fingerprint": "406d45f46b46913c8c63f07e21bbfcb6"
+    },
+    "storage.objects": {
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  },
+  "sqlSha256": "50b164d969f35fd97f38e14fe0e0e959510da0ecbba7c5375ebd535982ea12bb",
+  "after": {
+    "public.parties": {
+      "count": 23,
+      "fingerprint": "e721cb8481072d217c31d99bebb14710"
+    },
+    "public.party_items": {
+      "count": 55,
+      "fingerprint": "944be14ef36587ab403f689582828894"
+    },
+    "public.party_rsvps": {
+      "count": 26,
+      "fingerprint": "9bc4f27b34dfbba1769665d8089756a7"
+    },
+    "partyplus_private.host_access": {
+      "count": 23,
+      "fingerprint": "a9bb1834fe86502af457ea8bc02b19c1"
+    },
+    "partyplus_private.memberships": {
+      "count": 27,
+      "fingerprint": "8e8121d561a417b95929ea016d18b153"
+    },
+    "partyplus_private.operations": {
+      "count": 124,
+      "fingerprint": "30f60b8d191d6e3d5fb1f34f607fa3ba"
+    },
+    "auth.users": {
+      "count": 46,
+      "fingerprint": "406d45f46b46913c8c63f07e21bbfcb6"
+    },
+    "storage.objects": {
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  },
+  "rawClientGrantChecksDenied": 6,
+  "committed": true
+}

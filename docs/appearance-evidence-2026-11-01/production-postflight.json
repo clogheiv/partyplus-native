@@ -1,0 +1,49 @@
+{
+  "at": "2026-11-01T23:00:13.693899+00:00",
+  "gate": true,
+  "bucket": {
+    "id": "partyplus-party-images",
+    "public": true,
+    "fileSizeLimit": 1500000,
+    "allowedMimeTypes": [
+      "image/jpeg"
+    ]
+  },
+  "snapshots": {
+    "auth.users": {
+      "count": 4,
+      "fingerprint": "6b3609d121558ef9c346c1742cb4fb7c"
+    },
+    "public.parties": {
+      "count": 349,
+      "fingerprint": "46d72bb46519a2978f4b24700311f9d2"
+    },
+    "storage.objects": {
+      "count": 0,
+      "fingerprint": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.party_items": {
+      "count": 642,
+      "fingerprint": "83b535c500a100dcb267962f92157727"
+    },
+    "public.party_rsvps": {
+      "count": 121,
+      "fingerprint": "281fcf8de0c3c3d25ea69128153956ca"
+    },
+    "partyplus_private.operations": {
+      "count": 9,
+      "fingerprint": "aded29242248d6d8d3c110c437206558"
+    },
+    "partyplus_private.host_access": {
+      "count": 2,
+      "fingerprint": "98c0c912a2aac95781ab0f6d47ee289b"
+    },
+    "partyplus_private.memberships": {
+      "count": 3,
+      "fingerprint": "febd6ed6b449b836d088f6173a53f61e"
+    }
+  },
+  "objectPolicies": 3,
+  "allExistingAppearanceDefault": true,
+  "originalFingerprintsEqualPreflight": true
+}

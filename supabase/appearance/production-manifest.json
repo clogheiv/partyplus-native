@@ -1,0 +1,7 @@
+{
+  "preparedAt": "2026-11-01T22:59:59.065Z",
+  "sourceSha256": "50b164d969f35fd97f38e14fe0e0e959510da0ecbba7c5375ebd535982ea12bb",
+  "guardedSha256": "48ea8de51948d3da261535cb439be17e22a7bf739e263ff320a9f8b71aa2ee63",
+  "preflightSha256": "a5a38cd308cb8b0a4b2fa7ea3eea4b094c2b77a88b57c872c5a99873bc7e1904",
+  "changesBeyondApprovedMigration": "Only same-transaction RLS-protected hash snapshots, gate and raw-grant preservation assertions; no customer-data mutations."
+}
