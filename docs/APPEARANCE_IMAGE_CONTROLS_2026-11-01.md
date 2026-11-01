@@ -24,4 +24,14 @@ Phone observed at390CSS pixels, scroll width373, both top buttons50px high and a
 
 Editor-only original art, crop photos and preview brand images carry both documented per-image opt-out attributes. Public posters/thumbnails omit them (component render check), preserving ordinary invitation sharing. Clicking the marked original PP preview in the local browser left `/create` unchanged and produced no observed Pinterest overlay or extension frame. This is a bounded local observation, not proof of universal extension behavior or Michael's exact historical interaction.
 
-Publication pending; final source/deploy/hash evidence and rollback will be appended after the reviewed artifact is released.
+## Released result
+
+Published and locked **November 1, 2026 at 23:52:04 UTC / 17:52:04 America/Chicago** at https://partyplusapp.com. Reviewed source `6470a77428621c811f78e5aee097a2823671a91f` is pushed to `codex/web-rebuild`; subsequent receipt-only commits leave browser inputs unchanged. Current deploy `6ae7d074fae3d4f689d86f7c`, immutable artifact https://6ae7d074fae3d4f689d86f7c--partyplus-invite.netlify.app.
+
+All 16 downloadable public assets hash-match the reviewed build on draft and canonical domain; all 18 files total **1,265,161 bytes**. Photo CSP and legacy SPA routes passed. Safe exact publication/lock/asset evidence: `image-controls-evidence-2026-11-01/publication.json`. Existing appearance/storage/account/RSVP/bring APIs, models and permissions were not changed. No new backend test/customer mutation, service, spending, mobile submission or browser/extension setting change. Root dirty work and parent staging screenshot preserved; loopback preview stopped and viewport reset.
+
+The Pinterest mitigation uses the officially documented image attributes, not an access-control or copy-prevention promise. Its no-overlay observation is local and bounded; extension implementations may differ. The direct extension-overlay evidence for the original reproduction remains qualified as described above.
+
+Rollback: restore and lock prior fully compatible appearance deploy **`6ae7c57a0ba7fdac70a1b031`**. No database rollback is needed. Saved choices/photos/guest data remain intact; only the previous controls/preview behavior returns. Keep automatic publishing locked, and never reopen obsolete raw table grants.
+
+No further action or source file is needed from Michael to complete this request. Hosts can use Change image beside Invitation preview or the visible actions in Party appearance, then save their changes.

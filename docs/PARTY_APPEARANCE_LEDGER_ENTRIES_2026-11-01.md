@@ -1,5 +1,7 @@
 # Exact current external-note entries — PartyPlus appearance
 
+Latest focused image-controls status supersedes the live deployment details below: [IMAGE_CONTROLS_LEDGER_ENTRIES_2026-11-01.md](IMAGE_CONTROLS_LEDGER_ENTRIES_2026-11-01.md). These appearance-release entries remain historical.
+
 Requested external Pages destinations remained unavailable in the rebuild's connected searches. Save these exact current entries when access returns; no substitute external page was created. Earlier branding entries remain historical in `WEB_REBUILD_LEDGER_ENTRIES_2026-11-01.md`.
 
 ## 00 — Current Status & Next Actions
