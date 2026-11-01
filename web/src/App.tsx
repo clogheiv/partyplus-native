@@ -256,9 +256,10 @@ function Editor({ session, navigate, onSaved, original, notify }: {
         const now = new Date().toISOString();
         const { pendingItemName, pendingItemQty, pendingItemId, ...fields } = prepared;
         const imageId = normalizeAppearance(fields.appearance).image?.id;
-        if (imageId) {
+        if (imageId && imageId !== normalizeAppearance(original?.appearance).image?.id) {
             const localPhoto = await loadDraftPhoto(fields.id!, imageId);
-            if (localPhoto) await api.uploadPartyPhoto(fields.id!, imageId, localPhoto);
+            if (!localPhoto) throw Error('This photo draft is no longer in your browser. Choose the photo again or remove it before saving. Your other details are preserved.');
+            await api.uploadPartyPhoto(fields.id!, imageId, localPhoto);
         }
         const saved = await api.saveParty({ ...fields, id: fields.id || crypto.randomUUID(), title: fields.title!.trim(), items: fields.items || [], createdAt: fields.createdAt || now, updatedAt: now } as Party);
         api.clearDraft();
