@@ -3,6 +3,9 @@ import type { PartyItem, PartyRsvpStatus } from '../../src/lib/partyTypes';
 import { api, type WebParty as Party, type WebEditorDraft } from './api';
 import { includePendingItem, partyMapLinks } from './editorDraft';
 import Account from './Account';
+import { AppearanceControls, AppearancePoster, AppearanceThumbnail } from './PartyAppearance';
+import { normalizeAppearance } from './appearance';
+import { preparePartyPhoto, storeDraftPhoto, loadDraftPhoto, removeDraftPhoto } from './draftMedia';
 import './styles.css';
 type Session = Awaited<ReturnType<typeof api.getSession>>;
 type Lists = {
@@ -49,17 +52,13 @@ function GatheringArt({ variant = 0 }: {
     {variant === 0 ? <><path d="M157 57 177 106 224 82 213 134 267 143 225 177 260 219 205 217 204 272 165 235 130 277 122 223 68 239 94 191 45 168 97 150 77 99 128 118Z" fill="currentColor"/><circle cx="157" cy="168" r="43" fill="var(--poster-bg)"/><path d="m280 55-22 19m35 9-27 1M65 274l18-20" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/></> : variant === 1 ? <><path d="M160 272V141m0 80c-66 0-105-33-105-77 59 0 99 21 105 63m0 19c61 0 104-30 104-70-57 0-99 15-104 55" stroke="currentColor" strokeWidth="15"/><path d="M160 143c-61-2-83-60-51-88 25-22 51 13 51 13s29-37 55-12c31 30 1 84-55 87Z" fill="currentColor"/><path d="m42 70 7 14m216 178 15-8" stroke="currentColor" strokeWidth="7" strokeLinecap="round"/></> : <><circle cx="159" cy="161" r="79" stroke="currentColor" strokeWidth="24"/><path d="M158 27v28m0 214v28M26 160h29m211 0h28M65 67l20 20m150 149 20 20M66 253l20-20M235 86l20-20" stroke="currentColor" strokeWidth="15" strokeLinecap="round"/><circle cx="137" cy="148" r="6" fill="currentColor"/><circle cx="180" cy="148" r="6" fill="currentColor"/><path d="M128 181c17 22 42 22 61 0" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/></>}
   </svg>;
 }
-function InvitationPoster({ party, preview = false, host = false }: {
+function InvitationPoster({ party, preview = false, host = false, photoUrl }: {
     party: Partial<Party>;
     preview?: boolean;
     host?: boolean;
+    photoUrl?: string;
 }) {
-    const Title = preview ? 'h2' : 'h1';
-    return <div className={`invitation-poster ${paletteFor(party.id)} ${preview ? 'poster-preview' : ''}`}>
-    <div className="poster-topline"><span>{preview ? 'YOUR INVITATION' : host ? 'HOSTED BY YOU' : 'YOU’RE INVITED'}</span><div className="poster-brand"><img src="/assets/brand/partyplus-icon.png" alt="" width="36" height="36" decoding="async"/><div><span className="poster-brand-name">PartyPlus</span><span className="poster-brand-tagline">Party planning, made simple</span></div></div></div>
-    <div className="poster-body"><div className="poster-title-block">{party.theme && <span className="poster-theme">{party.theme}</span>}<Title>{party.title || 'A very good get-together.'}</Title><span className="poster-host-line">{preview ? 'A little something to look forward to.' : 'Good company. You included.'}</span></div><div className="poster-art"><GatheringArt variant={paletteIndex(party.id || 'partyplus')}/><span className="poster-art-label">LET’S<br /><em>get together.</em></span></div></div>
-    <div className="poster-bottomline"><span>{calendarParts(party.date).month} {calendarParts(party.date).day}</span><span>{party.date ? timeLabel(party.date) || 'SAVE THE DATE' : 'DATE TO COME'}</span><span>{party.location || party.address || 'PLACE TO COME'}</span></div>
-  </div>;
+    return <AppearancePoster party={party} preview={preview} host={host} photoUrl={photoUrl || api.partyPhotoUrl(normalizeAppearance(party.appearance).image?.id)}/>;
 }
 function Icon({ name, size = 20 }: {
     name: string;
@@ -93,6 +92,7 @@ export default function App() {
         const next = current ? await api.listParties() : emptyLists;
         setLists(next);
         setListError('');
+        if (current && !current.isAnonymous) void api.retryPhotoCleanup().catch(() => {});
         if ((next.hosting.length || next.joined.length) && !sessionStorage.getItem('partyplus.returning-use')) {
             sessionStorage.setItem('partyplus.returning-use', '1');
             void api.track('returning_use');
@@ -136,7 +136,7 @@ export default function App() {
     </div></header>
     <div className="main-wrap">
       <main id="main" ref={heading} tabIndex={-1}>
-        {booting ? <Loading /> : infoPage ? <InfoPage page={infoPage} navigate={navigate}/> : account ? <Account session={session} refresh={refresh} navigate={navigate} notify={setToast}/> : creating ? <Editor session={session} navigate={navigate} onSaved={refresh}/> : partyId ? <PartyPage key={partyId} id={partyId} session={session} refresh={refresh} joined={lists.joined.some(p => p.id === partyId)} navigate={navigate} notify={setToast} editing={path.includes('edit=1')} isInvitation={Boolean(legacyInvite || path.startsWith('/i/'))}/> : !known ? <div className="empty panel"><h1>This page wandered off.</h1><p>Your next gathering is still waiting.</p><Link to="/" className="button primary">Back to my parties</Link></div> : <Dashboard lists={lists} error={listError} retry={() => refresh().catch(e => setListError(message(e)))} navigate={navigate} session={session}/>}
+        {booting ? <Loading /> : infoPage ? <InfoPage page={infoPage} navigate={navigate}/> : account ? <Account session={session} refresh={refresh} navigate={navigate} notify={setToast}/> : creating ? <Editor session={session} navigate={navigate} onSaved={refresh} notify={setToast}/> : partyId ? <PartyPage key={partyId} id={partyId} session={session} refresh={refresh} joined={lists.joined.some(p => p.id === partyId)} navigate={navigate} notify={setToast} editing={path.includes('edit=1')} isInvitation={Boolean(legacyInvite || path.startsWith('/i/'))}/> : !known ? <div className="empty panel"><h1>This page wandered off.</h1><p>Your next gathering is still waiting.</p><Link to="/" className="button primary">Back to my parties</Link></div> : <Dashboard lists={lists} error={listError} retry={() => refresh().catch(e => setListError(message(e)))} navigate={navigate} session={session}/>}
       </main>
       <footer className="site-footer"><div><span className="footer-wordmark"><img src="/assets/brand/partyplus-icon.png" alt="" width="34" height="34" loading="lazy" decoding="async"/>PartyPlus</span><p>Anyone with the invitation link can view party details.<br />Works in your browser. No app download.</p></div><div className="footer-right"><span className="footer-motto">Party planning, made simple</span><nav aria-label="Information"><Link to="/support">Support</Link><Link to="/privacy">Privacy</Link><Link to="/terms">Terms</Link></nav></div></footer>
     </div>
@@ -170,7 +170,7 @@ function Dashboard({ lists, error, retry, navigate, session }: {
         return <button className={`party-ticket ${paletteFor(party.id)}`} key={party.id} onClick={() => navigate(`/party/${encodeURIComponent(party.id)}`)}>
       <span className="ticket-date"><span>{calendar.month}</span><strong>{calendar.day}</strong><small>{calendar.weekday}</small></span>
       <span className="ticket-content"><span className="ticket-kicker">{tab === 'hosting' ? 'HOSTED BY YOU' : response ? statusLabel[response.status].toUpperCase() : 'YOU’RE INVITED'}{party.theme && <span> / {party.theme}</span>}</span><strong className="ticket-title">{party.title}</strong><span className="ticket-location"><Icon name="pin" size={17}/>{party.location || 'Location to be decided'}</span><span className="ticket-meta">{party.date && timeLabel(party.date) && <span>{timeLabel(party.date)}</span>}<span>{claimed}/{party.items.length} items claimed</span>{party.cloudStatus && party.cloudStatus !== 'committed' && <span className="pending-tag">Needs sync</span>}</span></span>
-      <span className="ticket-end"><GatheringArt variant={paletteIndex(party.id)}/><span className="ticket-open"><span>Open party</span><Icon name="arrow"/></span></span>
+      <span className="ticket-end ticket-appearance"><AppearanceThumbnail appearance={party.appearance} photoUrl={api.partyPhotoUrl(normalizeAppearance(party.appearance).image?.id)} partyId={party.id}/><span className="ticket-open"><span>Open party</span><Icon name="arrow"/></span></span>
     </button>;
     };
     return <>
@@ -178,7 +178,7 @@ function Dashboard({ lists, error, retry, navigate, session }: {
     <section className="dashboard-intro"><div><span className="eyebrow">GOOD COMPANY STARTS HERE</span><h1>My parties<span className="editorial-dot">.</span></h1><p>{hasAny ? 'Your plans, your people. All in one good place.' : 'Give your people something to look forward to.'}</p></div><button className="button primary new-party-button" onClick={() => navigate('/create')}><Icon name="plus"/>Create a party</button></section>
     <section className={`dashboard-feature dashboard-brand-feature ${next ? paletteFor(next.id) : 'tone-cobalt'}`}>
       <div className="feature-copy"><span className="eyebrow">{next ? 'NEXT ON YOUR CALENDAR' : 'AN EXCUSE TO GET TOGETHER'}</span><h2>{next ? next.title : <>Less back &amp; forth.<br /><em>More see you there.</em></>}</h2><p>{next ? dateLabel(next.date) : 'Make the plan. Share one invitation. Make it easy for guests to pitch in.'}</p><button className="button paper" onClick={() => navigate(next ? `/party/${encodeURIComponent(next.id)}` : '/create')}>{next ? 'Open invitation' : 'Make your first plan'}<Icon name="arrow"/></button></div>
-      <figure className="brand-banner-panel"><img className="brand-banner-image" src="/assets/brand/partyplus-banner.jpg" srcSet="/assets/brand/partyplus-banner-small.jpg 768w, /assets/brand/partyplus-banner.jpg 1440w" sizes="(max-width: 640px) calc(100vw - 92px), (max-width: 900px) 44vw, (max-width: 1360px) 40vw, 555px" alt="Original PartyPlus celebration banner" width="1440" height="697" decoding="async"/><figcaption><span>Party planning, made simple</span><span className="banner-confetti" aria-hidden="true"><i/><i/><i/></span></figcaption></figure>
+      <figure className={`brand-banner-panel ${next ? 'next-party-appearance' : ''}`}>{next ? <AppearanceThumbnail appearance={next.appearance} photoUrl={api.partyPhotoUrl(normalizeAppearance(next.appearance).image?.id)} partyId={next.id}/> : <img className="brand-banner-image" src="/assets/brand/partyplus-banner.jpg" srcSet="/assets/brand/partyplus-banner-small.jpg 768w, /assets/brand/partyplus-banner.jpg 1440w" sizes="(max-width: 640px) calc(100vw - 92px), (max-width: 900px) 44vw, (max-width: 1360px) 40vw, 555px" alt="Original PartyPlus celebration banner" width="1440" height="697" decoding="async"/>}<figcaption><span>Party planning, made simple</span><span className="banner-confetti" aria-hidden="true"><i/><i/><i/></span></figcaption></figure>
     </section>
     <section className="parties-section" aria-label="Your saved parties"><div className="list-toolbar"><div className="tabs" role="tablist" aria-label="Party lists"><button id="hosting-tab" role="tab" aria-selected={tab === 'hosting'} aria-controls="party-list" className={tab === 'hosting' ? 'selected' : ''} onClick={() => setTab('hosting')}>Hosting <span>{lists.hosting.length}</span></button><button id="joined-tab" role="tab" aria-selected={tab === 'joined'} aria-controls="party-list" className={tab === 'joined' ? 'selected' : ''} onClick={() => setTab('joined')}>Joined <span>{lists.joined.length}</span></button></div>{lists[tab].length > 2 && <label className="party-search"><Icon name="search" size={18}/><span className="sr-only">Find a party</span><input type="search" placeholder="Find a party" value={query} onChange={e => setQuery(e.target.value)}/></label>}</div>
       {error && <Notice kind="error">{error} <button className="text-button" onClick={retry}>Try again</button></Notice>}
@@ -191,11 +191,12 @@ function Dashboard({ lists, error, retry, navigate, session }: {
     <div className="editorial-note"><span aria-hidden="true">✳</span><p>A good host doesn’t have to do it all.<br /><strong>Make a list. Make room for everyone.</strong></p><span className="note-rule"/></div>
   </>;
 }
-function Editor({ session, navigate, onSaved, original }: {
+function Editor({ session, navigate, onSaved, original, notify }: {
     session: Session;
     navigate: (p: string) => void;
     onSaved: () => Promise<unknown>;
     original?: Party;
+    notify: (text: string) => void;
 }) {
     const [draft, setDraft] = useState<WebEditorDraft>(() => {
         const stored = api.loadDraft();
@@ -207,12 +208,45 @@ function Editor({ session, navigate, onSaved, original }: {
     const draftRef = useRef(draft);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
+    const [photoBusy, setPhotoBusy] = useState(false);
+    const [photoError, setPhotoError] = useState('');
+    const [photoPreview, setPhotoPreview] = useState<string>();
+    const photoSelection = useRef(0);
+    const photoId = normalizeAppearance(draft.appearance).image?.id;
+    useEffect(() => {
+        let active = true; let objectUrl: string | undefined;
+        setPhotoPreview(undefined);
+        if (draft.id && photoId) void loadDraftPhoto(draft.id, photoId).then(blob => {
+            if (blob && active) { objectUrl = URL.createObjectURL(blob); setPhotoPreview(objectUrl); }
+        }).catch(() => { if (active) setPhotoError('This browser could not recover the photo draft. Choose the photo again if its preview is missing.'); });
+        return () => { active = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+    }, [draft.id, photoId]);
     useEffect(() => { api.storeDraft(draft); }, [draft]);
     const changeDraft = (build: (current: WebEditorDraft) => WebEditorDraft) => { const next = build(draftRef.current); api.storeDraft(next); draftRef.current = next; setDraft(next); return next; };
     const update = (field: keyof WebEditorDraft, value: unknown) => changeDraft(d => ({ ...d, [field]: value, ...(field === 'pendingItemName' && value && !d.pendingItemId ? { pendingItemId: crypto.randomUUID() } : {}) }));
     const addItem = () => changeDraft(d => includePendingItem(d, () => crypto.randomUUID()));
     const removeItem = (item: PartyItem) => changeDraft(d => ({ ...d, items: d.items?.filter(i => i.id !== item.id), removedItemIds: original?.items.some(i => i.id === item.id) ? [...(d.removedItemIds || []), item.id] : d.removedItemIds }));
-    const submit = async (e: FormEvent) => { e.preventDefault(); setError(''); if (draftRef.current.pendingItemQty?.trim() && !draftRef.current.pendingItemName?.trim()) {
+    const selectPhoto = async (file: File) => {
+        const selection = ++photoSelection.current; setPhotoBusy(true); setPhotoError('');
+        try {
+            const blob = await preparePartyPhoto(file);
+            if (selection !== photoSelection.current) return;
+            const imageId = crypto.randomUUID(); const partyId = draftRef.current.id!;
+            await storeDraftPhoto(partyId, imageId, blob);
+            const previousId = normalizeAppearance(draftRef.current.appearance).image?.id;
+            changeDraft(d => ({ ...d, appearance: { ...normalizeAppearance(d.appearance), layout: 'photo', image: { id: imageId, positionX: 50, positionY: 50, zoom: 1 } } }));
+            setPreviewOpen(true);
+            if (previousId && previousId !== original?.appearance?.image?.id) void removeDraftPhoto(partyId, previousId).catch(() => {});
+        } catch (e) { if (selection === photoSelection.current) setPhotoError(message(e)); }
+        finally { if (selection === photoSelection.current) setPhotoBusy(false); }
+    };
+    const removePhoto = () => {
+        const oldId = normalizeAppearance(draftRef.current.appearance).image?.id;
+        changeDraft(d => ({ ...d, appearance: { ...normalizeAppearance(d.appearance), image: undefined, ...(d.appearance?.layout === 'photo' ? { layout: 'illustrated' as const } : {}) } }));
+        setPhotoError('');
+        if (oldId && draft.id) void removeDraftPhoto(draft.id, oldId).catch(() => {});
+    };
+    const submit = async (e: FormEvent) => { e.preventDefault(); setError(''); if (photoBusy) { setError('Wait for your photo to finish preparing before saving.'); return; } if (draftRef.current.pendingItemQty?.trim() && !draftRef.current.pendingItemName?.trim()) {
         setError('Enter an item name for that quantity, or clear the quantity before saving.');
         return;
     } const prepared = changeDraft(d => includePendingItem(d, () => crypto.randomUUID())); if (!session || session.isAnonymous) {
@@ -221,10 +255,20 @@ function Editor({ session, navigate, onSaved, original }: {
     } setBusy(true); try {
         const now = new Date().toISOString();
         const { pendingItemName, pendingItemQty, pendingItemId, ...fields } = prepared;
+        const imageId = normalizeAppearance(fields.appearance).image?.id;
+        if (imageId) {
+            const localPhoto = await loadDraftPhoto(fields.id!, imageId);
+            if (localPhoto) await api.uploadPartyPhoto(fields.id!, imageId, localPhoto);
+        }
         const saved = await api.saveParty({ ...fields, id: fields.id || crypto.randomUUID(), title: fields.title!.trim(), items: fields.items || [], createdAt: fields.createdAt || now, updatedAt: now } as Party);
         api.clearDraft();
+        if (imageId) void removeDraftPhoto(saved.id, imageId).catch(() => {});
+        let cleanupPending = false;
+        try { cleanupPending = (await api.finalizePartyPhotos(saved.id, imageId, normalizeAppearance(original?.appearance).image?.id)) > 0; }
+        catch { cleanupPending = true; }
         await onSaved();
         navigate(`/party/${saved.id}`);
+        if (cleanupPending) notify('Party saved. Older photo cleanup will retry next time you return.');
     }
     catch (e) {
         setError(message(e));
@@ -239,6 +283,7 @@ function Editor({ session, navigate, onSaved, original }: {
         e.preventDefault();
         addItem();
     } }}/></label><label className="quantity-field">Quantity<input value={draft.pendingItemQty || ''} maxLength={60} placeholder="Serves 6" onChange={e => update('pendingItemQty', e.target.value)}/></label><button type="button" className="button secondary add-item-button" aria-label="Add item" onClick={addItem} disabled={!draft.pendingItemName?.trim()}><Icon name="plus"/><span>Add item</span></button></div>{draft.pendingItemName?.trim() && <p className="pending-item-note"><Icon name="check" size={16}/>This item is ready to add. Save your party to include it, or select Add item to keep building your list.</p>}<ul className="edit-items">{draft.items?.map(item => <li key={item.id}><span><strong>{item.name}</strong>{item.qty && <small>{item.qty}</small>}{item.claimedBy && <small>Being brought by {item.claimedBy}</small>}</span>{item.claimedBy || item.claimedByUserId ? <span className="badge subtle">CLAIMED</span> : <button type="button" className="remove-button" aria-label={`Remove ${item.name}`} onClick={() => removeItem(item)}>Remove</button>}</li>)}</ul>{!draft.items?.length && <p className="list-placeholder">A drink, a dish, a little something to share.</p>}</section>
+      <section className="panel form-panel appearance-panel"><div className="form-section-title"><span className="step-number">04</span><h2>Party appearance</h2><span className="badge subtle">OPTIONAL</span></div><p className="muted">Keep the PartyPlus original, or choose a look that feels like your gathering.</p><AppearanceControls value={draft.appearance} onChange={appearance => { update('appearance', appearance); setPreviewOpen(true); }} photoUrl={photoPreview || api.partyPhotoUrl(photoId)} onPhotoSelected={file => { void selectPhoto(file); }} onPhotoRemoved={removePhoto} uploadBusy={photoBusy || busy} uploadError={photoError}/><button type="button" className="text-button" onClick={() => { setPreviewOpen(true); requestAnimationFrame(() => document.getElementById('live-invitation-preview')?.scrollIntoView({ behavior: 'smooth', block: 'start' })); }}>See invitation preview<Icon name="arrow" size={17}/></button></section>
       {error && <Notice kind="error">{error}</Notice>}{draft.id && api.hasPending(draft.id) && <Notice kind="warning">Your change is saved in this browser and still needs confirmation. <button className="text-button" type="button" disabled={busy} onClick={async () => { setBusy(true); setError(''); try {
         await api.retry(draft.id!);
         const latest = await api.readParty(draft.id!);
@@ -253,8 +298,8 @@ function Editor({ session, navigate, onSaved, original }: {
     }
     finally {
         setBusy(false);
-    } }}>Retry saved change</button></Notice>}<div className="form-actions"><span>{original ? 'Changes are shared with your guests.' : 'Draft saved in this browser'}</span><button className="button primary" type="submit" disabled={busy || !draft.title?.trim()}>{busy ? 'Saving…' : original ? 'Save changes' : session && !session.isAnonymous ? 'Create party' : 'Sign in & create'}<Icon name="arrow" size={17}/></button></div></div>
-      <aside className="editor-preview"><div className="preview-heading"><span className="eyebrow">A PEEK AT YOUR PLANS</span><button type="button" className="preview-toggle" aria-expanded={previewOpen} aria-controls="live-invitation-preview" onClick={() => setPreviewOpen(value => !value)}><span>Live invitation preview</span><Icon name="chevron" size={18}/></button></div>{previewOpen && <div id="live-invitation-preview"><InvitationPoster party={draft} preview/><div className="preview-receipt"><span><Icon name="calendar" size={17}/>{dateLabel(draft.date)}</span><span><Icon name="pin" size={17}/>{draft.location || 'Your place goes here'}</span><span><Icon name="check" size={17}/>{(draft.items?.length || 0) + (draft.pendingItemName?.trim() ? 1 : 0)} things to bring</span></div><p className="preview-fineprint">Save your party to get one invitation link. Your guests can RSVP and choose what to bring right in their browser.</p><span className="preview-stamp">GOOD COMPANY<br />IS THE WHOLE POINT.</span></div>}</aside></form>
+    } }}>Retry saved change</button></Notice>}<div className="form-actions"><span>{original ? 'Changes are shared with your guests.' : 'Draft saved in this browser'}</span><button className="button primary" type="submit" disabled={busy || photoBusy || !draft.title?.trim()}>{busy ? 'Saving…' : photoBusy ? 'Preparing photo…' : original ? 'Save changes' : session && !session.isAnonymous ? 'Create party' : 'Sign in & create'}<Icon name="arrow" size={17}/></button></div></div>
+      <aside className="editor-preview"><div className="preview-heading"><span className="eyebrow">A PEEK AT YOUR PLANS</span><button type="button" className="preview-toggle" aria-expanded={previewOpen} aria-controls="live-invitation-preview" onClick={() => setPreviewOpen(value => !value)}><span>Live invitation preview</span><Icon name="chevron" size={18}/></button></div>{previewOpen && <div id="live-invitation-preview"><InvitationPoster party={draft} preview photoUrl={photoPreview}/><div className="preview-receipt"><span><Icon name="calendar" size={17}/>{dateLabel(draft.date)}</span><span><Icon name="pin" size={17}/>{draft.location || 'Your place goes here'}</span><span><Icon name="check" size={17}/>{(draft.items?.length || 0) + (draft.pendingItemName?.trim() ? 1 : 0)} things to bring</span></div><p className="preview-fineprint">Save your party to get one invitation link. Your guests can RSVP and choose what to bring right in their browser.</p><span className="preview-stamp">GOOD COMPANY<br />IS THE WHOLE POINT.</span></div>}</aside></form>
   </>;
 }
 function PartyPage({ id, session, refresh, joined, navigate, notify, editing, isInvitation }: {
@@ -331,7 +376,7 @@ function PartyPage({ id, session, refresh, joined, navigate, notify, editing, is
     if (!party)
         return <div className="empty panel"><span className="empty-icon"><Icon name="calendar" size={28}/></span><h1>{error ? 'We couldn’t open this party.' : 'This party isn’t available.'}</h1><p>{error || 'The invitation may have expired or the host may have removed it. Check the link with your host.'}</p><button className="button primary" onClick={load}>Try again</button><button className="text-button" onClick={() => navigate('/')}>My parties</button></div>;
     if (editing && party.canEdit)
-        return <Editor original={party} session={session} navigate={navigate} onSaved={async () => { await refresh(); await refreshParty(); }}/>;
+        return <Editor original={party} session={session} navigate={navigate} notify={notify} onSaved={async () => { await refresh(); await refreshParty(); }}/>;
     const maps = partyMapLinks(party.location, party.address);
     const host = party.canEdit === true;
     const yes = (party.rsvps || []).filter(r => r.status === 'yes');

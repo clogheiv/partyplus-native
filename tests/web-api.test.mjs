@@ -52,3 +52,16 @@ test('measurement has no party identity, names, links, or delivery claim; teleme
  await instance.api.track('invitation_link_copied','private-party');
  assert.deepEqual(Object.keys(instance.calls[0][1]).sort(),['p_event_id','p_kind']);
 });
+
+test('appearance save is not acknowledged when a backend drops it; exact pending payload remains retryable',async()=>{
+ const appearance={version:1,design:'birthday',layout:'illustrated',accent:'orchid',font:'editorial',artwork:'balloons'};
+ const h=setup();await assert.rejects(h.api.saveParty({...party,appearance}),/did not confirm.*appearance/);
+ assert.equal(h.api.hasPending(party.id),true);
+ const pending=JSON.parse(h.storage.get('partyplus.web.v1.pending.'+party.id));assert.deepEqual(pending.args.p_party.appearance,appearance);
+});
+
+test('appearance receipts accept canonical server key order and preserve the same photo crop in a saved retry',async()=>{
+ const appearance={version:1,design:'casual',layout:'photo',accent:'cobalt',font:'modern',artwork:'confetti',image:{id:'10667f51-1e84-4784-b2ba-895b86d91fa0',positionX:72,positionY:24,zoom:1.25}};
+ const h=setup({rpc:async(_name,args)=>({data:{committed:true,operationId:args.p_operation_id,party:{...party,appearance:{image:{zoom:1.25,positionY:24,positionX:72,id:appearance.image.id},artwork:'confetti',font:'modern',accent:'cobalt',layout:'photo',design:'casual',version:1}}}})});
+ const saved=await h.api.saveParty({...party,appearance});assert.equal(saved.appearance.image.positionX,72);assert.equal(h.api.hasPending(party.id),false);
+});

@@ -986,3 +986,17 @@ h1, h2, .feature-copy h2, .dashboard-intro h1, .page-heading h1,
   .poster-preview .poster-brand-tagline { max-width: 136px; }
   .site-footer { margin: 0; padding-left: 16px; padding-right: 16px; }
 }
+
+/* Saved party artwork follows the invitation into the host/guest agenda. */
+.ticket-end.ticket-appearance { padding: 0; background: #08111f; color: #fff8ef; }
+.ticket-appearance > .appearance-thumbnail { flex: 1; min-height: 135px; }
+.ticket-appearance .ticket-open { margin: 0; padding: 12px 14px; min-height: 48px; border-top-color: #526078; background: #08111f; color: #fff8ef; }
+.next-party-appearance > .appearance-thumbnail { height: 260px; }
+.next-party-appearance .appearance-thumbnail > .ap-original-icon { width: 135px; max-width: 40%; }
+.appearance-panel .form-section-title { flex-wrap: wrap; }
+.appearance-panel .form-section-title h2 { flex: 1; }
+.appearance-panel > .text-button { margin-top: 12px; }
+@media (max-width: 640px) {
+  .next-party-appearance > .appearance-thumbnail { height: 215px; }
+  .ticket-appearance > .appearance-thumbnail { min-height: 120px; }
+}

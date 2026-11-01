@@ -2,8 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 import type { Party, PartyItem, PartyRsvp } from '../../src/lib/partyTypes';
 import { classifyPartyError } from '../../src/lib/partyErrors';
 import { requireParty, requireCommitReceipt } from '../../src/lib/partyValidation';
+import type { PartyAppearance } from './appearance';
 
 export type WebParty = Omit<Party,'items'> & {
+  appearance?:PartyAppearance;
   address?:string;
   items: (PartyItem & {isMine?:boolean})[];
   ownRsvp?: PartyRsvp | null;
@@ -16,6 +18,7 @@ const config=__PARTYPLUS_WEB_CONFIG__;
 const client=createClient(config.url,config.key,{auth:{detectSessionInUrl:false,persistSession:true,autoRefreshToken:true}});
 const prefix='partyplus.web.v1.';
 type Pending={id:string;operationId:string;principal:string;name:string;args:Record<string,unknown>;attempted:boolean};
+type PhotoWork={principal:string;partyId:string;imageId:string};
 function read<T>(key:string):T|null { const value=localStorage.getItem(prefix+key); if (!value) return null; try {return JSON.parse(value);} catch {throw Error('Saved browser data needs recovery. Its original copy has been preserved.');} }
 function write(key:string,value:unknown) {localStorage.setItem(prefix+key,JSON.stringify(value));}
 async function session() {
@@ -50,6 +53,11 @@ async function lock<T>(id:string,operation:()=>Promise<T>):Promise<T> {
   if(!navigator.locks) throw Error('Please update your browser before saving. You can still view invitations.');
   return navigator.locks.request(prefix+id,operation);
 }
+function appearanceFingerprint(value:unknown):string {
+ if(value===null)return 'null';if(!value||typeof value!=='object')return 'missing';
+ const p=value as Record<string,unknown>;const image=p.image as Record<string,unknown>|undefined;
+ return JSON.stringify([p.version,p.design,p.layout,p.accent,p.font,p.artwork,image?[image.id,image.positionX,image.positionY,image.zoom]:null]);
+}
 async function mutation(id:string,name?:string,args?:Record<string,unknown>):Promise<WebParty|null> {
  return lock(id,async()=>{
   const key='pending.'+id;
@@ -71,6 +79,8 @@ async function mutation(id:string,name?:string,args?:Record<string,unknown>):Pro
   let party:WebParty|null=null;
   if(pending.name!=='partyplus_v2_delete_party')party=requireCommitReceipt(result,id,pending.operationId).party as WebParty;
   else if(result?.committed!==true || result.operationId!==pending.operationId)throw Error('The server did not confirm this deletion. Retry the pending change.');
+  const submitted=pending.args.p_party as Record<string,unknown>|undefined;
+  if(pending.name==='partyplus_v2_commit_party'&&submitted&&Object.hasOwn(submitted,'appearance')&&appearanceFingerprint(submitted.appearance)!==appearanceFingerprint(party?.appearance))throw Error('The server did not confirm your invitation appearance. Your draft is preserved. Retry the saved change.');
   localStorage.removeItem(prefix+key);
   return party;
  });
@@ -83,6 +93,72 @@ async function track(kind:string) {
 export const api={
  config,
  getSession:session,
+ partyPhotoUrl(imageId?:string):string|undefined{
+  if(!imageId||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imageId))return undefined;
+  return `${config.url}/storage/v1/object/public/partyplus-party-images/${imageId.toLowerCase()}.jpg`;
+ },
+ async uploadPartyPhoto(partyId:string,imageId:string,photo:Blob):Promise<void>{
+  const current=await session();if(!current||current.isAnonymous)throw Error('Verify your email before uploading this photo. Your photo draft stays in this browser.');
+  if(api.hasPending(partyId))throw Error('Retry your pending party change before uploading a different photo.');
+  if(!api.partyPhotoUrl(imageId)||photo.type!=='image/jpeg'||photo.size<1||photo.size>1_500_000)throw Error('Choose and prepare a JPEG photo under 1.5 MB.');
+  const bytes=await photo.arrayBuffer();const header=new Uint8Array(bytes,0,Math.min(bytes.byteLength,3));
+  if(header.length<3||header[0]!==255||header[1]!==216||header[2]!==255)throw Error('The prepared photo is not a JPEG. Choose the photo again.');
+  const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
+  const prepared=await client.rpc('partyplus_web_prepare_image',{p_party_id:partyId,p_image_id:imageId,p_byte_size:photo.size,p_sha256:sha256});
+  if(prepared.error){
+   if(prepared.error.message.includes('image_capacity_reached'))throw Error('Photo storage is at its current safety limit. Keep gallery artwork for now, or remove an unused photo and try again. Your draft is preserved.');
+   throw classifyPartyError(prepared.error);
+  }
+  const slot=prepared.data;
+  const imagePath=imageId.toLowerCase()+'.jpg';
+  if(slot?.imageId!==imageId||slot.bucket!=='partyplus-party-images'||slot.path!==imagePath)throw Error('The server could not authorize this photo upload. Your draft is preserved.');
+  let uncertain=false;
+  try{const result=await client.storage.from(slot.bucket).upload(slot.path,photo,{contentType:'image/jpeg',cacheControl:'3600',upsert:false});uncertain=!!result.error;}catch{uncertain=true;}
+  if(uncertain){
+   // A dropped upload response or duplicate retry is safe only if the exact
+   // immutable bytes are already present; never overwrite a prior object.
+   try{
+    const response=await fetch(api.partyPhotoUrl(imageId)!,{signal:AbortSignal.timeout(20000)});
+    if(!response.ok||Number(response.headers.get('content-length'))>1_500_000)throw Error();
+    const stored=await response.arrayBuffer();if(stored.byteLength!==photo.size)throw Error();
+    const storedHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',stored)),byte=>byte.toString(16).padStart(2,'0')).join('');
+    if(storedHash!==sha256)throw Error();
+   }catch{throw Error('The photo upload could not be confirmed. Your draft is preserved. Check your connection and save again.');}
+  }
+  await lock('photo-work',async()=>{
+   const uploaded=read<PhotoWork[]>('uploadedPhotos')??[];
+   write('uploadedPhotos',[...uploaded.filter(entry=>entry.imageId!==imageId),{principal:current.id,partyId,imageId}]);
+  });
+ },
+ async finalizePartyPhotos(partyId:string,keepImageId?:string,previousImageId?:string):Promise<number>{
+  const current=await session();if(!current||current.isAnonymous)return 0;
+  await lock('photo-work',async()=>{
+   const uploaded=read<PhotoWork[]>('uploadedPhotos')??[];
+   const queued=read<PhotoWork[]>('photoCleanup')??[];
+   const candidates=[...uploaded.filter(entry=>entry.principal===current.id&&entry.partyId===partyId&&entry.imageId!==keepImageId),...(previousImageId&&previousImageId!==keepImageId?[{principal:current.id,partyId,imageId:previousImageId}]:[])];
+   const next=[...queued];for(const entry of candidates)if(!next.some(saved=>saved.principal===entry.principal&&saved.imageId===entry.imageId))next.push(entry);
+   write('photoCleanup',next);
+   write('uploadedPhotos',uploaded.filter(entry=>entry.principal!==current.id||entry.partyId!==partyId));
+  });
+  return api.retryPhotoCleanup();
+ },
+ async retryPhotoCleanup():Promise<number>{
+  const current=await session();if(!current||current.isAnonymous)return 0;
+  return lock('photo-work',async()=>{
+  const queued=read<PhotoWork[]>('photoCleanup')??[];const remaining:PhotoWork[]=[];let attempted=0;
+  if(!queued.length)return 0;
+  for(const entry of queued){
+   if(entry.principal!==current.id||attempted>=4){remaining.push(entry);continue;}attempted++;
+   try{
+    const slot=await rpc('partyplus_web_begin_image_removal',{p_image_id:entry.imageId});
+    if(slot?.imageId!==entry.imageId||slot.bucket!=='partyplus-party-images'||slot.path!==entry.imageId.toLowerCase()+'.jpg')throw Error('Invalid removal authorization');
+    const {error}=await client.storage.from(slot.bucket).remove([slot.path]);if(error)throw error;
+    if(await rpc('partyplus_web_release_image',{p_image_id:entry.imageId})!==true)throw Error('Removal not confirmed');
+   }catch{remaining.push(entry);}
+  }
+  write('photoCleanup',remaining);return remaining.filter(entry=>entry.principal===current.id).length;
+  });
+ },
  async listParties():Promise<{hosting:WebParty[];joined:WebParty[]}>{
   if(!await session())return {hosting:[],joined:[]};
   const result=await rpc('partyplus_web_list_my_parties');
