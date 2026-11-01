@@ -996,6 +996,12 @@ h1, h2, .feature-copy h2, .dashboard-intro h1, .page-heading h1,
 .appearance-panel .form-section-title { flex-wrap: wrap; }
 .appearance-panel .form-section-title h2 { flex: 1; }
 .appearance-panel > .text-button { margin-top: 12px; }
+.preview-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.preview-title-row h2 { font-family: "Space Grotesk", "Segoe UI", sans-serif; font-size: 19px; line-height: 1.4; letter-spacing: -.3px; word-spacing: normal; margin: 0; }
+.preview-change-image { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 9px 12px; border: 1px solid var(--cobalt); color: var(--cobalt); background: var(--white); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.preview-change-image:hover { background: #eef0ff; }
+.preview-save-note { font-size: 14px; line-height: 1.6; color: var(--muted); margin: 10px 0 4px; }
+.editor-preview .preview-toggle { min-height: 44px; }
 @media (max-width: 640px) {
   .next-party-appearance > .appearance-thumbnail { height: 215px; }
   .ticket-appearance > .appearance-thumbnail { min-height: 120px; }

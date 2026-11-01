@@ -1,7 +1,9 @@
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
 import { appearanceDesigns, appearanceForDesign, normalizeAppearance, type PartyAppearance, type PartyArtwork, type PartyAccent, type PartyFont, type PartyLayout } from './appearance';
 import './appearance.css';
 
+// Editing-only per-image opt-out; public invitations and thumbnails keep normal sharing behavior.
+const editingImageAttributes = (editing: boolean) => editing ? { 'data-pin-nopin': 'true', nopin: 'nopin' } : {};
 const brandIcon = '/assets/brand/partyplus-icon.png';
 const banner = '/assets/brand/partyplus-banner.jpg';
 const bannerSources = '/assets/brand/partyplus-banner-small.jpg 768w, /assets/brand/partyplus-banner.jpg 1440w';
@@ -27,11 +29,11 @@ const artworks: { id: PartyArtwork; name: string }[] = [
   { id: 'game-night', name: 'Game night' }, { id: 'none', name: 'No artwork' },
 ];
 
-function Artwork({ artwork, compact = false }: { artwork: PartyArtwork; compact?: boolean }) {
+function Artwork({ artwork, compact = false, editing = false }: { artwork: PartyArtwork; compact?: boolean; editing?: boolean }) {
   if (artwork === 'none') return <span className="ap-clean-art" aria-hidden="true"><span/><span/><span/></span>;
   if (artwork === 'partyplus') return compact
-    ? <img className="ap-original-icon" src={brandIcon} width="90" height="90" alt="" decoding="async"/>
-    : <img className="ap-original-banner" src={banner} srcSet={bannerSources} sizes="(max-width: 640px) 90vw, 560px" width="1440" height="697" alt="" decoding="async"/>;
+    ? <img {...editingImageAttributes(editing)} className="ap-original-icon" src={brandIcon} width="90" height="90" alt="" decoding="async"/>
+    : <img {...editingImageAttributes(editing)} className="ap-original-banner" src={banner} srcSet={bannerSources} sizes="(max-width: 640px) 90vw, 560px" width="1440" height="697" alt="" decoding="async"/>;
   return <svg className={`ap-artwork ap-artwork-${artwork}`} viewBox="0 0 320 300" fill="none" aria-hidden="true">
     {artwork === 'confetti' && <>
       <path d="M58 200c20-104 75-139 149-112" stroke="var(--ap-art-one)" strokeWidth="28" strokeLinecap="round"/>
@@ -86,17 +88,17 @@ function appearanceClass(appearance: PartyAppearance) {
   return `ap-accent-${appearance.accent} ap-font-${appearance.font} ap-design-${appearance.design}`;
 }
 
-function PhotoFrame({ appearance, photoUrl, fallback, decorative = false }: { appearance: PartyAppearance; photoUrl?: string; fallback: ReactNode; decorative?: boolean }) {
+function PhotoFrame({ appearance, photoUrl, fallback, decorative = false, editing = false }: { appearance: PartyAppearance; photoUrl?: string; fallback: ReactNode; decorative?: boolean; editing?: boolean }) {
   const [failedUrl, setFailedUrl] = useState('');
   const crop = appearance.image || { positionX: 50, positionY: 50, zoom: 1 };
   const position = `${crop.positionX}% ${crop.positionY}%`;
   return <div className="ap-photo-frame">{photoUrl && failedUrl !== photoUrl
-    ? <img src={photoUrl} alt={decorative ? '' : 'Your party photo'} decoding="async" onError={() => setFailedUrl(photoUrl)} style={{ objectPosition: position, transform: `scale(${crop.zoom})`, transformOrigin: position }}/>
+    ? <img {...editingImageAttributes(editing)} src={photoUrl} alt={decorative ? '' : 'Your party photo'} decoding="async" onError={() => setFailedUrl(photoUrl)} style={{ objectPosition: position, transform: `scale(${crop.zoom})`, transformOrigin: position }}/>
     : <div className="ap-photo-fallback">{fallback}</div>}</div>;
 }
 
-function BrandRail({ preview, host }: { preview?: boolean; host?: boolean }) {
-  return <div className="ap-brand-rail"><span className="ap-invite-label">{preview ? 'YOUR INVITATION' : host ? 'HOSTED BY YOU' : 'YOU’RE INVITED'}</span><div className="ap-brand-lockup"><img src={brandIcon} alt="" width="34" height="34" decoding="async"/><div><span className="ap-brand-name">PartyPlus</span><span className="ap-brand-tagline">Party planning, made simple</span></div></div></div>;
+function BrandRail({ preview, host, editing = false }: { preview?: boolean; host?: boolean; editing?: boolean }) {
+  return <div className="ap-brand-rail"><span className="ap-invite-label">{preview ? 'YOUR INVITATION' : host ? 'HOSTED BY YOU' : 'YOU’RE INVITED'}</span><div className="ap-brand-lockup"><img {...editingImageAttributes(editing)} src={brandIcon} alt="" width="34" height="34" decoding="async"/><div><span className="ap-brand-name">PartyPlus</span><span className="ap-brand-tagline">Party planning, made simple</span></div></div></div>;
 }
 
 function eventDate(value?: string) {
@@ -114,10 +116,10 @@ export function AppearancePoster({ party, photoUrl, preview = false, host = fals
   const date = eventDate(party.date);
   const copy = <div className="ap-poster-copy">{party.theme && <span className="ap-theme-label">{party.theme}</span>}<Title className="ap-event-title">{party.title || 'A very good get-together.'}</Title><p className="ap-poster-welcome">{preview ? 'A little something to look forward to.' : 'Good company. You included.'}</p></div>;
   return <section className={`appearance-poster ${appearanceClass(appearance)} ap-layout-${appearance.layout}${preview ? ' ap-poster-preview' : ''}${appearance.artwork === 'none' ? ' ap-no-artwork' : ''}`} aria-label={preview ? 'Invitation preview' : 'Party invitation'}>
-    <BrandRail preview={preview} host={host}/>
-    {appearance.layout === 'photo' ? <div className="ap-photo-composition"><PhotoFrame appearance={appearance} photoUrl={photoUrl} fallback={<Artwork artwork={appearance.artwork === 'none' ? 'partyplus' : appearance.artwork} compact/>}/>{copy}</div>
-      : appearance.layout === 'elegant' ? <div className="ap-elegant-composition">{appearance.artwork !== 'none' && <div className="ap-elegant-ornament"><Artwork artwork={appearance.artwork} compact/></div>}<span className="ap-elegant-rule" aria-hidden="true"/>{copy}<span className="ap-elegant-rule" aria-hidden="true"/></div>
-      : <div className="ap-illustrated-composition">{copy}{appearance.artwork !== 'none' && <div className={`ap-poster-art${appearance.artwork === 'partyplus' ? ' ap-banner-art' : ''}`}><Artwork artwork={appearance.artwork}/></div>}</div>}
+    <BrandRail preview={preview} host={host} editing={preview}/>
+    {appearance.layout === 'photo' ? <div className="ap-photo-composition"><PhotoFrame editing={preview} appearance={appearance} photoUrl={photoUrl} fallback={<Artwork editing={preview} artwork={appearance.artwork === 'none' ? 'partyplus' : appearance.artwork} compact/>}/>{copy}</div>
+      : appearance.layout === 'elegant' ? <div className="ap-elegant-composition">{appearance.artwork !== 'none' && <div className="ap-elegant-ornament"><Artwork editing={preview} artwork={appearance.artwork} compact/></div>}<span className="ap-elegant-rule" aria-hidden="true"/>{copy}<span className="ap-elegant-rule" aria-hidden="true"/></div>
+      : <div className="ap-illustrated-composition">{copy}{appearance.artwork !== 'none' && <div className={`ap-poster-art${appearance.artwork === 'partyplus' ? ' ap-banner-art' : ''}`}><Artwork editing={preview} artwork={appearance.artwork}/></div>}</div>}
     <div className="ap-event-facts"><span>{date.date}</span><span>{date.time}</span><span>{party.location || party.address || 'Place to come'}</span></div>
   </section>;
 }
@@ -142,30 +144,41 @@ export type AppearanceControlsProps = {
 export function AppearanceControls({ value, onChange, photoUrl, onPhotoSelected, onPhotoRemoved, uploadBusy = false, uploadError }: AppearanceControlsProps) {
   const appearance = normalizeAppearance(value);
   const prefix = useId();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const designGalleryRef = useRef<HTMLFieldSetElement>(null);
+  const hasImage = Boolean(appearance.image || photoUrl);
+  const openFilePicker = () => fileInputRef.current?.click();
+  const focusDesignGallery = () => { designGalleryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); designGalleryRef.current?.focus({ preventScroll: true }); };
   const update = (patch: Partial<PartyAppearance>) => onChange(normalizeAppearance({ ...appearance, ...patch }));
   const updateCrop = (key: 'positionX' | 'positionY' | 'zoom', value: number) => { if (appearance.image) update({ image: { ...appearance.image, [key]: value } }); };
   const chooseDesign = (design: PartyAppearance['design']) => {
     const next = appearanceForDesign(design);
     onChange(appearance.image ? { ...next, image: { ...appearance.image }, ...(appearance.layout === 'photo' ? { layout: 'photo' as const } : {}) } : next);
   };
-  return <details className="appearance-controls"><summary><span><span className="ap-controls-kicker">MAKE IT YOURS · OPTIONAL</span><strong>Choose your invitation’s look</strong></span><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
-    <div className="ap-controls-body"><p className="ap-controls-intro">Start with a design, then add your own touch. Your invitation preview updates as you go.</p>
-      <fieldset className="ap-fieldset"><legend>Start with a design</legend><div className="ap-design-gallery">{appearanceDesigns.map(design => {
+  return <section className="appearance-controls" aria-labelledby={`${prefix}-appearance-heading`}>
+    <div className="ap-controls-heading"><span className="ap-controls-kicker">INVITATION APPEARANCE</span><h2 id={`${prefix}-appearance-heading`}>Make it yours</h2></div>
+    <div className="ap-controls-body">
+      <p className="ap-photo-sharing-note">Photos are visible to anyone with the invitation or photo link. Choose a photo you’re comfortable sharing.</p>
+      <div className="ap-primary-actions"><button type="button" className="ap-action-secondary" onClick={focusDesignGallery} aria-controls={`${prefix}-design-gallery`}>Choose a design</button><button type="button" className="ap-action-primary" data-appearance-upload disabled={uploadBusy} onClick={openFilePicker}>Upload your own image</button></div>
+      <input ref={fileInputRef} className="ap-hidden-file-input" type="file" hidden accept="image/jpeg,image/png,image/webp" disabled={uploadBusy} aria-label="Invitation image file" onChange={event => { const file = event.currentTarget.files?.[0]; if (file) onPhotoSelected(file); event.currentTarget.value = ''; }}/>
+      <p className="ap-upload-help">JPEG, PNG, or WebP. Your image stays separate from the invitation text, so every detail is easy to read.</p>
+      {uploadBusy && <p className="ap-upload-status" role="status">Preparing your image. Keep this page open.</p>}{uploadError && <p className="ap-upload-error" role="alert">{uploadError}</p>}
+      <section className={`ap-photo-settings ap-image-controls${hasImage ? ' ap-image-attached' : ''}`} id="party-image-controls" tabIndex={-1} aria-labelledby={`${prefix}-photo-heading`}>
+        <div className="ap-photo-settings-heading"><div><h3 id={`${prefix}-photo-heading`}>Your image</h3>{!hasImage && <p>Use the upload button above to add an image of your own.</p>}</div>{hasImage && <div className="ap-image-actions"><button className="ap-action-secondary" data-appearance-replace type="button" disabled={uploadBusy} onClick={openFilePicker}>Replace image</button><button className="ap-action-remove" type="button" disabled={uploadBusy} onClick={onPhotoRemoved}>Remove image</button></div>}</div>
+        {hasImage && <p className="ap-photo-removal-note">Removing it changes this invitation; previously shared photo links may still work.</p>}
+        {(photoUrl || appearance.image || appearance.layout === 'photo') && <div className={`ap-crop-editor ${appearanceClass(appearance)}`}><PhotoFrame editing appearance={appearance} photoUrl={photoUrl} fallback={<div className="ap-photo-empty"><Artwork editing artwork="partyplus" compact/><span>{uploadBusy ? 'Getting your photo ready' : appearance.image ? 'Photo preview will appear here' : 'Choose a photo to make this invitation yours'}</span></div>}/>{photoUrl && appearance.layout !== 'photo' && <button className="ap-use-photo" type="button" onClick={() => update({ layout: 'photo' })}>Use the Photo layout</button>}{appearance.image && photoUrl && <fieldset className="ap-crop-sliders" disabled={uploadBusy}><legend>Frame your photo</legend><p>Move and zoom the photo inside the frame. The invitation uses this same shape.</p>{([{ key: 'positionX', label: 'Horizontal position', min: 0, max: 100, step: 1 }, { key: 'positionY', label: 'Vertical position', min: 0, max: 100, step: 1 }, { key: 'zoom', label: 'Zoom', min: 1, max: 2, step: .05 }] as const).map(control => <label className="ap-range-label" htmlFor={`${prefix}-${control.key}`} key={control.key}><span>{control.label}<output htmlFor={`${prefix}-${control.key}`}>{control.key === 'zoom' ? `${appearance.image![control.key].toFixed(2)}×` : `${Math.round(appearance.image![control.key])}%`}</output></span><input type="range" id={`${prefix}-${control.key}`} min={control.min} max={control.max} step={control.step} value={appearance.image![control.key]} onChange={event => updateCrop(control.key, Number(event.target.value))}/></label>)}</fieldset>}</div>}
+      </section>
+      <fieldset className="ap-fieldset ap-design-destination" ref={designGalleryRef} id={`${prefix}-design-gallery`} tabIndex={-1}><legend>Start with a design</legend><div className="ap-design-gallery">{appearanceDesigns.map(design => {
         const preset = appearanceForDesign(design.id);
-        return <label className={`ap-design-card${appearance.design === design.id ? ' ap-selected' : ''}`} key={design.id}><input className="ap-native-radio" type="radio" name={`${prefix}-design`} value={design.id} checked={appearance.design === design.id} onChange={() => chooseDesign(design.id)}/><span className={`ap-design-art ${appearanceClass(preset)}`}><Artwork artwork={preset.artwork} compact/></span><span className="ap-card-copy"><strong>{design.name}</strong><small>{design.description}</small></span><span className="ap-choice-check" aria-hidden="true">✓</span></label>;
+        return <label className={`ap-design-card${appearance.design === design.id ? ' ap-selected' : ''}`} key={design.id}><input className="ap-native-radio" type="radio" name={`${prefix}-design`} value={design.id} checked={appearance.design === design.id} onChange={() => chooseDesign(design.id)}/><span className={`ap-design-art ${appearanceClass(preset)}`}><Artwork editing artwork={preset.artwork} compact/></span><span className="ap-card-copy"><strong>{design.name}</strong><small>{design.description}</small></span><span className="ap-choice-check" aria-hidden="true">✓</span></label>;
       })}</div></fieldset>
-      <fieldset className="ap-fieldset"><legend>Layout</legend><div className="ap-layout-options">{layouts.map(layout => <label className={`ap-text-option${appearance.layout === layout.id ? ' ap-selected' : ''}`} key={layout.id}><input className="ap-native-radio" type="radio" name={`${prefix}-layout`} value={layout.id} checked={appearance.layout === layout.id} onChange={() => update({ layout: layout.id })}/><span className={`ap-layout-symbol ap-symbol-${layout.id}`} aria-hidden="true"><i/><i/><i/></span><strong>{layout.name}</strong><small>{layout.description}</small></label>)}</div></fieldset>
+      
+      <details className="ap-advanced-options"><summary><span>More appearance options</span><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div className="ap-advanced-body"><fieldset className="ap-fieldset"><legend>Layout</legend><div className="ap-layout-options">{layouts.map(layout => <label className={`ap-text-option${appearance.layout === layout.id ? ' ap-selected' : ''}`} key={layout.id}><input className="ap-native-radio" type="radio" name={`${prefix}-layout`} value={layout.id} checked={appearance.layout === layout.id} onChange={() => update({ layout: layout.id })}/><span className={`ap-layout-symbol ap-symbol-${layout.id}`} aria-hidden="true"><i/><i/><i/></span><strong>{layout.name}</strong><small>{layout.description}</small></label>)}</div></fieldset>
       <fieldset className="ap-fieldset"><legend>Color</legend><div className="ap-color-options">{accents.map(accent => <label className={`ap-color-option${appearance.accent === accent.id ? ' ap-selected' : ''}`} key={accent.id}><input className="ap-native-radio" type="radio" name={`${prefix}-accent`} value={accent.id} checked={appearance.accent === accent.id} onChange={() => update({ accent: accent.id })}/><span className={`ap-color-dot ap-accent-${accent.id}`} aria-hidden="true"><span>✓</span></span><span>{accent.name}</span></label>)}</div></fieldset>
       <fieldset className="ap-fieldset"><legend>Typography</legend><div className="ap-font-options">{fonts.map(font => <label className={`ap-text-option ap-font-${font.id}${appearance.font === font.id ? ' ap-selected' : ''}`} key={font.id}><input className="ap-native-radio" type="radio" name={`${prefix}-font`} value={font.id} checked={appearance.font === font.id} onChange={() => update({ font: font.id })}/><span className="ap-type-sample" aria-hidden="true">Aa</span><strong>{font.name}</strong><small>{font.description}</small></label>)}</div></fieldset>
-      <fieldset className="ap-fieldset"><legend>Artwork</legend><div className="ap-artwork-gallery">{artworks.map(artwork => <label className={`ap-artwork-option ${appearanceClass(appearance)}${appearance.artwork === artwork.id ? ' ap-selected' : ''}`} key={artwork.id}><input className="ap-native-radio" type="radio" name={`${prefix}-artwork`} value={artwork.id} checked={appearance.artwork === artwork.id} onChange={() => update({ artwork: artwork.id })}/><span className="ap-artwork-swatch"><Artwork artwork={artwork.id} compact/></span><span>{artwork.name}</span><span className="ap-choice-check" aria-hidden="true">✓</span></label>)}</div></fieldset>
-      <section className="ap-photo-settings" aria-labelledby={`${prefix}-photo-heading`}><div className="ap-photo-settings-heading"><div><h3 id={`${prefix}-photo-heading`}>A photo of your own</h3><p>Your people, your place, or a favorite memory.</p></div>{(appearance.image || photoUrl) && <button className="ap-photo-remove" type="button" disabled={uploadBusy} onClick={onPhotoRemoved}>Remove photo</button>}</div>
-        <p className="ap-photo-sharing-note">Photos are visible to anyone with the invitation or photo link. Choose a photo you’re comfortable sharing.</p>
-        {(appearance.image || photoUrl) && <p className="ap-photo-removal-note">Removing it changes this invitation; previously shared photo links may still work.</p>}
-        <label className="ap-file-picker"><input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploadBusy} onChange={event => { const file = event.currentTarget.files?.[0]; if (file) onPhotoSelected(file); event.currentTarget.value = ''; }}/><span>{uploadBusy ? 'Preparing photo…' : appearance.image || photoUrl ? 'Choose a different photo' : 'Choose a photo'}</span></label><p className="ap-upload-help">JPEG, PNG, or WebP. Your photo stays separate from the invitation text, so every detail is easy to read.</p>
-        {uploadBusy && <p className="ap-upload-status" role="status">Preparing your photo. Keep this page open.</p>}{uploadError && <p className="ap-upload-error" role="alert">{uploadError}</p>}
-        {(photoUrl || appearance.image || appearance.layout === 'photo') && <div className={`ap-crop-editor ${appearanceClass(appearance)}`}><PhotoFrame appearance={appearance} photoUrl={photoUrl} fallback={<div className="ap-photo-empty"><Artwork artwork="partyplus" compact/><span>{uploadBusy ? 'Getting your photo ready' : appearance.image ? 'Photo preview will appear here' : 'Choose a photo to make this invitation yours'}</span></div>}/>{photoUrl && appearance.layout !== 'photo' && <button className="ap-use-photo" type="button" onClick={() => update({ layout: 'photo' })}>Use the Photo layout</button>}{appearance.image && photoUrl && <fieldset className="ap-crop-sliders" disabled={uploadBusy}><legend>Frame your photo</legend><p>Move and zoom the photo inside the frame. The invitation uses this same shape.</p>{([{ key: 'positionX', label: 'Horizontal position', min: 0, max: 100, step: 1 }, { key: 'positionY', label: 'Vertical position', min: 0, max: 100, step: 1 }, { key: 'zoom', label: 'Zoom', min: 1, max: 2, step: .05 }] as const).map(control => <label className="ap-range-label" htmlFor={`${prefix}-${control.key}`} key={control.key}><span>{control.label}<output htmlFor={`${prefix}-${control.key}`}>{control.key === 'zoom' ? `${appearance.image![control.key].toFixed(2)}×` : `${Math.round(appearance.image![control.key])}%`}</output></span><input type="range" id={`${prefix}-${control.key}`} min={control.min} max={control.max} step={control.step} value={appearance.image![control.key]} onChange={event => updateCrop(control.key, Number(event.target.value))}/></label>)}</fieldset>}</div>}
-      </section>
+      <fieldset className="ap-fieldset"><legend>Artwork</legend><div className="ap-artwork-gallery">{artworks.map(artwork => <label className={`ap-artwork-option ${appearanceClass(appearance)}${appearance.artwork === artwork.id ? ' ap-selected' : ''}`} key={artwork.id}><input className="ap-native-radio" type="radio" name={`${prefix}-artwork`} value={artwork.id} checked={appearance.artwork === artwork.id} onChange={() => update({ artwork: artwork.id })}/><span className="ap-artwork-swatch"><Artwork editing artwork={artwork.id} compact/></span><span>{artwork.name}</span><span className="ap-choice-check" aria-hidden="true">✓</span></label>)}</div></fieldset>
+      </div></details>
       <p className="ap-controls-note">The PartyPlus original is always here. Choosing another design keeps your party details and attached photo.</p>
     </div>
-  </details>;
+  </section>;
 }
