@@ -1,5 +1,7 @@
 # Exact pending external ledger entries — November 1, 2026
 
+Latest appearance customization/current-status update supersedes the live deployment details below: [PARTY_APPEARANCE_LEDGER_ENTRIES_2026-11-01.md](PARTY_APPEARANCE_LEDGER_ENTRIES_2026-11-01.md). These original-artwork entries remain historical.
+
 The requested external Pages destinations were unavailable in the connected searches for this rebuild. These are the exact new entries to apply when those destinations become accessible; no substitute external page was created.
 
 ## 00 — Current Status & Next Actions
