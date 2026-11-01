@@ -32,6 +32,18 @@ Desktop was observed at 1413 CSS pixels. Phone was observed at 390 CSS pixels, w
 
 Parent bounded visual review of `brand-evidence-2026-11-01/desktop-my-parties.png` and `phone-creation.png` found no blocking issue. The phone screenshot shows the real icon and readable exact tagline on the invitation-preview rail. Some browser screenshot calls timed out; DOM geometry and the successful saved images are the scoped evidence, rather than a claim of additional physical-device testing. Temporary viewport override was reset. Screenshots capture synthetic local data, before the final minor optional-participation copy polish.
 
-Publication remains pending. The final source/deploy/hash verification will be appended after the reviewed artifact is published.
+## Released result
+
+Published and locked **2026-11-01 at 21:08:59 UTC (15:08:59 America/Chicago)** on https://partyplusapp.com. Reviewed browser source: `fc72234f571ffeec0ab50f6f951a87676e4e726c`, pushed to `codex/web-rebuild`. Current deploy: `6ae7aa2735ea84cd7acb7d95`. Its immutable preview is https://6ae7aa2735ea84cd7acb7d95--partyplus-invite.netlify.app. Subsequent receipt-only commits do not change browser inputs.
+
+All 16 downloadable public files SHA-256 matched the reviewed artifact on both draft and canonical domain; the two Netlify routing/header configuration files are validated by actual CSP and legacy `/share?id=` SPA response behavior. All 18 artifact files total **1,209,376 bytes**, including JavaScript, CSS, fonts/licenses/provenance and the original-artwork derivatives. PNG/JPEG MIME and signatures, exact tagline metadata, actual PP favicon and Apple icon all passed. The real canonical browser rendered the correct original header icon and exact tagline/title. The browser automation extension temporarily decorates its controlled tab favicon; the served document references the actual PP PNG, verified by public HTTP.
+
+Machine-readable publication/lock/asset evidence: `brand-evidence-2026-11-01/publication.json`. Actual hosted artifact screenshot: `brand-evidence-2026-11-01/hosted-original-artwork.png`. Prior desktop/phone visual review screenshots remain in that directory. Browser screenshot capture was unreliable on some small-screen views; no claim of a physical phone test is made.
+
+The existing Netlify site, domain, resources and account were reused; no spending or service plan change. No backend, Auth, customer-data or mobile change. Existing functionality remains in the preserved code paths; no broad unrelated test cycle was repeated for this branding-only update. No file or decision is needed from Michael to complete this request.
+
+### Reversible rollback
+
+Restore and lock prior compatible ready deploy **`6ae663c013623bb52b726f3d`** on the same Netlify site, then confirm the canonical root and branding assets. Current and prior deploys use the same secure backend contract; no database rollback is required. Keep automatic publishing locked so the old `backup/share-working` build cannot overwrite the release. Do not restore obsolete raw-reader artifacts or reopen raw table access.
 
 Root dirty mobile files, the modernization worktree and the saved staging-resume screenshot are preserved. No customer party or response is needed for branding QA; synthetic local fixtures are used. External Pages destinations were unavailable in the prior connected search; exact current-status and operating-ledger entries will be saved in the repository.

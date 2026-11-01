@@ -1,0 +1,19 @@
+# Exact pending external ledger entries — November 1, 2026
+
+The requested external Pages destinations were unavailable in the connected searches for this rebuild. These are the exact new entries to apply when those destinations become accessible; no substitute external page was created.
+
+## 00 — Current Status & Next Actions
+
+PartyPlus original-artwork branding refinement RELEASED on November 1, 2026 at 21:08:59 UTC / 15:08:59 America/Chicago. Live https://partyplusapp.com. Published and automatically locked deploy `6ae7aa2735ea84cd7acb7d95`; reviewed browser source `fc72234f571ffeec0ab50f6f951a87676e4e726c` on `codex/web-rebuild`, followed by receipt-only documentation. Prior compatible deploy `6ae663c013623bb52b726f3d` retained for reversible frontend rollback.
+
+User reported the updated site works well and looks better, and requested authentic original branding. Actual repository PP icon and celebration banner were visually inspected and reused, with deep navy masthead/footer and My Parties feature, actual-icon invitation signature, exact accessible “Party planning, made simple” tagline, browser favicon and Apple home-screen icon. Source artwork is intact; local proportional derivatives are recorded by hashes, not regenerated logos. Responsive public images total 580,639 bytes instead of shipping the 10,009,579-byte originals. No paid assets, new dependency, service or resource.
+
+Focused TypeScript, package lint/build, desktop1413CSS and phone390CSS review passed. No horizontal overflow, all images loaded, smaller banner selected on phone, form inputs16px; current navigation, creation preview, maps, Share/Copy, RSVP and bring-list controls remain present. Bounded parent visual review found no blocking issue. All16 public file hashes matched the18-file1,209,376-byte reviewed artifact on draft and live domain; MIME, actual icon references, CSP and legacy SPA routing passed. Evidence, source provenance, screenshots and rollback are in `docs/BRAND_REFINEMENT_2026-11-01.md` and `docs/brand-evidence-2026-11-01/publication.json`.
+
+Account/API/editor/backend code and customer records were not changed; synthetic local data supplied the visual proof. Michael has no action or missing source file for this request. Prior ownership/sender/anonymous-account limitations remain as previously documented; this release does not change them. Current funnel metrics and app-store status remain unknown; reported user success is feedback, not a measurement aggregate. Mobile work remains deferred. Existing dirty root/modernization work and parent staging screenshot are preserved. No remaining blocker for this branding release.
+
+Next actions: use the branded website normally; monitor concrete visual/save/RSVP feedback; retain the compatible prior deploy and automatic publishing lock. No additional migration or promotion is required for this update.
+
+## Clogher Labs — Company Operating Ledger
+
+2026-11-01 — PartyPlus authentic original-artwork refinement completed and published on existing resources without new spending. Reused owner-supplied icon/banner, preserved full compositions, added faithful local responsive derivatives (580,639 image bytes), deep navy product branding, exact “Party planning, made simple” accessible tagline and actual PP browser/home-screen icons. Current locked deploy `6ae7aa2735ea84cd7acb7d95`, browser source `fc72234f571ffeec0ab50f6f951a87676e4e726c`; live https://partyplusapp.com. Desktop/phone visual review, type/build/package lint and all16 public asset hash/MIME/CSP/routing checks passed. No backend/Auth/customer/mobile change or new resource/charge. Compatible prior deploy `6ae663c013623bb52b726f3d` retained for rollback. Source provenance and exact release receipt are in the repository because requested external notes were unavailable. No Michael action needed.
