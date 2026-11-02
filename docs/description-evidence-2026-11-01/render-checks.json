@@ -1,0 +1,102 @@
+{
+  "actual": [
+    {
+      "copyChildren": 2,
+      "description": "Bon fire and Karaoke.",
+      "duplicateNoteSection": false,
+      "generatedFallback": false,
+      "noteOccurrences": 1,
+      "path": "/i/populated-illustrated"
+    },
+    {
+      "copyChildren": 1,
+      "description": null,
+      "duplicateNoteSection": false,
+      "generatedFallback": false,
+      "noteOccurrences": 0,
+      "path": "/i/empty-illustrated"
+    },
+    {
+      "copyChildren": 2,
+      "description": "Bon fire and Karaoke.",
+      "duplicateNoteSection": false,
+      "generatedFallback": false,
+      "noteOccurrences": 1,
+      "path": "/i/populated-photo"
+    },
+    {
+      "copyChildren": 1,
+      "description": null,
+      "duplicateNoteSection": false,
+      "generatedFallback": false,
+      "noteOccurrences": 0,
+      "path": "/i/empty-photo"
+    },
+    {
+      "copyChildren": 2,
+      "description": "Bon fire and Karaoke.",
+      "duplicateNoteSection": false,
+      "generatedFallback": false,
+      "noteOccurrences": 1,
+      "path": "/i/populated-elegant"
+    },
+    {
+      "copyChildren": 1,
+      "description": null,
+      "duplicateNoteSection": false,
+      "generatedFallback": false,
+      "noteOccurrences": 0,
+      "path": "/i/empty-elegant"
+    }
+  ],
+  "preview": [
+    {
+      "copyChildren": 2,
+      "description": "Bon fire and Karaoke.",
+      "descriptionCount": 1,
+      "generatedFallback": false,
+      "layout": "appearance-poster ap-accent-navy ap-font-editorial ap-design-partyplus ap-layout-illustrated ap-poster-preview"
+    },
+    {
+      "copyChildren": 1,
+      "description": null,
+      "descriptionCount": 0,
+      "generatedFallback": false,
+      "layout": "appearance-poster ap-accent-navy ap-font-editorial ap-design-partyplus ap-layout-illustrated ap-poster-preview"
+    },
+    {
+      "copyChildren": 2,
+      "description": "Bon fire and Karaoke.",
+      "descriptionCount": 1,
+      "generatedFallback": false,
+      "layout": "appearance-poster ap-accent-navy ap-font-editorial ap-design-partyplus ap-layout-photo ap-poster-preview"
+    },
+    {
+      "copyChildren": 1,
+      "description": null,
+      "descriptionCount": 0,
+      "generatedFallback": false,
+      "layout": "appearance-poster ap-accent-navy ap-font-editorial ap-design-partyplus ap-layout-photo ap-poster-preview"
+    },
+    {
+      "copyChildren": 2,
+      "description": "Bon fire and Karaoke.",
+      "descriptionCount": 1,
+      "generatedFallback": false,
+      "layout": "appearance-poster ap-accent-navy ap-font-editorial ap-design-partyplus ap-layout-elegant ap-poster-preview"
+    },
+    {
+      "copyChildren": 1,
+      "description": null,
+      "descriptionCount": 0,
+      "generatedFallback": false,
+      "layout": "appearance-poster ap-accent-navy ap-font-editorial ap-design-partyplus ap-layout-elegant ap-poster-preview"
+    }
+  ],
+  "phone": {
+    "width": 390,
+    "scrollWidth": 373
+  },
+  "viewportReset": true,
+  "sourceNotes": "User-provided example in read-only synthetic fixtures; no customer data fetched or changed."
+}

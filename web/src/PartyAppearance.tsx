@@ -108,13 +108,13 @@ function eventDate(value?: string) {
   return { date: new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date), time: value.length > 10 ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date) : 'Save the date' };
 }
 
-export type AppearancePosterParty = { id?: string; title?: string; theme?: string; date?: string; location?: string; address?: string; appearance?: PartyAppearance };
+export type AppearancePosterParty = { id?: string; title?: string; notes?: string; theme?: string; date?: string; location?: string; address?: string; appearance?: PartyAppearance };
 
 export function AppearancePoster({ party, photoUrl, preview = false, host = false }: { party: AppearancePosterParty; photoUrl?: string; preview?: boolean; host?: boolean }) {
   const appearance = normalizeAppearance(party.appearance);
   const Title = preview ? 'h2' : 'h1';
   const date = eventDate(party.date);
-  const copy = <div className="ap-poster-copy">{party.theme && <span className="ap-theme-label">{party.theme}</span>}<Title className="ap-event-title">{party.title || 'A very good get-together.'}</Title><p className="ap-poster-welcome">{preview ? 'A little something to look forward to.' : 'Good company. You included.'}</p></div>;
+  const copy = <div className="ap-poster-copy">{party.theme && <span className="ap-theme-label">{party.theme}</span>}<Title className="ap-event-title">{party.title || 'A very good get-together.'}</Title>{party.notes?.trim() && <p className="ap-party-description">{party.notes}</p>}</div>;
   return <section className={`appearance-poster ${appearanceClass(appearance)} ap-layout-${appearance.layout}${preview ? ' ap-poster-preview' : ''}${appearance.artwork === 'none' ? ' ap-no-artwork' : ''}`} aria-label={preview ? 'Invitation preview' : 'Party invitation'}>
     <BrandRail preview={preview} host={host} editing={preview}/>
     {appearance.layout === 'photo' ? <div className="ap-photo-composition"><PhotoFrame editing={preview} appearance={appearance} photoUrl={photoUrl} fallback={<Artwork editing={preview} artwork={appearance.artwork === 'none' ? 'partyplus' : appearance.artwork} compact/>}/>{copy}</div>
