@@ -1,0 +1,18 @@
+.account-access-panel .guest-existing-access { border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:27px; }
+.guest-existing-access h2 { font-family:"Space Grotesk","Segoe UI",sans-serif; font-size:23px; line-height:1.4; letter-spacing:-.4px; }
+.guest-existing-access h3 { font-size:19px; line-height:1.4; margin:25px 0 10px; }
+.guest-existing-access p { font-size:14px; line-height:1.7; color:var(--muted); }
+.guest-existing-access .notice h3 { margin-top:0; }
+.guest-existing-access .notice p { color:inherit; }
+.account-access-panel .auth-methods { margin-top:20px; }
+.account-access-panel .code-access-alternative { text-align:center; white-space:normal; line-height:1.7; margin-top:12px; padding:12px 2px; }
+.account-route-choice { border-top:1px solid var(--line); padding-top:23px; margin-top:23px; }
+.account-route-choice p { margin-bottom:12px; color:var(--muted); font-size:14px; }
+.account-password-offer { border:1px solid var(--cobalt); padding:22px; background:#f1f3ff; margin:23px 0; }
+.account-password-offer h3 { font-size:24px; line-height:1.4; margin:0 0 13px; }
+.account-password-offer p { font-size:16px; line-height:1.7; color:#34416c; }
+.account-password-offer form { margin-top:20px; }
+@media(max-width:640px) {
+ .account-access-panel .auth-methods button { min-height:50px; }
+ .account-password-offer { padding:18px; }
+}

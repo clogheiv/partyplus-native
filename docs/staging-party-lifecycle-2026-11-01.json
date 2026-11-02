@@ -1,0 +1,72 @@
+{
+  "at": "2026-11-02T02:02:02.796Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "productionAccessed": false,
+  "customerDataUsed": false,
+  "deletedSyntheticPartyId": "7c40a862-0017-4de4-888d-5e2c77533e08",
+  "retainedUiPartyId": "f8a4bad6-e418-4ed2-8ac3-6a0d536d9d07",
+  "checks": {
+    "verifiedHostOwnsFixture": true,
+    "strangerDeleteDenied": true,
+    "anonymousGuestDeleteDenied": true,
+    "hostDeletionReceiptAndReplayConfirmed": true,
+    "unsignedGuestHostAndStrangerReadsGone": true,
+    "oldV2InvitationReadGone": true,
+    "hostingAndJoinedListsExcludeDeleted": true,
+    "newGuestWritesDeniedAfterDelete": true,
+    "tombstoneRetainsGuestData": true,
+    "unrelatedPartyFingerprintsPreserved": true
+  },
+  "unrelatedBefore": {
+    "public.parties": {
+      "count": 25,
+      "fingerprint": "5e24d09189e08342b37ec70c992c3ea0"
+    },
+    "public.party_items": {
+      "count": 57,
+      "fingerprint": "6afb5534723f16a2f1f2ae0e1b0460a7"
+    },
+    "public.party_rsvps": {
+      "count": 28,
+      "fingerprint": "f6e6123918d63711cde4ea943499fa72"
+    },
+    "partyplus_private.host_access": {
+      "count": 25,
+      "fingerprint": "6deb9c02e2fbfd09e31285718e2181fe"
+    },
+    "partyplus_private.memberships": {
+      "count": 29,
+      "fingerprint": "80aad0c6d90c77a0e4e6e201f4245461"
+    },
+    "partyplus_private.operations": {
+      "count": 133,
+      "fingerprint": "1865401004227d218f49cb90526b51b1"
+    }
+  },
+  "unrelatedAfter": {
+    "public.parties": {
+      "count": 25,
+      "fingerprint": "5e24d09189e08342b37ec70c992c3ea0"
+    },
+    "public.party_items": {
+      "count": 57,
+      "fingerprint": "6afb5534723f16a2f1f2ae0e1b0460a7"
+    },
+    "public.party_rsvps": {
+      "count": 28,
+      "fingerprint": "f6e6123918d63711cde4ea943499fa72"
+    },
+    "partyplus_private.host_access": {
+      "count": 25,
+      "fingerprint": "6deb9c02e2fbfd09e31285718e2181fe"
+    },
+    "partyplus_private.memberships": {
+      "count": 29,
+      "fingerprint": "80aad0c6d90c77a0e4e6e201f4245461"
+    },
+    "partyplus_private.operations": {
+      "count": 133,
+      "fingerprint": "1865401004227d218f49cb90526b51b1"
+    }
+  }
+}
