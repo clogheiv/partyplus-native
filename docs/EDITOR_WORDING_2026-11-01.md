@@ -1,5 +1,7 @@
 # Exact editor wording correction
 
+Latest description/current-status release supersedes the live deployment details below: [HOST_DESCRIPTION_2026-11-01.md](HOST_DESCRIPTION_2026-11-01.md). The requested editor wording and next-design feedback in this earlier entry remain preserved.
+
 Michael requested a focused wording change, with existing section numbers and functionality retained:
 
 - Replace the editor's introduction with one heading: **Save the details for your party**.

@@ -1,5 +1,7 @@
 # PartyPlus Web Rebuild — durable checkpoint
 
+Latest host-description release November 1, 2026 19:22America/Chicago / November 2 01:22UTC: existing host note is the sole description, once under the title in all layouts/previews; blank notes omit the paragraph/margin and generated fallback/duplicate note display are removed. Locked deploy `6ae7e58121c131c27086d331`, source `78a836bdc6b9aee2d22a31d02838993ac80a91e4`. Current receipt/exact notes/synthetic evidence/rollback: [HOST_DESCRIPTION_2026-11-01.md](HOST_DESCRIPTION_2026-11-01.md). Older entries below remain historical.
+
 Latest exact-wording release November1,2026 18:17:26America/Chicago / November2 00:17:26UTC: single requested editor intro and section02/03/Address wording shipped. Locked deploy `6ae7d64d87b5c3af8f3fc3b0`, source `89bac942c28b17a17ab564749254be932998c721`. Receipt/current exact notes/next-design feedback/rollback: [EDITOR_WORDING_2026-11-01.md](EDITOR_WORDING_2026-11-01.md). Older entries below remain historical.
 
 Latest focused release November1,2026 23:52:04UTC: image actions are visible and the preview directs hosts to Change image. Locked deploy `6ae7d074fae3d4f689d86f7c`, source `6470a77428621c811f78e5aee097a2823671a91f`. Current receipt/investigation/limits/rollback: [APPEARANCE_IMAGE_CONTROLS_2026-11-01.md](APPEARANCE_IMAGE_CONTROLS_2026-11-01.md). Exact status/company fallback: [IMAGE_CONTROLS_LEDGER_ENTRIES_2026-11-01.md](IMAGE_CONTROLS_LEDGER_ENTRIES_2026-11-01.md). Older entries below remain historical.
