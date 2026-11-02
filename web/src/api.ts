@@ -78,7 +78,7 @@ async function mutation(id:string,name?:string,args?:Record<string,unknown>):Pro
   }
   let party:WebParty|null=null;
   if(pending.name!=='partyplus_v2_delete_party')party=requireCommitReceipt(result,id,pending.operationId).party as WebParty;
-  else if(result?.committed!==true || result.operationId!==pending.operationId)throw Error('The server did not confirm this deletion. Retry the pending change.');
+  else if(result?.deleted!==true || result.operationId!==pending.operationId)throw Error('The server did not confirm this deletion. Retry the pending change.');
   const submitted=pending.args.p_party as Record<string,unknown>|undefined;
   if(pending.name==='partyplus_v2_commit_party'&&submitted&&Object.hasOwn(submitted,'appearance')&&appearanceFingerprint(submitted.appearance)!==appearanceFingerprint(party?.appearance))throw Error('The server did not confirm your invitation appearance. Your draft is preserved. Retry the saved change.');
   localStorage.removeItem(prefix+key);

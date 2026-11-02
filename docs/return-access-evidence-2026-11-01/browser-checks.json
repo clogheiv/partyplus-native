@@ -1,0 +1,12 @@
+{
+  "localFixtureOnly": true,
+  "returningPasswordSignIn": true,
+  "exactSignInHeading": "Sign in to your account",
+  "mobile": {"cssWidth":360,"scrollWidth":343,"signInTextVisible":true,"signInRight":326.97,"passwordDefaultVisible":true,"viewportReset":true},
+  "newAccount": {"explicitRoute":true,"emailVerification":true,"createPasswordOffer":true,"otherDevicesExplanation":true,"optionalSkip":true,"actualCredentialChanged":false,"transport":"ephemeral synthetic Auth; no email delivery claim"},
+  "guest": {"anonymousRsvp":true,"existingAccountActionAboveForm":true,"nonMergeAndSessionWarning":true,"cancelRetainedGuestSession":true},
+  "lists": {"sameDayEarlierInPast":true,"undatedActive":true,"joinedSelectionRetainedAcrossPastBack":true,"rescheduleFutureReturnedActive":true,"rsvpTwoAndClaimRetained":true,"liveCrossingObserved":false,"boundaryProof":"strict timestamp/equality/timezone unit checks and inspected local timers","foregroundRefreshProof":"coalesced focus/visibility implementation; no independent other-device browser observation"},
+  "staging": {"passwordSignIn":true,"credentialFileRemoved":true,"manageNearMainActions":true,"editAndDeleteVisible":true,"confirmation":"This removes the party and its invitation for everyone.","disposableFixture":"f8a4bad6-e418-4ed2-8ac3-6a0d536d9d07","serverTombstoneAndFreshInvitationUnavailable":true,"deleteReceiptMismatchFoundAndClientFixed":true,"repeatedDelete":false,"correctedSameOperationReplayTested":"client harness using observed deleted:true plus exact operationId shape; no immutable-preview bypass"},
+  "screenshots": {"available":"staging-sign-in.png","phoneAndOfferCapture":"two distinct timeouts; no retry or native fallback"},
+  "productionCustomerMutations": false
+}

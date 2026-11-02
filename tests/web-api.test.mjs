@@ -65,3 +65,18 @@ test('appearance receipts accept canonical server key order and preserve the sam
  const h=setup({rpc:async(_name,args)=>({data:{committed:true,operationId:args.p_operation_id,party:{...party,appearance:{image:{zoom:1.25,positionY:24,positionX:72,id:appearance.image.id},artwork:'confetti',font:'modern',accent:'cobalt',layout:'photo',design:'casual',version:1}}}})});
  const saved=await h.api.saveParty({...party,appearance});assert.equal(saved.appearance.image.positionX,72);assert.equal(h.api.hasPending(party.id),false);
 });
+
+test('delete confirmation accepts the actual deleted receipt and retries the same saved operation after response loss',async()=>{
+ const storage=new Map();const first=setup({storage,rpc:async()=>({error:{message:'network unavailable'}})});
+ await assert.rejects(first.api.deleteParty(party.id));assert.equal(first.api.hasPending(party.id),true);
+ const resumed=setup({storage,rpc:async(_name,args)=>({data:{deleted:true,operationId:args.p_operation_id}})});
+ assert.equal(await resumed.api.retry(party.id),null);assert.equal(resumed.api.hasPending(party.id),false);
+ assert.equal(resumed.calls[0][0],'partyplus_v2_delete_party');assert.equal(resumed.calls[0][1].p_operation_id,first.calls[0][1].p_operation_id);
+});
+
+test('false, missing, mismatched and unrelated commit acknowledgements cannot clear a pending deletion',async()=>{
+ for(const receipt of [()=>null,args=>({deleted:false,operationId:args.p_operation_id}),()=>({deleted:true}),()=>({deleted:true,operationId:randomUUID()}),args=>({committed:true,operationId:args.p_operation_id})]){
+  const h=setup({rpc:async(_name,args)=>({data:receipt(args)})});
+  await assert.rejects(h.api.deleteParty(party.id),/did not confirm this deletion/);assert.equal(h.api.hasPending(party.id),true);
+ }
+});

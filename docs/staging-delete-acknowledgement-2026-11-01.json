@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-02T02:36:09.835Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "productionAccessed": false,
+  "readOnly": true,
+  "fixture": "f8a4bad6-e418-4ed2-8ac3-6a0d536d9d07",
+  "state": {
+    "tombstoned": true,
+    "web_read_null": true,
+    "v2_read_null": true
+  },
+  "deleteReceiptCount": 1,
+  "receipts": [
+    {
+      "receipt_keys": [
+        "deleted",
+        "operationId"
+      ],
+      "deleted_true": true,
+      "committed_key_present": false,
+      "operation_id_matches_record": true
+    }
+  ]
+}
