@@ -1,5 +1,7 @@
 # Exact current external-note entries — image controls
 
+Latest wording/current-status update supersedes live deployment details below: [EDITOR_WORDING_2026-11-01.md](EDITOR_WORDING_2026-11-01.md), including exact requested labels and substantial preloaded-design feedback for next discussion only. These controls entries remain historical.
+
 The requested external Pages destinations were unavailable in prior connected searches. These exact entries are saved for the requested destinations; no substitute external page was created.
 
 ## 00 — Current Status & Next Actions

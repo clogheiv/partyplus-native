@@ -1,5 +1,7 @@
 # PartyPlus Web Rebuild — durable checkpoint
 
+Latest exact-wording release November1,2026 18:17:26America/Chicago / November2 00:17:26UTC: single requested editor intro and section02/03/Address wording shipped. Locked deploy `6ae7d64d87b5c3af8f3fc3b0`, source `89bac942c28b17a17ab564749254be932998c721`. Receipt/current exact notes/next-design feedback/rollback: [EDITOR_WORDING_2026-11-01.md](EDITOR_WORDING_2026-11-01.md). Older entries below remain historical.
+
 Latest focused release November1,2026 23:52:04UTC: image actions are visible and the preview directs hosts to Change image. Locked deploy `6ae7d074fae3d4f689d86f7c`, source `6470a77428621c811f78e5aee097a2823671a91f`. Current receipt/investigation/limits/rollback: [APPEARANCE_IMAGE_CONTROLS_2026-11-01.md](APPEARANCE_IMAGE_CONTROLS_2026-11-01.md). Exact status/company fallback: [IMAGE_CONTROLS_LEDGER_ENTRIES_2026-11-01.md](IMAGE_CONTROLS_LEDGER_ENTRIES_2026-11-01.md). Older entries below remain historical.
 
 Latest release November1,2026 23:05:20UTC: optional party appearance/photo customization is live and locked at `6ae7c57a0ba7fdac70a1b031`, reviewed source `65626053a68c8de129f56804e00d2a35a6f15b53`. Current receipt/checks/public-photo limits/future business posture/rollback: [PARTY_APPEARANCE_RELEASE_2026-11-01.md](PARTY_APPEARANCE_RELEASE_2026-11-01.md). Exact status/company-note fallback: [PARTY_APPEARANCE_LEDGER_ENTRIES_2026-11-01.md](PARTY_APPEARANCE_LEDGER_ENTRIES_2026-11-01.md). Older entries below remain historical.
