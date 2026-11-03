@@ -1,0 +1,245 @@
+{
+  "at": "2026-11-03T01:47:22.40057+00:00",
+  "access": {
+    "raw": [
+      {
+        "role": "anon",
+        "table": "public.parties",
+        "allowed": false
+      },
+      {
+        "role": "authenticated",
+        "table": "public.parties",
+        "allowed": false
+      },
+      {
+        "role": "anon",
+        "table": "public.party_items",
+        "allowed": false
+      },
+      {
+        "role": "authenticated",
+        "table": "public.party_items",
+        "allowed": false
+      },
+      {
+        "role": "anon",
+        "table": "public.party_rsvps",
+        "allowed": false
+      },
+      {
+        "role": "authenticated",
+        "table": "public.party_rsvps",
+        "allowed": false
+      }
+    ],
+    "rpc": [
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_claim_item(text,text,boolean,uuid)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_claim_item(text,text,boolean,uuid)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_commit_party(uuid,bigint,jsonb)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_commit_party(uuid,bigint,jsonb)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_delete_party(text,uuid)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_delete_party(text,uuid)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_list_host_parties()"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_list_host_parties()"
+      },
+      {
+        "role": "anon",
+        "execute": true,
+        "function": "partyplus_v2_read_party(text)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_read_party(text)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_rsvp(text,uuid,jsonb)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_rsvp(text,uuid,jsonb)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_suggest_item(text,text,text,uuid)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_v2_suggest_item(text,text,text,uuid)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_v2_sync_legacy_aliases()"
+      },
+      {
+        "role": "authenticated",
+        "execute": false,
+        "function": "partyplus_v2_sync_legacy_aliases()"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_begin_image_removal(uuid)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_begin_image_removal(uuid)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_can_delete_image(text)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_can_delete_image(text)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_can_upload_image(text)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_can_upload_image(text)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_join_party(text,uuid)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_join_party(text,uuid)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_list_my_parties()"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_list_my_parties()"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_prepare_image(text,uuid,integer,text)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_prepare_image(text,uuid,integer,text)"
+      },
+      {
+        "role": "anon",
+        "execute": true,
+        "function": "partyplus_web_read_party(text)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_read_party(text)"
+      },
+      {
+        "role": "anon",
+        "execute": true,
+        "function": "partyplus_web_record_event(uuid,text)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_record_event(uuid,text)"
+      },
+      {
+        "role": "anon",
+        "execute": false,
+        "function": "partyplus_web_release_image(uuid)"
+      },
+      {
+        "role": "authenticated",
+        "execute": true,
+        "function": "partyplus_web_release_image(uuid)"
+      }
+    ],
+    "gate": true
+  },
+  "installed": false,
+  "snapshots": {
+    "auth.users": {
+      "count": 4,
+      "fingerprint": "a9c0603db8af2ee86f64a16b79d664f2"
+    },
+    "public.parties": {
+      "count": 350,
+      "fingerprint": "c00469a752071798ac5270fbf5decf95"
+    },
+    "storage.objects": {
+      "count": 2,
+      "fingerprint": "83dbce17beaa7d0012dc307ae22b4c74"
+    },
+    "public.party_items": {
+      "count": 642,
+      "fingerprint": "83b535c500a100dcb267962f92157727"
+    },
+    "public.party_rsvps": {
+      "count": 121,
+      "fingerprint": "281fcf8de0c3c3d25ea69128153956ca"
+    },
+    "partyplus_private.operations": {
+      "count": 13,
+      "fingerprint": "ae9f34c13a92a00c3fbd0a42967753ac"
+    },
+    "partyplus_private.host_access": {
+      "count": 3,
+      "fingerprint": "9c3f01432bedda2b0f924e7d2d22abfa"
+    },
+    "partyplus_private.memberships": {
+      "count": 3,
+      "fingerprint": "febd6ed6b449b836d088f6173a53f61e"
+    }
+  }
+}

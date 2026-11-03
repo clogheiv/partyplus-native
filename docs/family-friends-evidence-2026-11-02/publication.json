@@ -1,0 +1,293 @@
+{
+  "at": "2026-11-03T01:56:08.318Z",
+  "sourceCommit": "dae5c5a5d0dbbcb90a2040d4d01a0c798b01d5fa",
+  "browserSourceCommit": "dae5c5a5d0dbbcb90a2040d4d01a0c798b01d5fa",
+  "siteId": "f7af2b09-2f8a-44d7-bf17-b8993eb17492",
+  "publishedDeploy": "6ae93dce850a924fd26f894d",
+  "autoPublishingLocked": true,
+  "previousPublished": "6ae7f8ce6b1fc10a226a7a17",
+  "url": "https://partyplusapp.com",
+  "rollback": "Prior deploy6ae7f8ce6b1fc10a226a7a17 is retained. Keep additive backend/address data; prior UI preserves it but cannot format new structured-only addresses, so use a forward formatter correction for complete display. No destructive database rollback.",
+  "totalBytes": 1273921,
+  "artifactFiles": {
+    "/app.css": "2ccaf534922e202a0994d245467edd553c86a9de225158b55f6a289afb490bdf",
+    "/app.js": "57f1ff29b4715a286f73f97b401150b770e152e919f78524d7d63eb1f7418fdf",
+    "/assets/brand/apple-touch-icon.png": "c07027406e2ff4020071806cc4541af8687304367d0357e366cd462613b83a05",
+    "/assets/brand/favicon.png": "b4e65e19beec096a2ecc2cd7d3e8e98ccd17249b8468405f75dddee846ba0095",
+    "/assets/brand/partyplus-banner-small.jpg": "fca50f2c08a3405da40620dc793564c640657da60d1ac7288ef391169bed33a9",
+    "/assets/brand/partyplus-banner.jpg": "dce112c013c98cf1646fbedbc4dfa2cedc6936ddca37b61bf3c3370c92d81116",
+    "/assets/brand/partyplus-icon.png": "36c52bea8ba998ae19975cc205e2b5a7d0fc06feab0e67cd2544878553be60f7",
+    "/assets/brand/SOURCES.json": "a8379f299e690d09755cece64b5382a1c7eea76dce998cac9d0e0fd8312b4312",
+    "/assets/fonts/Fraunces-Display-Italic.woff2": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb",
+    "/assets/fonts/Fraunces-Display-Semibold.woff2": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65",
+    "/assets/fonts/Fraunces-OFL.txt": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+    "/assets/fonts/SOURCES.json": "8e67aa8d489b99b62e874a0bca0d1dcb3474b33be47c97ea789b6ba2fec1865e",
+    "/assets/fonts/SpaceGrotesk-OFL.txt": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+    "/assets/fonts/SpaceGrotesk-Variable.woff2": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07",
+    "/favicon.svg": "923ad85af343eb5966aeefb9682629d4b465bfc4c8f4a44d4be7f9a35c4fb174",
+    "/index.html": "c20c1ac52c1aaa3b0d3cf68737697ec0d7b3c70c25de7c4d6c0f9c8750f68f36",
+    "/_headers": "e0660fdc1bbd3cadff66366954f6dc0eb561f3e6b0d5a85d6837be44cd6480de",
+    "/_redirects": "1a19e5c5f88552f864ef32e91621da3414a9386727048ac521f26ab04c0abc41"
+  },
+  "draftVerification": {
+    "at": "2026-11-03T01:50:21.469Z",
+    "origin": "https://6ae93dce850a924fd26f894d--partyplus-invite.netlify.app",
+    "deployId": "6ae93dce850a924fd26f894d",
+    "browserSource": "dae5c5a5d0dbbcb90a2040d4d01a0c798b01d5fa",
+    "artifactFiles": {
+      "/app.css": "2ccaf534922e202a0994d245467edd553c86a9de225158b55f6a289afb490bdf",
+      "/app.js": "57f1ff29b4715a286f73f97b401150b770e152e919f78524d7d63eb1f7418fdf",
+      "/assets/brand/apple-touch-icon.png": "c07027406e2ff4020071806cc4541af8687304367d0357e366cd462613b83a05",
+      "/assets/brand/favicon.png": "b4e65e19beec096a2ecc2cd7d3e8e98ccd17249b8468405f75dddee846ba0095",
+      "/assets/brand/partyplus-banner-small.jpg": "fca50f2c08a3405da40620dc793564c640657da60d1ac7288ef391169bed33a9",
+      "/assets/brand/partyplus-banner.jpg": "dce112c013c98cf1646fbedbc4dfa2cedc6936ddca37b61bf3c3370c92d81116",
+      "/assets/brand/partyplus-icon.png": "36c52bea8ba998ae19975cc205e2b5a7d0fc06feab0e67cd2544878553be60f7",
+      "/assets/brand/SOURCES.json": "a8379f299e690d09755cece64b5382a1c7eea76dce998cac9d0e0fd8312b4312",
+      "/assets/fonts/Fraunces-Display-Italic.woff2": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb",
+      "/assets/fonts/Fraunces-Display-Semibold.woff2": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65",
+      "/assets/fonts/Fraunces-OFL.txt": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+      "/assets/fonts/SOURCES.json": "8e67aa8d489b99b62e874a0bca0d1dcb3474b33be47c97ea789b6ba2fec1865e",
+      "/assets/fonts/SpaceGrotesk-OFL.txt": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+      "/assets/fonts/SpaceGrotesk-Variable.woff2": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07",
+      "/favicon.svg": "923ad85af343eb5966aeefb9682629d4b465bfc4c8f4a44d4be7f9a35c4fb174",
+      "/index.html": "c20c1ac52c1aaa3b0d3cf68737697ec0d7b3c70c25de7c4d6c0f9c8750f68f36",
+      "/_headers": "e0660fdc1bbd3cadff66366954f6dc0eb561f3e6b0d5a85d6837be44cd6480de",
+      "/_redirects": "1a19e5c5f88552f864ef32e91621da3414a9386727048ac521f26ab04c0abc41"
+    },
+    "totalBytes": 1273921,
+    "publicAssets": [
+      {
+        "file": "/app.css",
+        "sha256": "2ccaf534922e202a0994d245467edd553c86a9de225158b55f6a289afb490bdf",
+        "bytes": 88636,
+        "mime": "text/css; charset=UTF-8"
+      },
+      {
+        "file": "/app.js",
+        "sha256": "57f1ff29b4715a286f73f97b401150b770e152e919f78524d7d63eb1f7418fdf",
+        "bytes": 460202,
+        "mime": "application/javascript; charset=UTF-8"
+      },
+      {
+        "file": "/assets/brand/apple-touch-icon.png",
+        "sha256": "c07027406e2ff4020071806cc4541af8687304367d0357e366cd462613b83a05",
+        "bytes": 57069,
+        "mime": "image/png"
+      },
+      {
+        "file": "/assets/brand/favicon.png",
+        "sha256": "b4e65e19beec096a2ecc2cd7d3e8e98ccd17249b8468405f75dddee846ba0095",
+        "bytes": 5546,
+        "mime": "image/png"
+      },
+      {
+        "file": "/assets/brand/partyplus-banner-small.jpg",
+        "sha256": "fca50f2c08a3405da40620dc793564c640657da60d1ac7288ef391169bed33a9",
+        "bytes": 117886,
+        "mime": "image/jpeg"
+      },
+      {
+        "file": "/assets/brand/partyplus-banner.jpg",
+        "sha256": "dce112c013c98cf1646fbedbc4dfa2cedc6936ddca37b61bf3c3370c92d81116",
+        "bytes": 289320,
+        "mime": "image/jpeg"
+      },
+      {
+        "file": "/assets/brand/partyplus-icon.png",
+        "sha256": "36c52bea8ba998ae19975cc205e2b5a7d0fc06feab0e67cd2544878553be60f7",
+        "bytes": 110818,
+        "mime": "image/png"
+      },
+      {
+        "file": "/assets/brand/SOURCES.json",
+        "sha256": "a8379f299e690d09755cece64b5382a1c7eea76dce998cac9d0e0fd8312b4312",
+        "bytes": 2283,
+        "mime": "application/json"
+      },
+      {
+        "file": "/assets/fonts/Fraunces-Display-Italic.woff2",
+        "sha256": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb",
+        "bytes": 43620,
+        "mime": "font/woff2"
+      },
+      {
+        "file": "/assets/fonts/Fraunces-Display-Semibold.woff2",
+        "sha256": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65",
+        "bytes": 37228,
+        "mime": "font/woff2"
+      },
+      {
+        "file": "/assets/fonts/Fraunces-OFL.txt",
+        "sha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+        "bytes": 4391,
+        "mime": "text/plain; charset=UTF-8"
+      },
+      {
+        "file": "/assets/fonts/SOURCES.json",
+        "sha256": "8e67aa8d489b99b62e874a0bca0d1dcb3474b33be47c97ea789b6ba2fec1865e",
+        "bytes": 1501,
+        "mime": "application/json"
+      },
+      {
+        "file": "/assets/fonts/SpaceGrotesk-OFL.txt",
+        "sha256": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+        "bytes": 4495,
+        "mime": "text/plain; charset=UTF-8"
+      },
+      {
+        "file": "/assets/fonts/SpaceGrotesk-Variable.woff2",
+        "sha256": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07",
+        "bytes": 49256,
+        "mime": "font/woff2"
+      },
+      {
+        "file": "/favicon.svg",
+        "sha256": "923ad85af343eb5966aeefb9682629d4b465bfc4c8f4a44d4be7f9a35c4fb174",
+        "bytes": 268,
+        "mime": "image/svg+xml"
+      },
+      {
+        "file": "/index.html",
+        "sha256": "c20c1ac52c1aaa3b0d3cf68737697ec0d7b3c70c25de7c4d6c0f9c8750f68f36",
+        "bytes": 778,
+        "mime": "text/html; charset=UTF-8"
+      }
+    ],
+    "metadataAndOriginalIcon": true,
+    "storageAndLocalPhotoCsp": true,
+    "legacyRoute": true,
+    "customerReadsOrMutations": false
+  },
+  "canonicalVerification": {
+    "at": "2026-11-03T01:56:18.525Z",
+    "origin": "https://partyplusapp.com",
+    "deployId": "6ae93dce850a924fd26f894d",
+    "browserSource": "dae5c5a5d0dbbcb90a2040d4d01a0c798b01d5fa",
+    "artifactFiles": {
+      "/app.css": "2ccaf534922e202a0994d245467edd553c86a9de225158b55f6a289afb490bdf",
+      "/app.js": "57f1ff29b4715a286f73f97b401150b770e152e919f78524d7d63eb1f7418fdf",
+      "/assets/brand/apple-touch-icon.png": "c07027406e2ff4020071806cc4541af8687304367d0357e366cd462613b83a05",
+      "/assets/brand/favicon.png": "b4e65e19beec096a2ecc2cd7d3e8e98ccd17249b8468405f75dddee846ba0095",
+      "/assets/brand/partyplus-banner-small.jpg": "fca50f2c08a3405da40620dc793564c640657da60d1ac7288ef391169bed33a9",
+      "/assets/brand/partyplus-banner.jpg": "dce112c013c98cf1646fbedbc4dfa2cedc6936ddca37b61bf3c3370c92d81116",
+      "/assets/brand/partyplus-icon.png": "36c52bea8ba998ae19975cc205e2b5a7d0fc06feab0e67cd2544878553be60f7",
+      "/assets/brand/SOURCES.json": "a8379f299e690d09755cece64b5382a1c7eea76dce998cac9d0e0fd8312b4312",
+      "/assets/fonts/Fraunces-Display-Italic.woff2": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb",
+      "/assets/fonts/Fraunces-Display-Semibold.woff2": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65",
+      "/assets/fonts/Fraunces-OFL.txt": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+      "/assets/fonts/SOURCES.json": "8e67aa8d489b99b62e874a0bca0d1dcb3474b33be47c97ea789b6ba2fec1865e",
+      "/assets/fonts/SpaceGrotesk-OFL.txt": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+      "/assets/fonts/SpaceGrotesk-Variable.woff2": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07",
+      "/favicon.svg": "923ad85af343eb5966aeefb9682629d4b465bfc4c8f4a44d4be7f9a35c4fb174",
+      "/index.html": "c20c1ac52c1aaa3b0d3cf68737697ec0d7b3c70c25de7c4d6c0f9c8750f68f36",
+      "/_headers": "e0660fdc1bbd3cadff66366954f6dc0eb561f3e6b0d5a85d6837be44cd6480de",
+      "/_redirects": "1a19e5c5f88552f864ef32e91621da3414a9386727048ac521f26ab04c0abc41"
+    },
+    "totalBytes": 1273921,
+    "publicAssets": [
+      {
+        "file": "/app.css",
+        "sha256": "2ccaf534922e202a0994d245467edd553c86a9de225158b55f6a289afb490bdf",
+        "bytes": 88636,
+        "mime": "text/css; charset=UTF-8"
+      },
+      {
+        "file": "/app.js",
+        "sha256": "57f1ff29b4715a286f73f97b401150b770e152e919f78524d7d63eb1f7418fdf",
+        "bytes": 460202,
+        "mime": "application/javascript; charset=UTF-8"
+      },
+      {
+        "file": "/assets/brand/apple-touch-icon.png",
+        "sha256": "c07027406e2ff4020071806cc4541af8687304367d0357e366cd462613b83a05",
+        "bytes": 57069,
+        "mime": "image/png"
+      },
+      {
+        "file": "/assets/brand/favicon.png",
+        "sha256": "b4e65e19beec096a2ecc2cd7d3e8e98ccd17249b8468405f75dddee846ba0095",
+        "bytes": 5546,
+        "mime": "image/png"
+      },
+      {
+        "file": "/assets/brand/partyplus-banner-small.jpg",
+        "sha256": "fca50f2c08a3405da40620dc793564c640657da60d1ac7288ef391169bed33a9",
+        "bytes": 117886,
+        "mime": "image/jpeg"
+      },
+      {
+        "file": "/assets/brand/partyplus-banner.jpg",
+        "sha256": "dce112c013c98cf1646fbedbc4dfa2cedc6936ddca37b61bf3c3370c92d81116",
+        "bytes": 289320,
+        "mime": "image/jpeg"
+      },
+      {
+        "file": "/assets/brand/partyplus-icon.png",
+        "sha256": "36c52bea8ba998ae19975cc205e2b5a7d0fc06feab0e67cd2544878553be60f7",
+        "bytes": 110818,
+        "mime": "image/png"
+      },
+      {
+        "file": "/assets/brand/SOURCES.json",
+        "sha256": "a8379f299e690d09755cece64b5382a1c7eea76dce998cac9d0e0fd8312b4312",
+        "bytes": 2283,
+        "mime": "application/json"
+      },
+      {
+        "file": "/assets/fonts/Fraunces-Display-Italic.woff2",
+        "sha256": "dfe552749bd4584f9b6701d3bf4e8400747b0d26fa95cbde7d73b6938a4f89eb",
+        "bytes": 43620,
+        "mime": "font/woff2"
+      },
+      {
+        "file": "/assets/fonts/Fraunces-Display-Semibold.woff2",
+        "sha256": "56353a30019b844014d492a8731a498646e1e6e7461af48cf3058f93d2ddfb65",
+        "bytes": 37228,
+        "mime": "font/woff2"
+      },
+      {
+        "file": "/assets/fonts/Fraunces-OFL.txt",
+        "sha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+        "bytes": 4391,
+        "mime": "text/plain; charset=UTF-8"
+      },
+      {
+        "file": "/assets/fonts/SOURCES.json",
+        "sha256": "8e67aa8d489b99b62e874a0bca0d1dcb3474b33be47c97ea789b6ba2fec1865e",
+        "bytes": 1501,
+        "mime": "application/json"
+      },
+      {
+        "file": "/assets/fonts/SpaceGrotesk-OFL.txt",
+        "sha256": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72",
+        "bytes": 4495,
+        "mime": "text/plain; charset=UTF-8"
+      },
+      {
+        "file": "/assets/fonts/SpaceGrotesk-Variable.woff2",
+        "sha256": "8e085aa438094f11487a836652edd5c054fa6a96f63fc7c282105ee3a4b08c07",
+        "bytes": 49256,
+        "mime": "font/woff2"
+      },
+      {
+        "file": "/favicon.svg",
+        "sha256": "923ad85af343eb5966aeefb9682629d4b465bfc4c8f4a44d4be7f9a35c4fb174",
+        "bytes": 268,
+        "mime": "image/svg+xml"
+      },
+      {
+        "file": "/index.html",
+        "sha256": "c20c1ac52c1aaa3b0d3cf68737697ec0d7b3c70c25de7c4d6c0f9c8750f68f36",
+        "bytes": 778,
+        "mime": "text/html; charset=UTF-8"
+      }
+    ],
+    "metadataAndOriginalIcon": true,
+    "storageAndLocalPhotoCsp": true,
+    "legacyRoute": true,
+    "customerReadsOrMutations": false
+  },
+  "backendSourceSha256": "181754752dd6804a10460b2755df4aca19fd2c5dc593664ca9ddc2f918ea7ee0",
+  "backendGuardSha256": "24d108ad382dc79e4e46370381f5eb51a8fde81e0be93f7a188ca37eeecd5ace",
+  "productionCustomerMutations": false
+}

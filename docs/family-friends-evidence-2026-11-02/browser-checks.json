@@ -1,0 +1,30 @@
+{
+  "reviewedBy": "parent root via supported browser API",
+  "stagingPreview": "https://6ae93d7531b3d4b23b55fba4--famous-fairy-b9cb63.netlify.app",
+  "browserSource": "dae5c5a5d0dbbcb90a2040d4d01a0c798b01d5fa",
+  "customerProductionReadsOrMutations": false,
+  "syntheticCreatedParty": "6ac5dee3-9ae0-4824-a547-44af70187982",
+  "checks": {
+    "actualStagingCreateAfterSignIn": true,
+    "streetCityZipSaved": true,
+    "leadingZeroZip01234": true,
+    "refreshAndEditorReload": true,
+    "completeDirectionsHref": true,
+    "legacyVerbatimExplicitReplace": true,
+    "exactItemAndAppearanceCopy": true,
+    "prominentCreateParty": true
+  },
+  "phone": {
+    "cssWidth": 390,
+    "clientWidth": 375,
+    "scrollWidth": 375,
+    "primaryFullWidth": true
+  },
+  "desktop": {
+    "cssWidth": 1440,
+    "primaryWidth": 212,
+    "primaryHeight": 64
+  },
+  "viewportReset": true,
+  "localPreviewLimitation": "Loopback unavailable in browser; no firewall/network/browser settings changed, no native fallback attempted. Actual HTTPS staging used instead."
+}

@@ -1,0 +1,78 @@
+{
+  "at": "2026-11-03T01:45:55.349Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "mode": "install",
+  "committed": true,
+  "productionAccessed": false,
+  "sourceSha256": "89a7b1c33d0d95c60a3e2c329280a5d03466c94297791f5002256ad561382fd3",
+  "allEightOriginalFingerprintsPreserved": true,
+  "allExistingRpcAccessRawGrantsAndGateUnchanged": true,
+  "before": {
+    "auth.users": {
+      "count": 49,
+      "fingerprint": "50289775836b81066919626c01a85695"
+    },
+    "public.parties": {
+      "count": 27,
+      "fingerprint": "b748fac585da2d8c266a64f7a91d170a"
+    },
+    "storage.objects": {
+      "count": 2,
+      "fingerprint": "e20ab857bc393e4262c4a91faa08c31b"
+    },
+    "public.party_items": {
+      "count": 59,
+      "fingerprint": "6ba049ca761d09ba607df5054cfed0fe"
+    },
+    "public.party_rsvps": {
+      "count": 29,
+      "fingerprint": "534a62fb72820142db0f01da1bac8630"
+    },
+    "partyplus_private.operations": {
+      "count": 139,
+      "fingerprint": "824e4c7ac2bc00b0e5d597d60d0e51a4"
+    },
+    "partyplus_private.host_access": {
+      "count": 27,
+      "fingerprint": "36ec5231dc535f4df065302e903961af"
+    },
+    "partyplus_private.memberships": {
+      "count": 30,
+      "fingerprint": "06088e4d8a01675dbd0573a7d5386a80"
+    }
+  },
+  "after": {
+    "auth.users": {
+      "count": 49,
+      "fingerprint": "50289775836b81066919626c01a85695"
+    },
+    "public.parties": {
+      "count": 27,
+      "fingerprint": "b748fac585da2d8c266a64f7a91d170a"
+    },
+    "storage.objects": {
+      "count": 2,
+      "fingerprint": "e20ab857bc393e4262c4a91faa08c31b"
+    },
+    "public.party_items": {
+      "count": 59,
+      "fingerprint": "6ba049ca761d09ba607df5054cfed0fe"
+    },
+    "public.party_rsvps": {
+      "count": 29,
+      "fingerprint": "534a62fb72820142db0f01da1bac8630"
+    },
+    "partyplus_private.operations": {
+      "count": 139,
+      "fingerprint": "824e4c7ac2bc00b0e5d597d60d0e51a4"
+    },
+    "partyplus_private.host_access": {
+      "count": 27,
+      "fingerprint": "36ec5231dc535f4df065302e903961af"
+    },
+    "partyplus_private.memberships": {
+      "count": 30,
+      "fingerprint": "06088e4d8a01675dbd0573a7d5386a80"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "preparedAt": "2026-11-03T01:48:58.896Z",
+  "sourceSha256": "181754752dd6804a10460b2755df4aca19fd2c5dc593664ca9ddc2f918ea7ee0",
+  "guardedSha256": "24d108ad382dc79e4e46370381f5eb51a8fde81e0be93f7a188ca37eeecd5ace",
+  "scope": "One nullable structured-address column, validation and existing RPC wrappers/projection; no backfill, changed client access, Auth/Storage setting, or original-data write."
+}

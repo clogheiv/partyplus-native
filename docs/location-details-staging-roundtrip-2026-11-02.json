@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-03T01:46:40.242Z",
+  "projectRef": "qmbwrbxbbshbavfhkujx",
+  "productionAccessed": false,
+  "customerDataUsed": false,
+  "syntheticPartyId": "3e1ecd34-2186-440f-927a-b807e1a803e2",
+  "checks": {
+    "legacyFreeformUnparsedAndPreserved": true,
+    "hostReceiptAndReplayExact": true,
+    "crossSessionAndUnsignedReadRoundtrip": true,
+    "myPartiesRoundtrip": true,
+    "oldClientOmissionPreserves": true,
+    "appearanceRsvpAndClaimRetained": true,
+    "guestAndStrangerWriteDenied": true,
+    "invalidInputRollsBack": true
+  },
+  "newFields": {
+    "version": 1,
+    "streetAddressMax": 300,
+    "cityMax": 120,
+    "zipCodeMax": 20
+  }
+}
