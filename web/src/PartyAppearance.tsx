@@ -1,6 +1,7 @@
 import { useId, useRef, useState, type ReactNode } from 'react';
 import { appearanceDesigns, appearanceForDesign, normalizeAppearance, type PartyAppearance, type PartyArtwork, type PartyAccent, type PartyFont, type PartyLayout } from './appearance';
 import './appearance.css';
+import { partyLocationText, type LocationDetails } from './partyLocation';
 
 // Editing-only per-image opt-out; public invitations and thumbnails keep normal sharing behavior.
 const editingImageAttributes = (editing: boolean) => editing ? { 'data-pin-nopin': 'true', nopin: 'nopin' } : {};
@@ -108,7 +109,7 @@ function eventDate(value?: string) {
   return { date: new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(date), time: value.length > 10 ? new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(date) : 'Save the date' };
 }
 
-export type AppearancePosterParty = { id?: string; title?: string; notes?: string; theme?: string; date?: string; location?: string; address?: string; appearance?: PartyAppearance };
+export type AppearancePosterParty = { id?: string; title?: string; notes?: string; theme?: string; date?: string; location?: string; address?: string; locationDetails?: LocationDetails | null; appearance?: PartyAppearance };
 
 export function AppearancePoster({ party, photoUrl, preview = false, host = false }: { party: AppearancePosterParty; photoUrl?: string; preview?: boolean; host?: boolean }) {
   const appearance = normalizeAppearance(party.appearance);
@@ -120,7 +121,7 @@ export function AppearancePoster({ party, photoUrl, preview = false, host = fals
     {appearance.layout === 'photo' ? <div className="ap-photo-composition"><PhotoFrame editing={preview} appearance={appearance} photoUrl={photoUrl} fallback={<Artwork editing={preview} artwork={appearance.artwork === 'none' ? 'partyplus' : appearance.artwork} compact/>}/>{copy}</div>
       : appearance.layout === 'elegant' ? <div className="ap-elegant-composition">{appearance.artwork !== 'none' && <div className="ap-elegant-ornament"><Artwork editing={preview} artwork={appearance.artwork} compact/></div>}<span className="ap-elegant-rule" aria-hidden="true"/>{copy}<span className="ap-elegant-rule" aria-hidden="true"/></div>
       : <div className="ap-illustrated-composition">{copy}{appearance.artwork !== 'none' && <div className={`ap-poster-art${appearance.artwork === 'partyplus' ? ' ap-banner-art' : ''}`}><Artwork editing={preview} artwork={appearance.artwork}/></div>}</div>}
-    <div className="ap-event-facts"><span>{date.date}</span><span>{date.time}</span><span>{party.location || party.address || 'Place to come'}</span></div>
+    <div className="ap-event-facts"><span>{date.date}</span><span>{date.time}</span><span>{partyLocationText(party) || 'Place to come'}</span></div>
   </section>;
 }
 
@@ -155,8 +156,7 @@ export function AppearanceControls({ value, onChange, photoUrl, onPhotoSelected,
     const next = appearanceForDesign(design);
     onChange(appearance.image ? { ...next, image: { ...appearance.image }, ...(appearance.layout === 'photo' ? { layout: 'photo' as const } : {}) } : next);
   };
-  return <section className="appearance-controls" aria-labelledby={`${prefix}-appearance-heading`}>
-    <div className="ap-controls-heading"><span className="ap-controls-kicker">INVITATION APPEARANCE</span><h2 id={`${prefix}-appearance-heading`}>Make it yours</h2></div>
+  return <section className="appearance-controls" aria-label="Design and image controls">
     <div className="ap-controls-body">
       <p className="ap-photo-sharing-note">Photos are visible to anyone with the invitation or photo link. Choose a photo you’re comfortable sharing.</p>
       <div className="ap-primary-actions"><button type="button" className="ap-action-secondary" onClick={focusDesignGallery} aria-controls={`${prefix}-design-gallery`}>Choose a design</button><button type="button" className="ap-action-primary" data-appearance-upload disabled={uploadBusy} onClick={openFilePicker}>Upload your own image</button></div>

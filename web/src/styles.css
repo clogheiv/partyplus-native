@@ -133,7 +133,10 @@ main { max-width: 1360px; min-height: 65vh; padding: 48px 48px 64px; margin: aut
 .dashboard-intro h1 { font-size: 66px; line-height: 1; margin: 0 0 16px; }
 .editorial-dot { color: var(--persimmon); }
 .dashboard-intro p { color: var(--muted); font-size: 16px; margin: 0; }
-.new-party-button { min-height: 52px; padding: 15px 24px; }
+.new-party-button { min-height: 62px; padding: 18px 30px; font-size: 19px; font-weight: 700; box-shadow: 0 5px 0 #101d68; }
+.new-party-button svg { width: 25px; height: 25px; }
+.legacy-location { margin: 0 0 24px; padding: 18px; border: 1px solid var(--line); border-radius: 4px; overflow-wrap: anywhere; }
+.legacy-location p { margin: 0 0 12px; }
 .dashboard-feature { background: var(--poster-bg); color: var(--poster-ink); display: grid; grid-template-columns: 1.45fr 1fr; gap: 30px; position: relative; overflow: hidden; border: 1px solid var(--ink); min-height: 352px; padding: 35px 40px 45px; }
 .feature-copy { position: relative; z-index: 2; align-self: center; }
 .feature-copy .eyebrow { letter-spacing: 1.6px; }

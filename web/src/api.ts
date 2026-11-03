@@ -3,10 +3,12 @@ import type { Party, PartyItem, PartyRsvp } from '../../src/lib/partyTypes';
 import { classifyPartyError } from '../../src/lib/partyErrors';
 import { requireParty, requireCommitReceipt } from '../../src/lib/partyValidation';
 import type { PartyAppearance } from './appearance';
+import type { LocationDetails } from './partyLocation';
 
 export type WebParty = Omit<Party,'items'> & {
   appearance?:PartyAppearance;
   address?:string;
+  locationDetails?:LocationDetails|null;
   items: (PartyItem & {isMine?:boolean})[];
   ownRsvp?: PartyRsvp | null;
   isJoined?:boolean;
@@ -58,6 +60,11 @@ function appearanceFingerprint(value:unknown):string {
  const p=value as Record<string,unknown>;const image=p.image as Record<string,unknown>|undefined;
  return JSON.stringify([p.version,p.design,p.layout,p.accent,p.font,p.artwork,image?[image.id,image.positionX,image.positionY,image.zoom]:null]);
 }
+function locationFingerprint(value:unknown):string {
+ if(!value||typeof value!=='object')return 'missing';
+ const p=value as Record<string,unknown>;
+ return JSON.stringify([p.version,p.streetAddress,p.city,p.zipCode]);
+}
 async function mutation(id:string,name?:string,args?:Record<string,unknown>):Promise<WebParty|null> {
  return lock(id,async()=>{
   const key='pending.'+id;
@@ -81,6 +88,7 @@ async function mutation(id:string,name?:string,args?:Record<string,unknown>):Pro
   else if(result?.deleted!==true || result.operationId!==pending.operationId)throw Error('The server did not confirm this deletion. Retry the pending change.');
   const submitted=pending.args.p_party as Record<string,unknown>|undefined;
   if(pending.name==='partyplus_v2_commit_party'&&submitted&&Object.hasOwn(submitted,'appearance')&&appearanceFingerprint(submitted.appearance)!==appearanceFingerprint(party?.appearance))throw Error('The server did not confirm your invitation appearance. Your draft is preserved. Retry the saved change.');
+  if(pending.name==='partyplus_v2_commit_party'&&submitted&&Object.hasOwn(submitted,'locationDetails')&&locationFingerprint(submitted.locationDetails)!==locationFingerprint(party?.locationDetails))throw Error('The server did not confirm your party location. Your draft is preserved. Retry the saved change.');
   localStorage.removeItem(prefix+key);
   return party;
  });
@@ -167,10 +175,12 @@ export const api={
  },
  async readParty(id:string):Promise<WebParty|null>{const result=await rpc('partyplus_web_read_party',{p_party_id:id});return result?requireParty(result,id) as WebParty:null;},
  async joinParty(id:string){await mutation(id,'partyplus_web_join_party',{p_party_id:id});},
- async saveParty(party:Party):Promise<WebParty>{
+ async saveParty(party:WebParty):Promise<WebParty>{
   const current=await session();if(!current||current.isAnonymous)throw Error('Sign in with your email to save your party. Your draft is preserved.');
   const created=!party.revision;
-  const result=await mutation(party.id,'partyplus_v2_commit_party',{p_expected_revision:party.revision??0,p_party:party});
+  const {locationDetails,...rest}=party;
+  const submitted=locationDetails?{...rest,locationDetails:{version:1,streetAddress:locationDetails.streetAddress.trim(),city:locationDetails.city.trim(),zipCode:locationDetails.zipCode.trim()}}:rest;
+  const result=await mutation(party.id,'partyplus_v2_commit_party',{p_expected_revision:party.revision??0,p_party:submitted});
   if(created)void track('party_created');return result!;
  },
  async rsvp(id:string,response:{name:string;status:'yes'|'maybe'|'no';attendeeCount:number}){const result=await mutation(id,'partyplus_v2_rsvp',{p_party_id:id,p_response:response});void track('rsvp_saved');return result!;},

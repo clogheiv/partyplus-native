@@ -80,3 +80,20 @@ test('false, missing, mismatched and unrelated commit acknowledgements cannot cl
   await assert.rejects(h.api.deleteParty(party.id),/did not confirm this deletion/);assert.equal(h.api.hasPending(party.id),true);
  }
 });
+
+test('structured location is normalized before durable save and checked in its receipt',async()=>{
+ const locationDetails={version:1,streetAddress:' 14 Synthetic Lane ',city:' Test City ',zipCode:' 01234 '};
+ const normalized={version:1,streetAddress:'14 Synthetic Lane',city:'Test City',zipCode:'01234'};
+ const dropped=setup();await assert.rejects(dropped.api.saveParty({...party,locationDetails}),/did not confirm your party location/);
+ assert.equal(dropped.api.hasPending(party.id),true);
+ const pending=JSON.parse(dropped.storage.get('partyplus.web.v1.pending.'+party.id));assert.deepEqual(pending.args.p_party.locationDetails,normalized);
+ const resumed=setup({storage:dropped.storage,rpc:async(_name,args)=>({data:{committed:true,operationId:args.p_operation_id,party:{...party,locationDetails:{city:'Test City',zipCode:'01234',streetAddress:'14 Synthetic Lane',version:1}}}})});
+ const saved=await resumed.api.retry(party.id);assert.equal(saved.locationDetails.zipCode,'01234');assert.equal(resumed.api.hasPending(party.id),false);
+ assert.equal(resumed.calls[0][1].p_operation_id,pending.operationId);
+});
+
+test('legacy null projection is omitted from save and exact raw location survives',async()=>{
+ const h=setup();await h.api.saveParty({...party,location:'Meet at oak, west gate',address:'Original freeform, no parsing',locationDetails:null});
+ const submitted=h.calls[0][1].p_party;
+ assert.equal(Object.hasOwn(submitted,'locationDetails'),false);assert.equal(submitted.location,'Meet at oak, west gate');assert.equal(submitted.address,'Original freeform, no parsing');
+});
